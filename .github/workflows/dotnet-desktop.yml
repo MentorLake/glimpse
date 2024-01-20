@@ -1,0 +1,61 @@
+name: Glimpse
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-22.04
+
+    env:
+      Solution_Name: Glimpse.sln
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Execute unit tests
+      run: dotnet test
+
+    - name: Publish
+      run: dotnet publish -r linux-x64 -c Release
+
+    - name: Zip release
+      run: |
+        zip --junk-paths glimpse.linux-x64.zip src/Glimpse/bin/Release/net8.0/linux-x64/publish/glimpse
+
+    - name: Create release
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        draft: false
+        prerelease: false
+        release_name: Release ${{ github.run_number }}.${{ github.run_attempt }}
+        tag_name: ${{ github.run_number }}.${{ github.run_attempt }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Upload linux-x64 artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: glimpse.linux-x64.zip
+        asset_name: glimpse.linux-x64.zip
+        asset_content_type: application/gzip

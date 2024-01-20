@@ -1,0 +1,26 @@
+<Project>
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<NoWarn>CS8632;CS8851</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<AdditionalFiles Include="..\..\.refrules" />
+		<EmbeddedResource Include="Assets/*" LogicalName="%(Filename)%(Extension)" />
+		<EmbeddedResource Include="**/*.css" LogicalName="%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MentorLake.Redux" Version="1.0.*"/>
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0"/>
+		<PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" Version="1.3.1" PrivateAssets="all"/>
+		<PackageReference Include="ReferenceCopAnalyzer" Version="0.3.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="System.Reactive" Version="6.0.1-preview.1"/>
+	</ItemGroup>
+
+</Project>

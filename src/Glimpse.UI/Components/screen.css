@@ -1,0 +1,100 @@
+.panel {
+	background-color: rgba(0, 0, 0, 0.8);
+	min-height: 52px;
+}
+
+.header-menu-item {
+	background-color: transparent;
+	margin-left: 6px;
+}
+
+.header-menu-item-label {
+	font-weight: bold;
+	color: #AAAAAA;
+}
+
+scrollbar {
+	border: 0;
+	background-color: rgba(0, 0, 0, 0);
+}
+
+menuitem + menuitem, separator + menuitem, separator {
+	margin-top: 6px;
+}
+
+menuitem label {
+	font-size: 13px;
+}
+
+label {
+	font: 11px Sans;
+}
+
+button {
+	all: unset;
+}
+
+button, .button {
+	margin: 0;
+	padding: 0;
+	outline: 0;
+	border: 0;
+	border-radius: 4px;
+	background-color: transparent;
+}
+
+button:hover, .button:hover, button:focus, .button:focus {
+	background-color: rgba(255, 255, 255, .1);
+}
+
+button:active, .button:active {
+	background-color: rgba(255, 255, 255, .3);
+}
+
+.foreach__dragging-placeholder {
+	border: 1px solid #444444;
+	border-radius: 4px;
+	padding: 0;
+	margin: 0;
+}
+
+flowboxchild {
+	padding: 0;
+}
+
+.chip__label-container {
+	border: 1px solid #444444;
+	border-radius: 16px;
+}
+
+.chip__label-container--unselected:hover {
+	background-color: rgb(66, 66, 66);
+}
+
+.chip__label-container--unselected:active {
+	background-color: rgb(100, 100, 100);
+}
+
+.chip__label-container--selected {
+	background-color: @theme_selected_bg_color;
+}
+
+.chip__label {
+	font-size: 11px;
+	min-height: 28px;
+	padding-left: 16px;
+	padding-right: 16px;
+}
+
+.chip__label-container--selected .chip__label {
+	color: black;
+}
+
+.clock {
+	padding-left: 8px;
+	padding-right: 8px;
+}
+
+.clock image {
+	margin-left: 8px;
+}

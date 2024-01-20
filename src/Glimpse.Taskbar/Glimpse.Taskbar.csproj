@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<ItemGroup>
+		<ProjectReference Include="..\Glimpse.Common\Glimpse.Common.csproj"/>
+		<ProjectReference Include="..\Glimpse.Configuration\Glimpse.Configuration.csproj"/>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="GtkSharp" Version="3.24.24.95"/>
+		<PackageReference Include="Tmds.DBus.Protocol" Version="0.15.0"/>
+	</ItemGroup>
+
+</Project>

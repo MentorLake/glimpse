@@ -1,0 +1,102 @@
+.start-menu__launch-icon {
+	border-radius: 5px;
+	min-width: 42px;
+	min-height: 42px;
+	margin-right: 2px;
+}
+
+.start-menu__launch-icon:hover {
+	background-color: rgba(255, 255, 255, 0.3);
+}
+
+.start-menu__launch-icon:active {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.start-menu__launch-icon--open {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.start-menu__window {
+	border: 1px solid #555555;
+	border-radius: 10px;
+	background-color: rgba(48, 48, 48, 0.95);
+	min-width: 640px;
+	min-height: 725px;
+}
+
+.start-menu__search-input {
+	margin-top: 16px;
+	min-height: 28px;
+	min-width: 560px;
+	border: 1px solid #444444;
+	border-radius: 15px;
+	background-color: rgba(33, 33, 33, 1);
+}
+
+.start-menu__chips {
+	margin-top: 16px;
+	margin-left: 32px;
+}
+
+.start-menu__apps-scroll-window {
+	margin: 24px 0 128px 32px;
+}
+
+.start-menu_apps {
+
+}
+
+.start-menu__apps flowboxchild {
+	min-width: 92px;
+	min-height: 76px;
+	padding: 0 2px 0 2px;
+}
+
+.start-menu__apps .foreach__dragging-placeholder {
+	min-width: 90px;
+	min-height: 74px;
+}
+
+.start-menu__app-icon-container {
+	border-radius: 4px;
+}
+
+.start-menu__app-icon-container:hover {
+	background-color: rgba(255, 255, 255, 0.2);
+}
+
+.start-menu__app-icon-container:active {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.start-menu__app-icon-container label {
+	min-width: 82px;
+	min-height: 16px;
+	margin-top: 4px;
+}
+
+.start-menu__account-icon {
+
+}
+
+.start-menu__username {
+	font-size: 14px;
+	margin-left: 8px;
+}
+
+.start-menu__user-settings-button {
+	padding: 8px;
+}
+
+.start-menu__power, .start-menu__settings {
+	min-width: 38px;
+	min-height: 38px;
+}
+
+.start-menu__action-bar {
+	border-bottom-right-radius: 10px;
+	border-bottom-left-radius: 10px;
+	background-color: rgba(33, 33, 33, 1);
+	padding: 8px 52px 8px 52px;
+}

@@ -1,0 +1,17 @@
+.notifications-config__container {
+	padding: 8px;
+}
+
+.notifications-config__switch-container {
+	min-width: 60px;
+	min-height: 32px;
+}
+
+.notifications-config__header {
+	font-weight: bold;
+	font-size: 11px;
+}
+
+.notifications-config__header:nth-child(2), .notifications-config__header:nth-child(3) {
+	min-width: 60px;
+}

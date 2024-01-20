@@ -1,0 +1,30 @@
+.notifications__window {
+	border: 1px solid #555555;
+	border-radius: 6px;
+	background-color: rgba(48, 48, 48, 0.95);
+	min-width: 300px;
+	min-height: 52px;
+	padding: 12px;
+}
+
+.notifications__summary {
+	font-weight: bold;
+	margin-top: 8px;
+	font-size: 12px;
+}
+
+.notifications__body {
+	margin-top: 2px;
+	font-size: 12px;
+}
+
+.notifications__image {
+	margin-top: 8px;
+	margin-right: 8px;
+}
+
+.notifications_action-button {
+	min-height: 32px;
+	padding-left: 6px;
+	padding-right: 6px;
+}

@@ -1,0 +1,62 @@
+.calendar__layout {
+	border: 1px solid #555555;
+	border-radius: 10px;
+}
+
+.calendar__today {
+	font-size: 14px;
+	font-weight: bold;
+	padding-left: 24px;
+	padding-right: 12px;
+	background-color: rgba(32, 32, 32, 0.9);
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+}
+
+.calendar__date {
+	padding-left: 12px;
+	padding-right: 12px;
+	background-color: rgba(48, 48, 48, 0.9);
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+}
+
+.calendar__date label {
+	font-size: 14px;
+}
+
+.calendar__date-header {
+	font-weight: bold;
+}
+
+.calendar__date--outside-month {
+	color: #666666;
+}
+
+.calendar__date--current-day {
+	background-color: @theme_selected_bg_color;
+	border-radius: 5px;
+	color: black;
+}
+
+.calendar__month {
+	padding-top: 14px;
+	padding-bottom: 14px;
+	padding-left: 24px;
+	background-color: rgba(48, 48, 48, 0.9);
+}
+
+.calendar__month label {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.calendar__month button {
+	min-height: 32px;
+	min-width: 32px;
+}
+
+.calendar__month button + button {
+	margin-left: 8px;
+	margin-right: 16px;
+}

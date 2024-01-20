@@ -1,0 +1,45 @@
+.window-picker__app {
+	padding: 6px;
+}
+
+.window-picker__app-events:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.window-picker__screenshot {
+	margin-top: 4px;
+	min-height: 100px;
+}
+
+.window-picker__app:hover {
+	border-radius: 0;
+}
+
+.window-picker__app-icon {
+	min-height: 24px;
+}
+
+.window-picker__app-name {
+	margin-left: 4px;
+}
+
+.window-picker__app-close-button {
+	border-radius: 4px;
+	min-width: 24px;
+	min-height: 24px;
+}
+
+.window-picker__app-close-button:hover {
+	background-color: rgba(255, 0, 0, 0.5);
+}
+
+.taskbar__container flowboxchild {
+	min-width: 42px;
+	min-height: 42px;
+	padding: 0 2px 0 2px;
+}
+
+.taskbar__container .foreach__dragging-placeholder {
+	min-width: 40px;
+	min-height: 40px;
+}
