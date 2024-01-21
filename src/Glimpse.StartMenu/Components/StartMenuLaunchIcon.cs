@@ -14,9 +14,9 @@ namespace Glimpse.UI.Components.StartMenu;
 
 public class StartMenuLaunchIcon : EventBox
 {
-	public StartMenuLaunchIcon(ReduxStore store, StartMenuWindow startMenuWindow)
+	public StartMenuLaunchIcon(ReduxStore store, StartMenuWindow startMenuWindow, StartMenuSelectors startMenuSelectors)
 	{
-		var viewModelObservable = store.Select(StartMenuSelectors.ViewModel)
+		var viewModelObservable = store.Select(startMenuSelectors.ViewModel)
 			.TakeUntilDestroyed(this)
 			.ObserveOn(new SynchronizationContextScheduler(new GLibSynchronizationContext(), false))
 			.Replay(1);

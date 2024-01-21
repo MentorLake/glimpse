@@ -15,7 +15,6 @@ public static class ConfigurationSelectors
 	public static readonly ISelector<ConfigurationFile> Configuration = CreateFeature<ConfigurationFile>();
 	public static readonly ISelector<string> VolumeCommand = Create(Configuration, s => s.VolumeCommand);
 	public static readonly ISelector<string> TaskManagerCommand = Create(Configuration, s => s.TaskManagerCommand);
-	public static readonly ISelector<ImmutableList<string>> TaskbarPinnedLaunchers = Create(Configuration, s => s.Taskbar.PinnedLaunchers);
 	public static readonly ISelector<ImmutableList<StartMenuLaunchIconContextMenuItem>> StartMenuLaunchIconContextMenuItems = Create(Configuration, s => s.StartMenuLaunchIconContextMenu);
 }
 

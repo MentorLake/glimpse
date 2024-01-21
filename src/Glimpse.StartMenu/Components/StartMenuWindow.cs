@@ -25,7 +25,7 @@ public class StartMenuWindow : Gtk.Window
 
 	public IObservable<Point> WindowMoved { get; }
 
-	public StartMenuWindow(ReduxStore store, IStartMenuDemands startMenuDemands)
+	public StartMenuWindow(ReduxStore store, IStartMenuDemands startMenuDemands, StartMenuSelectors startMenuSelectors)
 		: base(WindowType.Toplevel)
 	{
 		SkipPagerHint = true;
@@ -46,7 +46,7 @@ public class StartMenuWindow : Gtk.Window
 			.Select(e => new Point(e.X, e.Y))
 			.DistinctUntilChanged((a, b) => a.X == b.X && a.Y == b.Y);
 
-		var viewModelObservable = store.Select(StartMenuSelectors.ViewModel)
+		var viewModelObservable = store.Select(startMenuSelectors.ViewModel)
 			.TakeUntilDestroyed(this)
 			.ObserveOn(new SynchronizationContextScheduler(new GLibSynchronizationContext(), false))
 			.Replay(1);

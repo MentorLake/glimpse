@@ -4,7 +4,6 @@ namespace Glimpse.Configuration;
 
 public record ConfigurationFile
 {
-	public TaskbarConfiguration Taskbar { get; set; } = new();
 	public StartMenuConfiguration StartMenu { get; set; } = new();
 	public Notifications Notifications { get; set; } = new();
 	public string PowerButtonCommand { get; set; } = "xfce4-session-logout";
@@ -34,7 +33,6 @@ public record NotificationApplicationConfig
 	public string Name { get; set; }
 	public bool ShowPopupBubbles { get; set; }
 	public bool ShowInHistory { get; set; }
-
 }
 
 public record StartMenuLaunchIconContextMenuItem
@@ -46,11 +44,11 @@ public record StartMenuLaunchIconContextMenuItem
 
 public record StartMenuConfiguration
 {
+	public string StartMenuLaunchIconName { get; set; } = "start-here";
 	public ImmutableList<string> PinnedLaunchers { get; set; } = ImmutableList<string>.Empty;
 }
 
 public record TaskbarConfiguration
 {
-	public string StartMenuLaunchIconName { get; set; } = "start-here";
 	public ImmutableList<string> PinnedLaunchers { get; set; } = ImmutableList<string>.Empty;
 }

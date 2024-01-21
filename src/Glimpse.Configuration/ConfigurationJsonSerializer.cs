@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Glimpse.Configuration;
 
+[JsonSerializable(typeof(Dictionary<string, JsonElement>))]
 [JsonSerializable(typeof(ConfigurationFile))]
 internal partial class ConfigurationSerializationContext : JsonSerializerContext
 {

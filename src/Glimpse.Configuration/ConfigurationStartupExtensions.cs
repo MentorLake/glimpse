@@ -17,7 +17,7 @@ public static class ConfigurationStartupExtensions
 
 	public static Task UseGlimpseConfiguration(this IHost host)
 	{
-		var store = host.Services.GetRequiredService<ReduxStore>();
+		var configService = host.Services.GetRequiredService<ConfigurationService>();
 		var dataDirectory = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "glimpse");
 		var configFile = Path.Join(dataDirectory, "config.json");
 
@@ -31,20 +31,7 @@ public static class ConfigurationStartupExtensions
 			File.WriteAllText(configFile, JsonSerializer.Serialize(new ConfigurationFile(), typeof(ConfigurationFile), ConfigurationSerializationContext.Instance));
 		}
 
-		// Add file watcher
-		var config = (ConfigurationFile) JsonSerializer.Deserialize(
-			File.ReadAllText(configFile),
-			typeof(ConfigurationFile),
-			ConfigurationSerializationContext.Instance);
-
-		store.Dispatch(new UpdateConfigurationAction() { ConfigurationFile = config });
-
-		store.Select(ConfigurationSelectors.Configuration).Skip(1).Subscribe(f =>
-		{
-			Console.WriteLine("Writing");
-			File.WriteAllText(configFile, JsonSerializer.Serialize(f, typeof(ConfigurationFile), ConfigurationSerializationContext.Instance));
-		});
-
+		configService.Load(configFile);
 		return Task.CompletedTask;
 	}
 }
