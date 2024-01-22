@@ -6,16 +6,15 @@ using GLib;
 using Glimpse.Common.System.Reactive;
 using Glimpse.Freedesktop.DesktopEntries;
 using Glimpse.Interop.Gdk;
-using MentorLake.Redux;
-using Glimpse.StartMenu;
-using Glimpse.UI.State;
+using Glimpse.UI;
 using Glimpse.Xorg.State;
 using Gtk;
+using MentorLake.Redux;
 using ReactiveMarbles.ObservableEvents;
 using Key = Gdk.Key;
 using WindowType = Gtk.WindowType;
 
-namespace Glimpse.UI.Components.StartMenu.Window;
+namespace Glimpse.StartMenu.Components;
 
 public class StartMenuWindow : Gtk.Window
 {

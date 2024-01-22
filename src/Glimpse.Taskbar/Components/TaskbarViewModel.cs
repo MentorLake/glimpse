@@ -1,10 +1,9 @@
 using System.Collections.Immutable;
 using Glimpse.Freedesktop.DesktopEntries;
-using Glimpse.Taskbar;
 using Glimpse.UI.State;
 using Glimpse.Xorg;
 
-namespace Glimpse.UI.Components.Taskbar;
+namespace Glimpse.Taskbar.Components;
 
 public record TaskbarViewModel
 {

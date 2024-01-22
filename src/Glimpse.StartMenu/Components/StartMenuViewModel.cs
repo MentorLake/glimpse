@@ -3,7 +3,7 @@ using Glimpse.Configuration;
 using Glimpse.Freedesktop.DesktopEntries;
 using Glimpse.UI.State;
 
-namespace Glimpse.UI.Components.StartMenu;
+namespace Glimpse.StartMenu.Components;
 
 public class ActionBarViewModel
 {

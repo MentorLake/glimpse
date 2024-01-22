@@ -1,14 +1,14 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using Glimpse.Common.Images;
 using Glimpse.Freedesktop.DesktopEntries;
-using Glimpse.UI.Components.Shared;
+using Glimpse.UI;
+using Glimpse.UI.Components;
 using Glimpse.UI.State;
 using Glimpse.Xorg;
 using Gtk;
 using ReactiveMarbles.ObservableEvents;
 
-namespace Glimpse.UI.Components.Taskbar;
+namespace Glimpse.Taskbar.Components;
 
 public class TaskbarGroupContextMenu : Menu
 {

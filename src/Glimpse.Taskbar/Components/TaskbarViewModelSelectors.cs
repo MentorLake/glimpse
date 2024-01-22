@@ -2,14 +2,13 @@ using System.Collections.Immutable;
 using Glimpse.Common.Images;
 using Glimpse.Common.System.Collections;
 using Glimpse.Freedesktop.DesktopEntries;
-using MentorLake.Redux.Selectors;
-using Glimpse.Taskbar;
 using Glimpse.UI.State;
 using Glimpse.Xorg;
 using Glimpse.Xorg.State;
+using MentorLake.Redux.Selectors;
 using static MentorLake.Redux.Selectors.SelectorFactory;
 
-namespace Glimpse.UI.Components.Taskbar;
+namespace Glimpse.Taskbar.Components;
 
 public static class TaskbarViewModelSelectors
 {
@@ -17,15 +16,15 @@ public static class TaskbarViewModelSelectors
 		XorgSelectors.Windows,
 		windows => windows.ById.Values.ToImmutableList());
 
-	public static readonly ISelector<SlotReferences> Slots = Create(
+	public static readonly ISelector<SlotReferences> CurrentSlots = Create(
 		DesktopFileSelectors.DesktopFiles,
 		s_windowPropertiesList.WithSequenceComparer((x, y) => x.WindowRef.Id == y.WindowRef.Id && x.ClassHintName == y.ClassHintName),
-		TaskbarStateSelectors.UserSortedSlots,
-		(desktopFiles, windows, userSortedSlotCollection) =>
+		TaskbarSelectors.StoredSlots,
+		(desktopFiles, windows, storedSlots) =>
 		{
-			var result = ImmutableList<SlotRef>.Empty.AddRange(userSortedSlotCollection.Refs);
+			var result = ImmutableList<SlotRef>.Empty.AddRange(storedSlots.Refs);
 
-			var previouslyFoundDesktopFiles = userSortedSlotCollection.Refs
+			var previouslyFoundDesktopFiles = result
 				.Select(l => desktopFiles.ContainsKey(l.PinnedDesktopFileId) ? desktopFiles.ById[l.PinnedDesktopFileId] : null)
 				.Where(f => f != null)
 				.ToList();
@@ -58,7 +57,7 @@ public static class TaskbarViewModelSelectors
 		});
 
 	private static readonly ISelector<ImmutableList<(SlotRef Slot, DesktopFile DesktopFile)>> s_slotToDesktopFile = Create(
-		Slots,
+		CurrentSlots,
 		DesktopFileSelectors.DesktopFiles,
 		(slots, desktopFiles) =>
 		{
@@ -73,7 +72,7 @@ public static class TaskbarViewModelSelectors
 
 	private static readonly ISelector<ImmutableList<(SlotRef Slot, ImmutableList<IGlimpseImage> Icons)>> s_slotToWindowGroupIcons =
 		Create(
-			Slots,
+			CurrentSlots,
 			s_windowPropertiesList.WithSequenceComparer((x, y) => x.WindowRef.Id == y.WindowRef.Id && x.Icons == y.Icons),
 			(slots, windows) =>
 			{
@@ -81,7 +80,7 @@ public static class TaskbarViewModelSelectors
 			});
 
 	private static readonly ISelector<ImmutableList<(SlotRef Slot, ImageViewModel Icon)>> s_slotToIcon = Create(
-		Slots,
+		CurrentSlots,
 		s_slotToDesktopFile,
 		s_slotToWindowGroupIcons,
 		(slots, desktopFiles, windowGroups) =>
@@ -106,7 +105,7 @@ public static class TaskbarViewModelSelectors
 		(x, y) => CollectionComparer.Sequence(x, y, (i, j) => i.Slot == j.Slot && i.Icon == j.Icon));
 
 	private static readonly ISelector<ImmutableList<(SlotRef Slot, bool CanClose)>> s_slotToCanClose = Create(
-		Slots,
+		CurrentSlots,
 		s_windowPropertiesList.WithSequenceComparer((x, y) => x.WindowRef.Id == y.WindowRef.Id && x.ClassHintName == y.ClassHintName),
 		(slots, windows) =>
 		{
@@ -115,7 +114,7 @@ public static class TaskbarViewModelSelectors
 		(x, y) => CollectionComparer.Sequence(x, y, (i, j) => i.Slot == j.Slot && i.CanClose == j.CanClose));
 
 	private static readonly ISelector<ImmutableList<(SlotRef Slot, TaskbarGroupContextMenuViewModel ViewModel)>> s_contextMenu = Create(
-		Slots,
+		CurrentSlots,
 		s_slotToCanClose,
 		s_slotToDesktopFile,
 		s_slotToIcon,
@@ -145,7 +144,7 @@ public static class TaskbarViewModelSelectors
 			.ToImmutableList());
 
 	private static readonly ISelector<ImmutableList<KeyValuePair<IWindowRef, ImageViewModel>>> s_windowToScreenshot = Create(
-		Slots,
+		CurrentSlots,
 		XorgSelectors.Screenshots,
 		s_slotToDesktopFile,
 		s_windowPropertiesList.WithSequenceComparer((x, y) => x.WindowRef == y.WindowRef && x.Icons == y.Icons),
@@ -190,7 +189,7 @@ public static class TaskbarViewModelSelectors
 			.ToImmutableList());
 
 	public static readonly ISelector<TaskbarViewModel> ViewModel = Create(
-		Slots,
+		CurrentSlots,
 		s_slotToDesktopFile,
 		s_contextMenu,
 		s_slotToIcon,

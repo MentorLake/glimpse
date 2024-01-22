@@ -3,20 +3,19 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using GLib;
 using Glimpse.Freedesktop.DesktopEntries;
-using MentorLake.Redux;
-using Glimpse.Taskbar;
+using Glimpse.UI;
 using Glimpse.UI.Components.Shared.ForEach;
-using Glimpse.UI.State;
 using Glimpse.Xorg;
 using Glimpse.Xorg.State;
 using Gtk;
+using MentorLake.Redux;
 using ReactiveMarbles.ObservableEvents;
 
-namespace Glimpse.UI.Components.Taskbar;
+namespace Glimpse.Taskbar.Components;
 
 public class TaskbarView : Box
 {
-	public TaskbarView(ReduxStore store, IDisplayServer displayServer, AccountService accountService)
+	public TaskbarView(ReduxStore store, IDisplayServer displayServer)
 	{
 		var viewModelSelector = store
 			.Select(TaskbarViewModelSelectors.ViewModel)
@@ -117,8 +116,8 @@ public class TaskbarView : Box
 			 	.Subscribe(t => DesktopFileRunner.Run(t.First));
 
 			 contextMenu.Pin
-			 	.WithLatestFrom(viewModelObservable)
-			 	.Subscribe(t => store.Dispatch(new ToggleTaskbarPinningAction(t.Second.DesktopFile.Id)));
+				.WithLatestFrom(viewModelObservable)
+				.Subscribe(t => store.Dispatch(new ToggleTaskbarPinningAction(t.Second.DesktopFile.Id)));
 
 			 contextMenu.Launch
 			 	.WithLatestFrom(viewModelObservable)
@@ -141,7 +140,7 @@ public class TaskbarView : Box
 		forEachGroup.AddClass("taskbar__container");
 		forEachGroup.OrderingChanged
 			.TakeUntilDestroyed(this)
-			.Subscribe(ordering => store.Dispatch(new UpdateTaskbarSlotOrderingBulkAction() { Slots = ordering.Select(s => s.SlotRef).ToImmutableList() }));
+			.Subscribe(ordering => store.Dispatch(new UpdateTaskbarSlotOrderingBulkAction(ordering.Select(s => s.SlotRef).ToImmutableList())));
 		forEachGroup.DragBeginObservable.TakeUntilDestroyed(this).Subscribe(icon => icon.CloseWindowPicker());
 
 		Add(forEachGroup);

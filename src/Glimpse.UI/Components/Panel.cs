@@ -4,11 +4,11 @@ using Gdk;
 using GLib;
 using Glimpse.Configuration;
 using Glimpse.Freedesktop.DesktopEntries;
+using Glimpse.StartMenu.Components;
+using Glimpse.Taskbar.Components;
 using MentorLake.Redux;
 using Glimpse.UI.Components.SidePane;
-using Glimpse.UI.Components.StartMenu;
 using Glimpse.UI.Components.SystemTray;
-using Glimpse.UI.Components.Taskbar;
 using Glimpse.UI.State;
 using Gtk;
 using Microsoft.Extensions.DependencyInjection;
@@ -74,7 +74,7 @@ public class Panel : Window
 		Add(grid);
 		ShowAll();
 
-		store.Select(TaskbarViewModelSelectors.Slots)
+		store.Select(TaskbarViewModelSelectors.CurrentSlots)
 			.DistinctUntilChanged()
 			.TakeUntilDestroyed(this)
 			.ObserveOn(new SynchronizationContextScheduler(new GLibSynchronizationContext(), false))

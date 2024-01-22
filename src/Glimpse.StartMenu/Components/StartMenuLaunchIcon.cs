@@ -2,15 +2,15 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using GLib;
 using Glimpse.Freedesktop.DesktopEntries;
-using MentorLake.Redux;
-using Glimpse.UI.Components.StartMenu.Window;
+using Glimpse.UI;
 using Glimpse.UI.State;
 using Gtk;
+using MentorLake.Redux;
 using ReactiveMarbles.ObservableEvents;
 using Menu = Gtk.Menu;
 using MenuItem = Gtk.MenuItem;
 
-namespace Glimpse.UI.Components.StartMenu;
+namespace Glimpse.StartMenu.Components;
 
 public class StartMenuLaunchIcon : EventBox
 {

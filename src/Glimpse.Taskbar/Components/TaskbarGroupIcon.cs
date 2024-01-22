@@ -1,13 +1,14 @@
 using System.Reactive.Linq;
 using Cairo;
 using Glimpse.Common.Images;
+using Glimpse.UI;
 using Glimpse.UI.Components.Shared.ForEach;
 using Glimpse.UI.State;
 using Gtk;
 using ReactiveMarbles.ObservableEvents;
 using Color = Cairo.Color;
 
-namespace Glimpse.UI.Components.Taskbar;
+namespace Glimpse.Taskbar.Components;
 
 public class TaskbarGroupIcon : EventBox, IForEachDraggable
 {

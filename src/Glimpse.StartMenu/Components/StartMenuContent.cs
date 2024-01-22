@@ -4,6 +4,8 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using GLib;
 using Glimpse.Freedesktop.DesktopEntries;
+using Glimpse.UI;
+using Glimpse.UI.Components;
 using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.Shared.ForEach;
 using Glimpse.UI.State;
@@ -12,7 +14,7 @@ using ReactiveMarbles.ObservableEvents;
 using Key = Gdk.Key;
 using Menu = Gtk.Menu;
 
-namespace Glimpse.UI.Components.StartMenu.Window;
+namespace Glimpse.StartMenu.Components;
 
 public class StartMenuContent : Bin
 {

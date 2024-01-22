@@ -1,6 +1,6 @@
 using Glimpse.Common.Images;
 
-namespace Glimpse.UI.Components;
+namespace Glimpse.StartMenu.Components;
 
 public class Assets
 {

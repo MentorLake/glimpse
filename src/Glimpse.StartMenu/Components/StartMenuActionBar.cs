@@ -1,8 +1,9 @@
 using System.Reactive.Linq;
 using Glimpse.Common.Images;
+using Glimpse.UI;
 using Gtk;
 
-namespace Glimpse.UI.Components.StartMenu.Window;
+namespace Glimpse.StartMenu.Components;
 
 public class StartMenuActionBar : Box
 {

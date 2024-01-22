@@ -2,6 +2,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Gdk;
 using Glimpse.Common.System.Reactive;
+using Glimpse.UI;
 using Glimpse.UI.Components.Shared;
 using Glimpse.Xorg;
 using Gtk;
@@ -10,7 +11,7 @@ using ReactiveMarbles.ObservableEvents;
 using Window = Gtk.Window;
 using WindowType = Gtk.WindowType;
 
-namespace Glimpse.UI.Components.Taskbar;
+namespace Glimpse.Taskbar.Components;
 
 public class TaskbarWindowPicker : Window
 {
@@ -32,7 +33,7 @@ public class TaskbarWindowPicker : Window
 
 		var layout = new Box(Orientation.Horizontal, 0);
 		Add(layout);
-		this.ObserveEvent(w => w.Events().FocusOutEvent).Subscribe(_ => ClosePopup());
+		this.ObserveEvent(w => ObservableGeneratorExtensions.Events((TaskbarWindowPicker)w).FocusOutEvent).Subscribe(_ => ClosePopup());
 
 		viewModelObservable.Select(vm => vm.Tasks).UnbundleMany(t => t.WindowRef.Id).RemoveIndex().Subscribe(taskObservable =>
 		{
