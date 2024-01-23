@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Glimpse.Common.Microsoft.Extensions;
 using Glimpse.Configuration;
 using Glimpse.StartMenu.Components;
@@ -16,15 +15,11 @@ public static class StartMenuStartupExtensions
 	{
 		var store = host.Services.GetRequiredService<ReduxStore>();
 		var configurationService = host.Services.GetRequiredService<ConfigurationService>();
-
-		if (!configurationService.ContainsKey(StartMenuConstants.ConfigKey))
-		{
-			configurationService.Upsert(StartMenuConstants.ConfigKey, StartMenuConfiguration.EmptyJson);
-		}
+		configurationService.AddIfNotExists(StartMenuConfiguration.ConfigKey, StartMenuConfiguration.Empty.ToJsonElement());
 
 		configurationService
-			.ObserveChange(StartMenuConstants.ConfigKey)
-			.Subscribe(c => store.Dispatch(new UpdateStartMenuConfigurationJson(c)));
+			.ObserveChange(StartMenuConfiguration.ConfigKey)
+			.Subscribe(c => store.Dispatch(new UpdateStartMenuConfiguration(StartMenuConfiguration.From(c))));
 
 		return Task.CompletedTask;
 	}

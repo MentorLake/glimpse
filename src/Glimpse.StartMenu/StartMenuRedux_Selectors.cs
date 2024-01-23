@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Text.Json;
 using Glimpse.Common.System;
 using Glimpse.Configuration;
 using Glimpse.Freedesktop;
@@ -14,25 +13,21 @@ namespace Glimpse.StartMenu;
 public class StartMenuSelectors
 {
 	private static readonly ISelector<StartMenuState> s_startMenuState = CreateFeature<StartMenuState>();
-	private static readonly ISelector<JsonElement?> s_configurationJson = Create(s_startMenuState, s => s.ConfigurationJson);
-	internal static readonly ISelector<StartMenuConfiguration> s_deserializedConfiguration = Create(
-		s_configurationJson,
-		s => s?.Deserialize(typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance) as StartMenuConfiguration);
-	private static readonly ISelector<string> s_startMenuLaunchIconName = Create(s_deserializedConfiguration, s => s.StartMenuLaunchIconName);
-	private static readonly ISelector<ImmutableList<string>> s_pinnedLaunchers = Create(s_deserializedConfiguration, s => s.PinnedLaunchers);
-	private static readonly ISelector<ImmutableList<StartMenuLaunchIconContextMenuItem>> s_startMenuLaunchIconContextMenuItems = Create(s_deserializedConfiguration, s => s.StartMenuLaunchIconContextMenu);
-	private static readonly ISelector<string> s_powerButtonCommand = Create(s_deserializedConfiguration, s => s.PowerButtonCommand);
-	private static readonly ISelector<string> s_settingsButtonCommand = Create(s_deserializedConfiguration, s => s.SettingsButtonCommand);
-	private static readonly ISelector<string> s_userSettingsCommand = Create(s_deserializedConfiguration, s => s.UserSettingsCommand);
+	internal static readonly ISelector<StartMenuConfiguration> s_configuration = Create(s_startMenuState, s => s.Configuration);
+	private static readonly ISelector<string> s_startMenuLaunchIconName = Create(s_configuration, s => s.StartMenuLaunchIconName);
+	private static readonly ISelector<ImmutableList<string>> s_pinnedLaunchers = Create(s_configuration, s => s.PinnedLaunchers);
+	private static readonly ISelector<ImmutableList<StartMenuLaunchIconContextMenuItem>> s_startMenuLaunchIconContextMenuItems = Create(s_configuration, s => s.StartMenuLaunchIconContextMenu);
+	private static readonly ISelector<string> s_powerButtonCommand = Create(s_configuration, s => s.PowerButtonCommand);
+	private static readonly ISelector<string> s_settingsButtonCommand = Create(s_configuration, s => s.SettingsButtonCommand);
+	private static readonly ISelector<string> s_userSettingsCommand = Create(s_configuration, s => s.UserSettingsCommand);
+	private static readonly ISelector<string> s_searchTextSelector = Create(s_startMenuState, s => s.SearchText);
+	private static readonly ISelector<string> s_taskManagerCommandSelector = Create(ConfigurationSelectors.Configuration, s => s.TaskManagerCommand);
+	private static readonly ISelector<ImmutableDictionary<StartMenuChips, StartMenuAppFilteringChip>> s_chipsSelector = Create(s_startMenuState, s => s.Chips);
 
 	public ISelector<StartMenuViewModel> ViewModel { get; }
 
 	public StartMenuSelectors(IStartMenuDemands startMenuDemands)
 	{
-		var searchTextSelector = Create(s_startMenuState, s => s.SearchText);
-		var taskManagerCommandSelector = Create(ConfigurationSelectors.Configuration, s => s.TaskManagerCommand);
-		var chipsSelector = Create(s_startMenuState, s => s.Chips);
-
 		var actionBarViewModelSelector = Create(
 			s_powerButtonCommand,
 			s_settingsButtonCommand,
@@ -48,8 +43,8 @@ public class StartMenuSelectors
 
 		var allAppsSelector = Create(
 			DesktopFileSelectors.AllDesktopFiles,
-			searchTextSelector,
-			chipsSelector,
+			s_searchTextSelector,
+			s_chipsSelector,
 			startMenuDemands.TaskbarPinnedLaunchers,
 			s_pinnedLaunchers,
 			(allDesktopFiles, searchText,  chips, taskbarPinnedLaunchers, startMenuPinnedLaunchers) =>
@@ -88,7 +83,7 @@ public class StartMenuSelectors
 			s_startMenuLaunchIconContextMenuItems,
 			s_powerButtonCommand,
 			s_settingsButtonCommand,
-			taskManagerCommandSelector,
+			s_taskManagerCommandSelector,
 			(menuItems, powerButtonCommand, allSettingsCommands, taskManagerCommand) => menuItems
 				.Add(new() { DisplayText = "separator" })
 				.Add(new() { DisplayText = "Glimpse config", Executable = "xdg-open", Arguments = ConfigurationFile.FilePath })
@@ -99,9 +94,9 @@ public class StartMenuSelectors
 
 		ViewModel = Create(
 			allAppsSelector,
-			searchTextSelector,
+			s_searchTextSelector,
 			actionBarViewModelSelector,
-			chipsSelector,
+			s_chipsSelector,
 			menuItemsSelector,
 			s_startMenuLaunchIconName,
 			(allApps, searchText, actionBarViewModel, chips, menuItems, startMenuLaunchIconName) =>

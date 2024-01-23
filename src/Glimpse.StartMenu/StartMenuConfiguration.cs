@@ -12,6 +12,9 @@ public record StartMenuLaunchIconContextMenuItem
 
 public record StartMenuConfiguration
 {
+	public const string ConfigKey = "StartMenu";
+	public static StartMenuConfiguration Empty = new();
+
 	public string StartMenuLaunchIconName { get; set; } = "start-here";
 	public string PowerButtonCommand { get; set; } = "xfce4-session-logout";
 	public string SettingsButtonCommand { get; set; } = "xfce4-settings-manager";
@@ -27,5 +30,13 @@ public record StartMenuConfiguration
 		new () { DisplayText = "Network Connections", Executable = "nm-connection-editor" },
 		new () { DisplayText = "Session & Startup", Executable = "xfce4-settings-manager", Arguments = "-d xfce-session-settings" });
 
-	public static JsonElement EmptyJson = JsonSerializer.SerializeToElement(new StartMenuConfiguration(), typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance);
+	public JsonElement ToJsonElement()
+	{
+		return JsonSerializer.SerializeToElement(this, typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance);
+	}
+
+	public static StartMenuConfiguration From(JsonElement element)
+	{
+		return element.Deserialize(typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance) as StartMenuConfiguration;
+	}
 }

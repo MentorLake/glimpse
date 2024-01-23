@@ -11,7 +11,7 @@ namespace Glimpse.StartMenu;
 public record StartMenuState
 {
 	public string SearchText { get; init; } = "";
-	public JsonElement? ConfigurationJson { get; set; } = StartMenuConfiguration.EmptyJson;
+	public StartMenuConfiguration Configuration { get; set; } = StartMenuConfiguration.Empty;
 
 	public ImmutableDictionary<StartMenuChips, StartMenuAppFilteringChip> Chips { get; init; } =
 		ImmutableDictionary<StartMenuChips, StartMenuAppFilteringChip>.Empty
@@ -34,29 +34,29 @@ public record ToggleStartMenuPinningAction(string DesktopFileId);
 public record UpdateStartMenuSearchTextAction(string SearchText);
 public record UpdateStartMenuPinnedAppOrderingAction(ImmutableList<string> DesktopFileKeys);
 public record UpdateAppFilteringChip(StartMenuChips Chip);
-public record UpdateStartMenuConfigurationJson(JsonElement Json);
+public record UpdateStartMenuConfiguration(StartMenuConfiguration Config);
 
 public class StartMenuEffects(ConfigurationService configurationService) : IEffectsFactory
 {
 	public IEnumerable<Effect> Create() => new[]
 	{
 		EffectsFactory.CreateEffect<ToggleStartMenuPinningAction, StartMenuConfiguration>(
-			StartMenuSelectors.s_deserializedConfiguration,
+			StartMenuSelectors.s_configuration,
 			(a, s) =>
 			{
 				var updatedConfig = s with { PinnedLaunchers = s.PinnedLaunchers.Toggle(a.DesktopFileId) };
 				var serializedConfig = JsonSerializer.SerializeToElement(updatedConfig, typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance);
-				configurationService.Upsert(StartMenuConstants.ConfigKey, serializedConfig);
+				configurationService.Upsert(StartMenuConfiguration.ConfigKey, serializedConfig);
 			}),
 		EffectsFactory.CreateEffect<UpdateStartMenuPinnedAppOrderingAction, StartMenuConfiguration>(
-			StartMenuSelectors.s_deserializedConfiguration,
+			StartMenuSelectors.s_configuration,
 			(a, s) =>
 			{
 				if (!s.PinnedLaunchers.SequenceEqual(a.DesktopFileKeys))
 				{
 					var updatedConfig = s with { PinnedLaunchers = a.DesktopFileKeys };
 					var serializedConfig = JsonSerializer.SerializeToElement(updatedConfig, typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance);
-					configurationService.Upsert(StartMenuConstants.ConfigKey, serializedConfig);
+					configurationService.Upsert(StartMenuConfiguration.ConfigKey, serializedConfig);
 				}
 			})
 	};
@@ -67,7 +67,7 @@ internal class StartMenuReducers
 	public static readonly FeatureReducerCollection AllReducers = new()
 	{
 		FeatureReducer.Build(new StartMenuState())
-			.On<UpdateStartMenuConfigurationJson>((s, a) => s with { ConfigurationJson = a.Json })
+			.On<UpdateStartMenuConfiguration>((s, a) => s with { Configuration = a.Config })
 			.On<UpdateAppFilteringChip>((s, a) =>
 			{
 				var chips = s.Chips;

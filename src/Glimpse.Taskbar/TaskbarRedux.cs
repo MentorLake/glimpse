@@ -92,6 +92,7 @@ public static class TaskbarReducers
 
 				var results = new List<SlotRef>();
 
+				// This isn't handling all cases.
 				foreach (var x in join)
 				{
 					if (x.slotRef == null)
@@ -143,7 +144,8 @@ public class TaskbarEffects(ConfigurationService configurationService) : IEffect
 			}),
 		EffectsFactory.CreateEffect<ToggleTaskbarPinningAction, TaskbarConfiguration, SlotReferences>(
 			TaskbarSelectors.s_configuration,
-			TaskbarSelectors.StoredSlots, (_, config, currentSlots) =>
+			TaskbarSelectors.StoredSlots,
+			(_, config, currentSlots) =>
 			{
 				var pinnedLaunchers = currentSlots.Refs.Select(slot => slot.PinnedDesktopFileId).Where(x => !string.IsNullOrEmpty(x)).ToImmutableList();
 				var newConfig = config with { PinnedLaunchers = pinnedLaunchers };
