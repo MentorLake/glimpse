@@ -1,12 +1,14 @@
 using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 using Glimpse.Common.Images;
+using Glimpse.Configuration;
 using MentorLake.Redux;
 using MentorLake.Redux.Reducers;
 using MentorLake.Redux.Selectors;
 
 namespace Glimpse.Freedesktop.Notifications;
 
+public record UpdateNotificationsConfigurationAction(NotificationsConfiguration Config);
 public record LoadNotificationHistoryAction(NotificationHistory History);
 public record AddNotificationAction(FreedesktopNotification Notification);
 public record NotificationTimerExpiredAction(uint NotificationId);
@@ -43,6 +45,7 @@ public record NotificationHistoryEntry
 
 public static class NotificationSelectors
 {
+	public static readonly ISelector<NotificationsConfiguration> NotificationsConfiguration = SelectorFactory.CreateFeature<NotificationsConfiguration>();
 	public static readonly ISelector<NotificationHistory> NotificationHistory = SelectorFactory.CreateFeature<NotificationHistory>();
 	public static readonly ISelector<DataTable<uint, FreedesktopNotification>> NotificationsState = SelectorFactory.CreateFeature<DataTable<uint, FreedesktopNotification>>();
 	public static readonly ISelector<ImmutableList<NotificationHistoryApplication>> KnownApplications = SelectorFactory.Create(NotificationHistory, history => history.KnownApplications);
@@ -52,7 +55,10 @@ internal static class NotificationsReducers
 {
 	public static readonly FeatureReducerCollection AllReducers =
 	[
+		FeatureReducer.Build(new NotificationsConfiguration())
+			.On<UpdateNotificationsConfigurationAction>((s, a) => a.Config),
 		FeatureReducer.Build(new NotificationHistory())
+
 			.On<LoadNotificationHistoryAction>((s, a) => a.History)
 			.On<RemoveHistoryForApplicationAction>((s, a) => s with { Notifications = s.Notifications.Where(n => n.AppName != a.AppName).ToImmutableList() })
 			.On<ClearNotificationHistory>((s, a) => s with { Notifications = ImmutableList<NotificationHistoryEntry>.Empty })
