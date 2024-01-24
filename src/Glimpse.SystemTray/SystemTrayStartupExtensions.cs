@@ -1,11 +1,10 @@
 using Glimpse.Common.Microsoft.Extensions;
-using Glimpse.Freedesktop;
-using Glimpse.Freedesktop.SystemTray;
+using Glimpse.SystemTray.Components;
 using MentorLake.Redux.Effects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Glimpse.UI.Components.SystemTray;
+namespace Glimpse.SystemTray;
 
 public static class SystemTrayStartupExtensions
 {

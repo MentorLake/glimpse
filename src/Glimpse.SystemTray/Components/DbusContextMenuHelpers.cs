@@ -1,10 +1,9 @@
-using Gdk;
 using Glimpse.Freedesktop.DBus;
 using Gtk;
 using Menu = Gtk.Menu;
 using MenuItem = Gtk.MenuItem;
 
-namespace Glimpse.UI.Components.SystemTray;
+namespace Glimpse.SystemTray.Components;
 
 public static class DbusContextMenuHelpers
 {

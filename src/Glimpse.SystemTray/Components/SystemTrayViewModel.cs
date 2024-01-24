@@ -3,7 +3,7 @@ using Glimpse.Freedesktop.DBus;
 using Glimpse.Freedesktop.DBus.Introspection;
 using Glimpse.UI.State;
 
-namespace Glimpse.UI.Components.SystemTray;
+namespace Glimpse.SystemTray.Components;
 
 public class SystemTrayViewModel
 {

@@ -1,9 +1,10 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Glimpse.UI;
 using Gtk;
 using Menu = Gtk.Menu;
 
-namespace Glimpse.UI.Components.SystemTray;
+namespace Glimpse.SystemTray.Components;
 
 public class SystemTrayIcon : Button
 {

@@ -1,12 +1,11 @@
 using System.Collections.Immutable;
 using Glimpse.Freedesktop.DBus;
 using Glimpse.Freedesktop.DBus.Introspection;
-using Glimpse.Freedesktop.SystemTray;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
 using static MentorLake.Redux.Effects.EffectsFactory;
 
-namespace Glimpse.Freedesktop;
+namespace Glimpse.SystemTray;
 
 public class SystemTrayState
 {

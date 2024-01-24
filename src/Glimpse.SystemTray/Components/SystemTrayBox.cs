@@ -2,13 +2,13 @@ using System.Reactive.Linq;
 using GLib;
 using Glimpse.Common.System.Reactive;
 using Glimpse.Configuration;
-using Glimpse.Freedesktop;
 using Glimpse.Freedesktop.DesktopEntries;
-using MentorLake.Redux;
+using Glimpse.UI;
 using Gtk;
+using MentorLake.Redux;
 using ReactiveMarbles.ObservableEvents;
 
-namespace Glimpse.UI.Components.SystemTray;
+namespace Glimpse.SystemTray.Components;
 
 public class SystemTrayBox : Box
 {
@@ -31,7 +31,7 @@ public class SystemTrayBox : Box
 		PackEnd(volumeButton, false, false, 0);
 
 		store
-			.Select(SystemTraySelectors.ViewModel)
+			.Select(SystemTrayViewModelSelector.ViewModel)
 			.TakeUntilDestroyed(this)
 			.ObserveOn(new GLibSynchronizationContext())
 			.Select(x => x.Items)

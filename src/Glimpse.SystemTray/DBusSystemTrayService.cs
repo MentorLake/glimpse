@@ -8,7 +8,7 @@ using Glimpse.Freedesktop.DBus.Introspection;
 using MentorLake.Redux;
 using Tmds.DBus.Protocol;
 
-namespace Glimpse.Freedesktop.SystemTray;
+namespace Glimpse.SystemTray;
 
 public class DBusSystemTrayService(
 	DBusConnections dBusConnections,

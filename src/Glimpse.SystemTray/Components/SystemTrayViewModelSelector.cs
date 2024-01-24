@@ -1,12 +1,11 @@
 using System.Collections.Immutable;
-using Glimpse.Freedesktop;
 using Glimpse.Freedesktop.DBus.Interfaces;
-using MentorLake.Redux.Selectors;
 using Glimpse.UI.State;
+using MentorLake.Redux.Selectors;
 
-namespace Glimpse.UI.Components.SystemTray;
+namespace Glimpse.SystemTray.Components;
 
-public class SystemTraySelectors
+public class SystemTrayViewModelSelector
 {
 	public static readonly ISelector<SystemTrayViewModel> ViewModel = SelectorFactory.Create(
 		SelectorFactory.CreateFeature<SystemTrayState>(),
