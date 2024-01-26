@@ -1,7 +1,9 @@
 using System.Collections.Immutable;
+using System.Reactive.Linq;
 using Glimpse.Common.System.Collections;
 using Glimpse.Common.System.Collections.Immutable;
 using Glimpse.Configuration;
+using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
 using MentorLake.Redux.Selectors;
@@ -130,26 +132,30 @@ public static class TaskbarReducers
 	];
 }
 
-public class TaskbarEffects(ConfigurationService configurationService) : IEffectsFactory
+public class TaskbarEffects(ReduxStore store, ConfigurationService configurationService) : IEffectsFactory
 {
 	public IEnumerable<Effect> Create() => [
-		EffectsFactory.CreateEffect<UpdateTaskbarSlotOrderingBulkAction, TaskbarConfiguration, SlotReferences>(
-			TaskbarSelectors.s_configuration,
-			TaskbarSelectors.StoredSlots,
-			(_, config, currentSlots) =>
+		EffectsFactory.Create(actions => actions
+			.OfType<UpdateTaskbarSlotOrderingBulkAction>()
+			.WithLatestFrom(store.Select(TaskbarSelectors.s_configuration))
+			.WithLatestFrom(store.Select(TaskbarSelectors.StoredSlots))
+			.Do(t =>
 			{
+				var ((_, config), currentSlots) = t;
 				var pinnedLaunchers = currentSlots.Refs.Select(slot => slot.PinnedDesktopFileId).Where(x => !string.IsNullOrEmpty(x)).ToImmutableList();
 				var newConfig = config with { PinnedLaunchers = pinnedLaunchers };
 				configurationService.Upsert(TaskbarConfiguration.ConfigKey, newConfig.ToJsonElement());
-			}),
-		EffectsFactory.CreateEffect<ToggleTaskbarPinningAction, TaskbarConfiguration, SlotReferences>(
-			TaskbarSelectors.s_configuration,
-			TaskbarSelectors.StoredSlots,
-			(_, config, currentSlots) =>
+			})),
+		EffectsFactory.Create(actions => actions
+			.OfType<ToggleTaskbarPinningAction>()
+			.WithLatestFrom(store.Select(TaskbarSelectors.s_configuration))
+			.WithLatestFrom(store.Select(TaskbarSelectors.StoredSlots))
+			.Do(t =>
 			{
+				var ((_, config), currentSlots) = t;
 				var pinnedLaunchers = currentSlots.Refs.Select(slot => slot.PinnedDesktopFileId).Where(x => !string.IsNullOrEmpty(x)).ToImmutableList();
 				var newConfig = config with { PinnedLaunchers = pinnedLaunchers };
 				configurationService.Upsert(TaskbarConfiguration.ConfigKey, newConfig.ToJsonElement());
-			})
+			}))
 	];
 }

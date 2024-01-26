@@ -50,7 +50,7 @@ public class SidePaneWindow : Window
 		Add(_layoutRevealer);
 		SetSizeRequest(348, 734);
 
-		store.ObserveAction<WindowFocusedChangedAction>()
+		store.Actions.OfType<WindowFocusedChangedAction>()
 			.ObserveOn(new GLibSynchronizationContext())
 			.TakeUntilDestroyed(this)
 			.Where(action => IsVisible && action.WindowRef.Id != LibGdk3Interop.gdk_x11_window_get_xid(Window.Handle))

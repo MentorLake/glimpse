@@ -70,7 +70,7 @@ public static class Program
 				.SelectMany(e => e.Create())
 				.Select(oldEffect => new Effect()
 				{
-					Run = _ => oldEffect.Run(store).Do(_ => { }, exception => Console.WriteLine(exception)),
+					Run = _ => oldEffect.Run(store.Actions).Do(_ => { }, exception => Console.WriteLine(exception)),
 					Config = oldEffect.Config
 				})
 				.ToArray());

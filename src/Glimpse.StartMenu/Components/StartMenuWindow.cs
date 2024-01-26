@@ -72,13 +72,14 @@ public class StartMenuWindow : Gtk.Window
 			DesktopFileRunner.Run(desktopFile);
 		});
 
-		store.ObserveAction<WindowFocusedChangedAction>()
+		store.Actions
+			.OfType<WindowFocusedChangedAction>()
 			.ObserveOn(new GLibSynchronizationContext())
 			.TakeUntilDestroyed(this)
 			.Where(action => IsVisible && action.WindowRef.Id != LibGdk3Interop.gdk_x11_window_get_xid(Window.Handle))
 			.Subscribe(_ => ToggleVisibility());
 
-		store.ObserveAction<StartMenuOpenedAction>()
+		store.Actions.OfType<StartMenuOpenedAction>()
 			.ObserveOn(new GLibSynchronizationContext())
 			.TakeUntilDestroyed(this)
 			.Subscribe(_ => ToggleVisibility());

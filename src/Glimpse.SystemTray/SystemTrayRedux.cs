@@ -1,9 +1,9 @@
 using System.Collections.Immutable;
+using System.Reactive.Linq;
 using Glimpse.Freedesktop.DBus;
 using Glimpse.Freedesktop.DBus.Introspection;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
-using static MentorLake.Redux.Effects.EffectsFactory;
 
 namespace Glimpse.SystemTray;
 
@@ -123,7 +123,13 @@ public class SystemTrayItemStateEffects(DBusSystemTrayService systemTrayService)
 {
 	public IEnumerable<Effect> Create() => new[]
 	{
-		CreateEffect<ActivateApplicationAction>(async action => await systemTrayService.ActivateSystemTrayItemAsync(action.DbusObjectDescription, action.X, action.Y)),
-		CreateEffect<ActivateMenuItemAction>(async action => await systemTrayService.ClickedItem(action.DbusObjectDescription, action.MenuItemId))
+		EffectsFactory.Create(actions => actions
+			.OfType<ActivateApplicationAction>()
+			.Select(action => Observable.FromAsync(() => systemTrayService.ActivateSystemTrayItemAsync(action.DbusObjectDescription, action.X, action.Y)))
+			.Concat()),
+		EffectsFactory.Create(actions => actions
+			.OfType<ActivateMenuItemAction>()
+			.Select(action => Observable.FromAsync(() => systemTrayService.ClickedItem(action.DbusObjectDescription, action.MenuItemId)))
+			.Concat())
 	};
 }

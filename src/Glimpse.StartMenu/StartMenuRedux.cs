@@ -1,8 +1,10 @@
 using System.Collections.Immutable;
+using System.Reactive.Linq;
 using System.Text.Json;
 using Glimpse.Common.System.Collections.Immutable;
 using Glimpse.Configuration;
 using Glimpse.UI.State;
+using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
 
@@ -36,29 +38,34 @@ public record UpdateStartMenuPinnedAppOrderingAction(ImmutableList<string> Deskt
 public record UpdateAppFilteringChip(StartMenuChips Chip);
 public record UpdateStartMenuConfiguration(StartMenuConfiguration Config);
 
-public class StartMenuEffects(ConfigurationService configurationService) : IEffectsFactory
+public class StartMenuEffects(ReduxStore store, ConfigurationService configurationService) : IEffectsFactory
 {
 	public IEnumerable<Effect> Create() => new[]
 	{
-		EffectsFactory.CreateEffect<ToggleStartMenuPinningAction, StartMenuConfiguration>(
-			StartMenuSelectors.s_configuration,
-			(a, s) =>
+		EffectsFactory.Create(actions => actions
+			.OfType<ToggleStartMenuPinningAction>()
+			.WithLatestFrom(store.Select(StartMenuSelectors.s_configuration))
+			.Do(t =>
 			{
+				var (a, s) = t;
 				var updatedConfig = s with { PinnedLaunchers = s.PinnedLaunchers.Toggle(a.DesktopFileId) };
 				var serializedConfig = JsonSerializer.SerializeToElement(updatedConfig, typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance);
 				configurationService.Upsert(StartMenuConfiguration.ConfigKey, serializedConfig);
-			}),
-		EffectsFactory.CreateEffect<UpdateStartMenuPinnedAppOrderingAction, StartMenuConfiguration>(
-			StartMenuSelectors.s_configuration,
-			(a, s) =>
+			})),
+		EffectsFactory.Create(actions => actions
+			.OfType<UpdateStartMenuPinnedAppOrderingAction>()
+			.WithLatestFrom(store.Select(StartMenuSelectors.s_configuration))
+			.Do(t =>
 			{
+				var (a, s) = t;
+
 				if (!s.PinnedLaunchers.SequenceEqual(a.DesktopFileKeys))
 				{
 					var updatedConfig = s with { PinnedLaunchers = a.DesktopFileKeys };
 					var serializedConfig = JsonSerializer.SerializeToElement(updatedConfig, typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance);
 					configurationService.Upsert(StartMenuConfiguration.ConfigKey, serializedConfig);
 				}
-			})
+			}))
 	};
 }
 
