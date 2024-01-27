@@ -1,16 +1,16 @@
 using System.Reactive.Linq;
 using GLib;
+using Glimpse.Common.Gtk;
+using Glimpse.Common.Gtk.Accordion;
 using Glimpse.Common.System.Reactive;
-using Glimpse.Freedesktop.Notifications;
-using MentorLake.Redux;
-using Glimpse.UI.Components.NotificationsConfig;
-using Glimpse.UI.Components.Shared.Accordion;
+using Glimpse.Notifications.Components.NotificationsConfig;
 using Gtk;
+using MentorLake.Redux;
 using Pango;
 using ReactiveMarbles.ObservableEvents;
 using WrapMode = Pango.WrapMode;
 
-namespace Glimpse.UI.Components.SidePane.NotificationHistory;
+namespace Glimpse.Notifications.Components.NotificationHistory;
 
 public class NotificationHistoryWindow : Bin
 {

@@ -1,6 +1,6 @@
 using Glimpse.Common.Images;
 
-namespace Glimpse.Xorg.X11;
+namespace Glimpse.Common.Freedesktop.Xorg.X11;
 
 internal class X11DisplayServer(XLibAdaptorService xService) : IDisplayServer
 {

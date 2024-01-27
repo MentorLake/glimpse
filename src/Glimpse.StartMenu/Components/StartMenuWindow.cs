@@ -3,20 +3,20 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Gdk;
 using GLib;
+using Glimpse.Common.Freedesktop.DesktopEntries;
+using Glimpse.Common.Freedesktop.Xorg.State;
+using Glimpse.Common.Gtk;
 using Glimpse.Common.System.Reactive;
-using Glimpse.Freedesktop.DesktopEntries;
-using Glimpse.Interop.Gdk;
-using Glimpse.UI;
-using Glimpse.Xorg.State;
 using Gtk;
 using MentorLake.Redux;
 using ReactiveMarbles.ObservableEvents;
 using Key = Gdk.Key;
+using Window = Gtk.Window;
 using WindowType = Gtk.WindowType;
 
 namespace Glimpse.StartMenu.Components;
 
-public class StartMenuWindow : Gtk.Window
+public class StartMenuWindow : Window
 {
 	private readonly Subject<EventConfigure> _configureEventSubject = new();
 	private readonly StartMenuContent _startMenuContent;

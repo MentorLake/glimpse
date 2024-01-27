@@ -1,7 +1,7 @@
 using MentorLake.Redux.Selectors;
 using static MentorLake.Redux.Selectors.SelectorFactory;
 
-namespace Glimpse.Freedesktop;
+namespace Glimpse.Common.Freedesktop.Accounts;
 
 public static class AccountSelectors
 {

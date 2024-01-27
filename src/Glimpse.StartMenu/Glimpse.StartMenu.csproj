@@ -2,7 +2,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Glimpse.Common\Glimpse.Common.csproj"/>
-		<ProjectReference Include="..\Glimpse.Configuration\Glimpse.Configuration.csproj"/>
 		<ProjectReference Include="..\Glimpse.Taskbar\Glimpse.Taskbar.csproj"/>
 	</ItemGroup>
 

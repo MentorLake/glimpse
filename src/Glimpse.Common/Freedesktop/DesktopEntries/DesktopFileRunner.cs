@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using Glimpse.Interop.Gdk;
+using Glimpse.Common.Gtk;
 
-namespace Glimpse.Freedesktop.DesktopEntries;
+namespace Glimpse.Common.Freedesktop.DesktopEntries;
 
 public class DesktopFileRunner
 {

@@ -1,5 +1,5 @@
+using Glimpse.Common.Configuration;
 using Glimpse.Common.Microsoft.Extensions;
-using Glimpse.Configuration;
 using Glimpse.StartMenu.Components;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;

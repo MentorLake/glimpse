@@ -1,4 +1,4 @@
-namespace Glimpse.UI.Components.Shared;
+namespace Glimpse.Common.Gtk;
 
 public static class ThemeConstants
 {

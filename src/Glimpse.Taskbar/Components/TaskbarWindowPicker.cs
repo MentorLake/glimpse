@@ -1,10 +1,9 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Gdk;
+using Glimpse.Common.Freedesktop.Xorg;
+using Glimpse.Common.Gtk;
 using Glimpse.Common.System.Reactive;
-using Glimpse.UI;
-using Glimpse.UI.Components.Shared;
-using Glimpse.Xorg;
 using Gtk;
 using Pango;
 using ReactiveMarbles.ObservableEvents;

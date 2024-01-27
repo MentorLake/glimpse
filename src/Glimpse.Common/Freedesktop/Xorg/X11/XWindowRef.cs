@@ -1,4 +1,4 @@
-namespace Glimpse.Xorg.X11;
+namespace Glimpse.Common.Freedesktop.Xorg.X11;
 
 internal struct XWindowRef : IWindowRef, IEquatable<XWindowRef>
 {

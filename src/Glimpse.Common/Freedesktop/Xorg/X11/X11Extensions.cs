@@ -3,9 +3,8 @@ using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Glimpse.Common.Images;
-using Glimpse.Interop.XLib;
 
-namespace Glimpse.Xorg.X11;
+namespace Glimpse.Common.Freedesktop.Xorg.X11;
 
 internal static unsafe class X11Extensions
 {

@@ -1,15 +1,15 @@
 using System.Collections.Immutable;
 using GLib;
+using Glimpse.Common.Gtk;
 using Glimpse.Common.Microsoft.Extensions;
 using Glimpse.Common.System.Runtime.InteropServices;
-using Glimpse.Interop.Gdk;
 using MentorLake.Redux;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ReactiveMarbles.ObservableEvents;
 using Task = System.Threading.Tasks.Task;
 
-namespace Glimpse.Freedesktop.DesktopEntries;
+namespace Glimpse.Common.Freedesktop.DesktopEntries;
 
 public static class DesktopFileStartupExtensions
 {

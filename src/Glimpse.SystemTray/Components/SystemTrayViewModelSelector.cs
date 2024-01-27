@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
-using Glimpse.Freedesktop.DBus.Interfaces;
-using Glimpse.UI.State;
+using Glimpse.Common.Freedesktop.DBus;
+using Glimpse.Common.Gtk;
 using MentorLake.Redux.Selectors;
 
 namespace Glimpse.SystemTray.Components;

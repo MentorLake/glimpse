@@ -1,7 +1,6 @@
 using System.Collections.Immutable;
-using Glimpse.Configuration;
-using Glimpse.Freedesktop.DesktopEntries;
-using Glimpse.UI.State;
+using Glimpse.Common.Freedesktop.DesktopEntries;
+using Glimpse.Common.Gtk;
 
 namespace Glimpse.StartMenu.Components;
 

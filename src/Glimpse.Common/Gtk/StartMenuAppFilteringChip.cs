@@ -1,4 +1,4 @@
-namespace Glimpse.UI.State;
+namespace Glimpse.Common.Gtk;
 
 public record StartMenuAppFilteringChip
 {

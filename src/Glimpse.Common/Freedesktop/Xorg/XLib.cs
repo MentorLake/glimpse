@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Glimpse.Interop.XLib;
+namespace Glimpse.Common.Freedesktop.Xorg;
 
 public class XLib
 {

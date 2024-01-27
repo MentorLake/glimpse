@@ -1,6 +1,6 @@
 using Gtk;
 
-namespace Glimpse.UI.Components.Shared.ForEach;
+namespace Glimpse.Common.Gtk.ForEach;
 
 public static class ForEachExtensions
 {

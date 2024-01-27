@@ -1,12 +1,12 @@
+using Glimpse.Common.Freedesktop.Xorg.State;
+using Glimpse.Common.Freedesktop.Xorg.X11;
 using Glimpse.Common.Microsoft.Extensions;
 using MentorLake.Redux.Effects;
-using Glimpse.Xorg.State;
-using Glimpse.Xorg.X11;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Task = System.Threading.Tasks.Task;
 
-namespace Glimpse.Xorg;
+namespace Glimpse.Common.Freedesktop.Xorg;
 
 public static class XorgStartupExtensions
 {

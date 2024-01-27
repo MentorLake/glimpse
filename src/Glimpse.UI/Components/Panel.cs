@@ -2,14 +2,14 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using Gdk;
 using GLib;
-using Glimpse.Configuration;
-using Glimpse.Freedesktop.DesktopEntries;
+using Glimpse.Common.Freedesktop.DesktopEntries;
+using Glimpse.Common.Gtk;
 using Glimpse.StartMenu.Components;
 using Glimpse.SystemTray.Components;
+using Glimpse.Taskbar;
 using Glimpse.Taskbar.Components;
 using MentorLake.Redux;
 using Glimpse.UI.Components.SidePane;
-using Glimpse.UI.State;
 using Gtk;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveMarbles.ObservableEvents;
@@ -83,7 +83,7 @@ public class Panel : Window
 			.Subscribe(numGroups => { centerBox.MarginStart = ComputeCenterBoxMarginLeft(numGroups); });
 
 		var taskManagerObs = store
-			.Select(ConfigurationSelectors.TaskManagerCommand)
+			.Select(TaskbarSelectors.TaskManagerCommand)
 			.TakeUntilDestroyed(this)
 			.ObserveOn(new SynchronizationContextScheduler(new GLibSynchronizationContext(), false));
 

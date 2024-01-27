@@ -6,7 +6,7 @@ using Gtk;
 using ReactiveMarbles.ObservableEvents;
 using Drag = Gtk.Drag;
 
-namespace Glimpse.UI.Components.Shared.ForEach;
+namespace Glimpse.Common.Gtk.ForEach;
 
 public class ForEachFlowBox<TViewModel, TWidget, TKey> : FlowBox where TWidget : Widget, IForEachDraggable where TKey : IEquatable<TKey>
 {

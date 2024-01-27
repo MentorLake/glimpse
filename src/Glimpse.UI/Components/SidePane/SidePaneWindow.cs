@@ -1,11 +1,11 @@
 using System.Reactive.Linq;
 using Gdk;
 using GLib;
-using Glimpse.Interop.Gdk;
+using Glimpse.Common.Freedesktop.Xorg.State;
+using Glimpse.Common.Gtk;
+using Glimpse.Notifications.Components.NotificationHistory;
 using MentorLake.Redux;
 using Glimpse.UI.Components.SidePane.Calendar;
-using Glimpse.UI.Components.SidePane.NotificationHistory;
-using Glimpse.Xorg.State;
 using Gtk;
 using ReactiveMarbles.ObservableEvents;
 using Window = Gtk.Window;

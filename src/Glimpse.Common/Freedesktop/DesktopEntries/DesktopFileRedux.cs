@@ -3,7 +3,7 @@ using MentorLake.Redux;
 using MentorLake.Redux.Reducers;
 using MentorLake.Redux.Selectors;
 
-namespace Glimpse.Freedesktop.DesktopEntries;
+namespace Glimpse.Common.Freedesktop.DesktopEntries;
 
 public class DesktopFileSelectors
 {

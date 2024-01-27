@@ -1,11 +1,11 @@
 using System.Reactive.Linq;
 using System.Text.Json;
+using Glimpse.Common.Freedesktop.DBus;
+using Glimpse.Common.Freedesktop.DBus.Interfaces;
 using Glimpse.Common.System.Reactive;
-using Glimpse.Freedesktop.DBus;
-using Glimpse.Freedesktop.DBus.Interfaces;
 using MentorLake.Redux;
 
-namespace Glimpse.Freedesktop.Notifications;
+namespace Glimpse.Notifications;
 
 public enum NotificationCloseReason : int
 {

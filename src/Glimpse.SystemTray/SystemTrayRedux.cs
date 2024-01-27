@@ -1,93 +1,70 @@
 using System.Collections.Immutable;
 using System.Reactive.Linq;
-using Glimpse.Freedesktop.DBus;
-using Glimpse.Freedesktop.DBus.Introspection;
+using Glimpse.Common.Freedesktop.DBus;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
+using MentorLake.Redux.Selectors;
 
 namespace Glimpse.SystemTray;
 
-public class SystemTrayState
+public record SystemTrayState
 {
-	public ImmutableDictionary<string, SystemTrayItemState> Items { get; init; }= ImmutableDictionary<string, SystemTrayItemState>.Empty;
+	public ImmutableDictionary<string, SystemTrayItemState> Items { get; init; } = ImmutableDictionary<string, SystemTrayItemState>.Empty;
+	public SystemTrayConfiguration Configuration { get; init; } = SystemTrayConfiguration.Empty;
 }
 
-public class SystemTrayItemState
+public record SystemTrayItemState
 {
 	public StatusNotifierItemProperties Properties { get; init; }
 	public DbusObjectDescription StatusNotifierItemDescription { get; init; }
 	public DbusObjectDescription DbusMenuDescription { get; init; }
 	public DbusMenuItem RootMenuItem { get; init; }
-
-	public SystemTrayItemState()
-	{
-
-	}
-
-	public SystemTrayItemState(SystemTrayItemState other)
-	{
-		Properties = other.Properties;
-		StatusNotifierItemDescription = other.StatusNotifierItemDescription;
-		DbusMenuDescription = other.DbusMenuDescription;
-		RootMenuItem = other.RootMenuItem;
-	}
+	public string GetServiceName() => StatusNotifierItemDescription.ServiceName;
 }
 
-public static class SystemTrayItemStateExtensions
+public static class SystemTraySelectors
 {
-	public static string GetServiceName(this SystemTrayItemState itemState) => itemState.StatusNotifierItemDescription.ServiceName;
+	private static readonly ISelector<SystemTrayState> s_systemTrayState = SelectorFactory.CreateFeature<SystemTrayState>();
+	private static readonly ISelector<SystemTrayConfiguration> s_configuration = SelectorFactory.Create(s_systemTrayState, s => s.Configuration);
+	public static readonly ISelector<string> VolumeCommand = SelectorFactory.Create(s_configuration, s => s.VolumeCommand);
 }
 
-public class AddBulkTrayItemsAction
-{
-	public IEnumerable<SystemTrayItemState> Items { get; init; }
-}
+public record UpdateSystemTrayConfiguration(SystemTrayConfiguration Config);
+public record AddBulkTrayItemsAction(IEnumerable<SystemTrayItemState> Items);
+public record AddTrayItemAction(SystemTrayItemState ItemState);
+public record RemoveTrayItemAction(string ServiceName);
+public record UpdateMenuLayoutAction(string ServiceName, DbusMenuItem RootMenuItem);
 
-public class AddTrayItemAction
-{
-	public SystemTrayItemState ItemState { get; init; }
-}
-
-public class RemoveTrayItemAction
-{
-	public string ServiceName { get; init; }
-}
-
-public class UpdateMenuLayoutAction
-{
-	public string ServiceName { get; init; }
-	public DbusMenuItem RootMenuItem { get; init; }
-}
-
-public class ActivateApplicationAction
+public record ActivateApplicationAction
 {
 	public DbusObjectDescription DbusObjectDescription { get; init; }
 	public int X { get; init; }
 	public int Y { get; init; }
 }
 
-public class ActivateMenuItemAction
+public record ActivateMenuItemAction
 {
 	public DbusObjectDescription DbusObjectDescription { get; init; }
 	public int MenuItemId { get; init; }
 }
 
-public class UpdateStatusNotifierItemPropertiesAction
+public record UpdateStatusNotifierItemPropertiesAction
 {
 	public string ServiceName { get; init; }
 	public StatusNotifierItemProperties Properties { get; init; }
 }
 
-public static class SystemTrayItemStateReducers
+public record SystemTrayItemStateReducers : IReducerFactory
 {
-	public static readonly FeatureReducerCollection Reducers = new()
-	{
+	public FeatureReducerCollection Create() =>
+	[
 		FeatureReducer.Build(new SystemTrayState())
+			.On<UpdateSystemTrayConfiguration>((s, a) => s with { Configuration = a.Config })
 			.On<UpdateStatusNotifierItemPropertiesAction>((s, a) => s.Items.TryGetValue(a.ServiceName, out var currentItem)
-				? new() { Items = s.Items.SetItem(a.ServiceName, new SystemTrayItemState(currentItem) { Properties = a.Properties }) }
+				? s with { Items = s.Items.SetItem(a.ServiceName, currentItem with { Properties = a.Properties }) }
 				: s)
 			.On<UpdateMenuLayoutAction>((s, a) => s.Items.TryGetValue(a.ServiceName, out var currentItem)
-				? new() { Items = s.Items.SetItem(a.ServiceName, new SystemTrayItemState(currentItem) { RootMenuItem = a.RootMenuItem }) }
+				? s with { Items = s.Items.SetItem(a.ServiceName, currentItem with { RootMenuItem = a.RootMenuItem }) }
 				: s)
 			.On<AddBulkTrayItemsAction>((s, a) =>
 			{
@@ -103,7 +80,7 @@ public static class SystemTrayItemStateReducers
 
 				// Add existing items too
 
-				return new SystemTrayState()
+				return s with
 				{
 					Items = newItemList
 						.DistinctBy(i => i.StatusNotifierItemDescription.ServiceName)
@@ -111,12 +88,12 @@ public static class SystemTrayItemStateReducers
 				};
 			})
 			.On<AddTrayItemAction>((s, a) => !s.Items.ContainsKey(a.ItemState.GetServiceName())
-				? new() { Items = s.Items.Add(a.ItemState.GetServiceName(), a.ItemState) }
+				? s with { Items = s.Items.Add(a.ItemState.GetServiceName(), a.ItemState) }
 				: s)
 			.On<RemoveTrayItemAction>((s, a) => s.Items.ContainsKey(a.ServiceName)
-				? new() { Items = s.Items.Remove(a.ServiceName) }
+				? s with { Items = s.Items.Remove(a.ServiceName) }
 				: s)
-	};
+	];
 }
 
 public class SystemTrayItemStateEffects(DBusSystemTrayService systemTrayService) : IEffectsFactory

@@ -1,10 +1,9 @@
 using Gdk;
-using Gtk;
 using ReactiveMarbles.ObservableEvents;
 using Window = Gtk.Window;
 using WindowType = Gtk.WindowType;
 
-namespace Glimpse.UI.Components.NotificationsConfig;
+namespace Glimpse.Notifications.Components.NotificationsConfig;
 
 public class NotificationsConfigWindow : Window
 {

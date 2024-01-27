@@ -1,6 +1,6 @@
 using Gtk;
 
-namespace Glimpse.UI.Components.Shared.Accordion;
+namespace Glimpse.Common.Gtk.Accordion;
 
 public class Accordion : Bin
 {

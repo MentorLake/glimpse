@@ -1,7 +1,6 @@
 using System.Collections.Immutable;
-using Glimpse.Freedesktop.DBus;
-using Glimpse.Freedesktop.DBus.Introspection;
-using Glimpse.UI.State;
+using Glimpse.Common.Freedesktop.DBus;
+using Glimpse.Common.Gtk;
 
 namespace Glimpse.SystemTray.Components;
 

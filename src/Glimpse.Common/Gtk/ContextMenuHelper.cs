@@ -1,10 +1,8 @@
 using System.Reactive.Linq;
-using Glimpse.Freedesktop.DesktopEntries;
-using Glimpse.UI.Components.Shared;
-using Glimpse.UI.State;
+using Glimpse.Common.Freedesktop.DesktopEntries;
 using Gtk;
 
-namespace Glimpse.UI.Components;
+namespace Glimpse.Common.Gtk;
 
 public static class ContextMenuHelper
 {

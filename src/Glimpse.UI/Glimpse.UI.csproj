@@ -9,7 +9,6 @@
 		<ProjectReference Include="..\Glimpse.StartMenu\Glimpse.StartMenu.csproj" />
 		<ProjectReference Include="..\Glimpse.SystemTray\Glimpse.SystemTray.csproj" />
 		<ProjectReference Include="..\Glimpse.Taskbar\Glimpse.Taskbar.csproj" />
-		<ProjectReference Include="..\Glimpse.Configuration\Glimpse.Configuration.csproj"/>
 		<ProjectReference Include="..\Glimpse.Notifications\Glimpse.Notifications.csproj"/>
 	</ItemGroup>
 

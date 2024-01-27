@@ -1,6 +1,6 @@
 using Glimpse.Common.Images;
 
-namespace Glimpse.Freedesktop.DBus;
+namespace Glimpse.Common.Freedesktop.DBus;
 
 public record StatusNotifierItemProperties
 {

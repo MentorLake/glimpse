@@ -1,4 +1,4 @@
-namespace Glimpse.UI.Components.Shared.ForEach;
+namespace Glimpse.Common.Gtk.ForEach;
 
 public enum ForEachDataKeys
 {

@@ -1,7 +1,7 @@
 using System.Collections;
 using Tmds.DBus.Protocol;
 
-namespace Glimpse.Freedesktop.DBus.Core;
+namespace Glimpse.Common.Freedesktop.DBus.Core;
 
 public class DBusArrayItem : DBusItem, IReadOnlyList<DBusItem>
 {

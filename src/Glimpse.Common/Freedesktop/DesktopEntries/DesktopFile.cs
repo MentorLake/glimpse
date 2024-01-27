@@ -1,6 +1,6 @@
 using MentorLake.Redux;
 
-namespace Glimpse.Freedesktop.DesktopEntries;
+namespace Glimpse.Common.Freedesktop.DesktopEntries;
 
 public class DesktopFile : IKeyed<string>
 {

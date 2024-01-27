@@ -1,12 +1,12 @@
+using Glimpse.Common.Configuration;
 using Glimpse.Common.Microsoft.Extensions;
-using Glimpse.Configuration;
-using Glimpse.UI.Components.NotificationsConfig;
-using Glimpse.UI.Components.SidePane.NotificationHistory;
+using Glimpse.Notifications.Components.NotificationHistory;
+using Glimpse.Notifications.Components.NotificationsConfig;
 using MentorLake.Redux;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Glimpse.Freedesktop.Notifications;
+namespace Glimpse.Notifications;
 
 public static class NotificationsStartupExtensions
 {

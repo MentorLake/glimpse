@@ -1,9 +1,8 @@
 using Glimpse.Common.Images;
 using MentorLake.Redux;
 using MentorLake.Redux.Reducers;
-using Glimpse.Xorg.State;
 
-namespace Glimpse.Xorg;
+namespace Glimpse.Common.Freedesktop.Xorg.State;
 
 internal class XorgReducers
 {

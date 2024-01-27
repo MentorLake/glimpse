@@ -1,9 +1,8 @@
 using System.Reactive.Linq;
 using GLib;
+using Glimpse.Common.Freedesktop.DesktopEntries;
+using Glimpse.Common.Gtk;
 using Glimpse.Common.System.Reactive;
-using Glimpse.Configuration;
-using Glimpse.Freedesktop.DesktopEntries;
-using Glimpse.UI;
 using Gtk;
 using MentorLake.Redux;
 using ReactiveMarbles.ObservableEvents;
@@ -25,7 +24,7 @@ public class SystemTrayBox : Box
 			.AddMany(volumeIcon);
 
 		volumeButton.ObserveEvent(w => w.Events().ButtonReleaseEvent)
-			.WithLatestFrom(store.Select(ConfigurationSelectors.VolumeCommand))
+			.WithLatestFrom(store.Select(SystemTraySelectors.VolumeCommand))
 			.Subscribe(t => DesktopFileRunner.Run(t.Second));
 
 		PackEnd(volumeButton, false, false, 0);

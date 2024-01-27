@@ -1,10 +1,9 @@
 using System.Collections.Immutable;
-using Glimpse.Freedesktop.DesktopEntries;
-using Glimpse.Freedesktop.Notifications;
+using Glimpse.Common.Freedesktop.DesktopEntries;
+using Glimpse.Common.Gtk;
 using MentorLake.Redux.Selectors;
-using Glimpse.UI.State;
 
-namespace Glimpse.UI.Components.NotificationsConfig;
+namespace Glimpse.Notifications.Components.NotificationsConfig;
 
 public record NotificationsConfigViewModel
 {

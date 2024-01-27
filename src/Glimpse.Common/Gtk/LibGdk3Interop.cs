@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Glimpse.Interop.Gdk;
+namespace Glimpse.Common.Gtk;
 
 public class LibGdk3Interop
 {

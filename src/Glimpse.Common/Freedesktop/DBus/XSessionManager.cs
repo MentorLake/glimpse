@@ -1,8 +1,8 @@
-using Glimpse.Freedesktop.DBus.Core;
-using Glimpse.Freedesktop.DBus.Interfaces;
+using Glimpse.Common.Freedesktop.DBus.Core;
+using Glimpse.Common.Freedesktop.DBus.Interfaces;
 using Tmds.DBus.Protocol;
 
-namespace Glimpse.Freedesktop.DBus;
+namespace Glimpse.Common.Freedesktop.DBus;
 
 public class XSessionManager(OrgXfceSessionManager xfceSessionManager, OrgXfceSessionClient xfceSessionClient)
 {

@@ -1,13 +1,12 @@
+using Glimpse.Common.Freedesktop.Accounts;
+using Glimpse.Common.Freedesktop.DBus;
+using Glimpse.Common.Freedesktop.DBus.Interfaces;
 using Glimpse.Common.Microsoft.Extensions;
-using Glimpse.Freedesktop.DBus;
-using Glimpse.Freedesktop.DBus.Interfaces;
-using Glimpse.Freedesktop.DBus.Introspection;
-using Glimpse.Freedesktop.DesktopEntries;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Tmds.DBus.Protocol;
 
-namespace Glimpse.Freedesktop;
+namespace Glimpse.Common.Freedesktop;
 
 public static class FreedesktopStartupExtensions
 {

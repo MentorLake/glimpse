@@ -1,7 +1,6 @@
 using System.Reactive.Linq;
-using Glimpse.UI;
-using Glimpse.UI.Components.Shared.ForEach;
-using Glimpse.UI.State;
+using Glimpse.Common.Gtk;
+using Glimpse.Common.Gtk.ForEach;
 using Gtk;
 using Pango;
 using WrapMode = Pango.WrapMode;

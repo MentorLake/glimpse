@@ -1,8 +1,8 @@
 ﻿using System.Reactive.Linq;
-using Glimpse.Freedesktop.DBus.Core;
+using Glimpse.Common.Freedesktop.DBus.Core;
 using Tmds.DBus.Protocol;
 
-namespace Glimpse.Freedesktop.DBus.Interfaces;
+namespace Glimpse.Common.Freedesktop.DBus.Interfaces;
 
 public class OrgFreedesktopAccountsUser
 {

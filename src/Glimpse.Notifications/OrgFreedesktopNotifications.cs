@@ -1,12 +1,12 @@
 ﻿using System.Reactive.Subjects;
+using Glimpse.Common.Freedesktop.DBus;
+using Glimpse.Common.Freedesktop.DBus.Core;
 using Glimpse.Common.Images;
-using Glimpse.Freedesktop.DBus;
-using Glimpse.Freedesktop.DBus.Core;
 using MentorLake.Redux;
 using Tmds.DBus.Protocol;
 
 #pragma warning disable
-namespace Glimpse.Freedesktop.Notifications;
+namespace Glimpse.Notifications;
 
 public enum NotificationUrgency : byte
 {

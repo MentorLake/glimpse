@@ -1,10 +1,10 @@
 using System.Reactive.Linq;
-using Glimpse.Freedesktop.DBus;
-using Glimpse.Freedesktop.DBus.Interfaces;
+using Glimpse.Common.Freedesktop.DBus;
+using Glimpse.Common.Freedesktop.DBus.Interfaces;
 using MentorLake.Redux;
 using Task = System.Threading.Tasks.Task;
 
-namespace Glimpse.Freedesktop.DesktopEntries;
+namespace Glimpse.Common.Freedesktop.Accounts;
 
 public class AccountService(ReduxStore store, OrgFreedesktopAccounts freedesktopAccounts)
 {

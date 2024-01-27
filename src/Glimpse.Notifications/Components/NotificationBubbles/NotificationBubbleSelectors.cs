@@ -1,12 +1,10 @@
 using System.Collections.Immutable;
+using Glimpse.Common.Freedesktop.DesktopEntries;
+using Glimpse.Common.Gtk;
 using Glimpse.Common.System;
-using Glimpse.Freedesktop;
-using Glimpse.Freedesktop.DesktopEntries;
-using Glimpse.Freedesktop.Notifications;
 using MentorLake.Redux.Selectors;
-using Glimpse.UI.State;
 
-namespace Glimpse.UI.Components.NotificationBubbles;
+namespace Glimpse.Notifications.Components.NotificationBubbles;
 
 public record NotificationBubbleViewModel
 {

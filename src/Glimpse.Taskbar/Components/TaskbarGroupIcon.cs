@@ -1,9 +1,8 @@
 using System.Reactive.Linq;
 using Cairo;
+using Glimpse.Common.Gtk;
+using Glimpse.Common.Gtk.ForEach;
 using Glimpse.Common.Images;
-using Glimpse.UI;
-using Glimpse.UI.Components.Shared.ForEach;
-using Glimpse.UI.State;
 using Gtk;
 using ReactiveMarbles.ObservableEvents;
 using Color = Cairo.Color;

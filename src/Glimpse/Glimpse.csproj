@@ -33,7 +33,6 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-		<ProjectReference Include="..\Glimpse.Configuration\Glimpse.Configuration.csproj" />
 		<ProjectReference Include="..\Glimpse.UI\Glimpse.UI.csproj" />
 	</ItemGroup>
 

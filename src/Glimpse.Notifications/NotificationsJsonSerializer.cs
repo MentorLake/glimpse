@@ -1,8 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Glimpse.Configuration;
 
-namespace Glimpse.Freedesktop.Notifications;
+namespace Glimpse.Notifications;
 
 [JsonSerializable(typeof(NotificationHistory))]
 [JsonSerializable(typeof(NotificationsConfiguration))]

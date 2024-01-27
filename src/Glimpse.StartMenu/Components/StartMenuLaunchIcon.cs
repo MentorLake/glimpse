@@ -1,9 +1,8 @@
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using GLib;
-using Glimpse.Freedesktop.DesktopEntries;
-using Glimpse.UI;
-using Glimpse.UI.State;
+using Glimpse.Common.Freedesktop.DesktopEntries;
+using Glimpse.Common.Gtk;
 using Gtk;
 using MentorLake.Redux;
 using ReactiveMarbles.ObservableEvents;

@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Glimpse.StartMenu;
 
@@ -19,6 +20,7 @@ public record StartMenuConfiguration
 	public string PowerButtonCommand { get; set; } = "xfce4-session-logout";
 	public string SettingsButtonCommand { get; set; } = "xfce4-settings-manager";
 	public string UserSettingsCommand { get; set; } = "mugshot";
+	public string TaskManagerCommand { get; set; } = "xfce4-taskmanager";
 	public ImmutableList<string> PinnedLaunchers { get; set; } = ImmutableList<string>.Empty;
 
 	public ImmutableList<StartMenuLaunchIconContextMenuItem> StartMenuLaunchIconContextMenu { get; set;  } = ImmutableList.Create<StartMenuLaunchIconContextMenuItem>(
@@ -30,12 +32,12 @@ public record StartMenuConfiguration
 		new () { DisplayText = "Network Connections", Executable = "nm-connection-editor" },
 		new () { DisplayText = "Session & Startup", Executable = "xfce4-settings-manager", Arguments = "-d xfce-session-settings" });
 
-	public JsonElement ToJsonElement()
+	public JsonObject ToJsonElement()
 	{
-		return JsonSerializer.SerializeToElement(this, typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance);
+		return JsonSerializer.SerializeToNode(this, typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance)?.AsObject();
 	}
 
-	public static StartMenuConfiguration From(JsonElement element)
+	public static StartMenuConfiguration From(JsonObject element)
 	{
 		return element.Deserialize(typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance) as StartMenuConfiguration;
 	}

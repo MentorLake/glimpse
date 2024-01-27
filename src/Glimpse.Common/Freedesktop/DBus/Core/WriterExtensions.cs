@@ -1,6 +1,6 @@
 ﻿using Tmds.DBus.Protocol;
 
-namespace Glimpse.Freedesktop.DBus.Core;
+namespace Glimpse.Common.Freedesktop.DBus.Core;
 
 public static class WriterExtensions
 {

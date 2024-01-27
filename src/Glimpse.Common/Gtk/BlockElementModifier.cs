@@ -1,6 +1,6 @@
 using Gtk;
 
-namespace Glimpse.UI.Components.Shared;
+namespace Glimpse.Common.Gtk;
 
 public class BlockElementModifier
 {

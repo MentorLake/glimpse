@@ -1,7 +1,7 @@
 using System.Reactive.Linq;
 using MentorLake.Redux.Effects;
 
-namespace Glimpse.Xorg.State;
+namespace Glimpse.Common.Freedesktop.Xorg.State;
 
 internal class XorgEffects(IDisplayServer displayServer) : IEffectsFactory
 {

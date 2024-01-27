@@ -3,11 +3,10 @@ using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using Glimpse.Common.Images;
 using Glimpse.Common.System.Reactive;
-using Glimpse.Interop.XLib;
 using Microsoft.Extensions.Hosting;
 using Task = System.Threading.Tasks.Task;
 
-namespace Glimpse.Xorg.X11;
+namespace Glimpse.Common.Freedesktop.Xorg.X11;
 
 internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) : IDisposable
 {

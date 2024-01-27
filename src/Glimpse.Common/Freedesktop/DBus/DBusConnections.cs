@@ -1,6 +1,6 @@
 using Tmds.DBus.Protocol;
 
-namespace Glimpse.Freedesktop.DBus;
+namespace Glimpse.Common.Freedesktop.DBus;
 
 public class DBusConnections
 {

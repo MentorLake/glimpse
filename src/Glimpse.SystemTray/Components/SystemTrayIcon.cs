@@ -1,6 +1,6 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using Glimpse.UI;
+using Glimpse.Common.Gtk;
 using Gtk;
 using Menu = Gtk.Menu;
 

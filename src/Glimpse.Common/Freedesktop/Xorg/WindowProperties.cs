@@ -1,7 +1,7 @@
 using Glimpse.Common.Images;
 using MentorLake.Redux;
 
-namespace Glimpse.Xorg;
+namespace Glimpse.Common.Freedesktop.Xorg;
 
 public record WindowProperties : IKeyed<ulong>
 {

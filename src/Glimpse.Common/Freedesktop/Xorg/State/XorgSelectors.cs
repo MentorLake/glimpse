@@ -3,7 +3,7 @@ using MentorLake.Redux;
 using MentorLake.Redux.Selectors;
 using static MentorLake.Redux.Selectors.SelectorFactory;
 
-namespace Glimpse.Xorg.State;
+namespace Glimpse.Common.Freedesktop.Xorg.State;
 
 public class XorgSelectors
 {

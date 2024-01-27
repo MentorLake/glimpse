@@ -1,4 +1,4 @@
-namespace Glimpse.Freedesktop.DBus.Introspection;
+namespace Glimpse.Common.Freedesktop.DBus;
 
 public record DbusObjectDescription
 {

@@ -1,8 +1,7 @@
 using System.Reactive.Linq;
-using Glimpse.UI.State;
 using Gtk;
 
-namespace Glimpse.UI.Components.Shared;
+namespace Glimpse.Common.Gtk;
 
 public class Chip : Box
 {

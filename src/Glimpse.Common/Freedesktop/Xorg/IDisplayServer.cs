@@ -1,6 +1,6 @@
 using Glimpse.Common.Images;
 
-namespace Glimpse.Xorg;
+namespace Glimpse.Common.Freedesktop.Xorg;
 
 public interface IDisplayServer
 {

@@ -1,4 +1,4 @@
-﻿namespace Glimpse.Freedesktop.DBus.Core;
+﻿namespace Glimpse.Common.Freedesktop.DBus.Core;
 
 public record PropertyChanges<TProperties>(TProperties Properties, string[] Invalidated, string[] Changed)
 {

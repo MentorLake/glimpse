@@ -1,6 +1,6 @@
 using Glimpse.Common.Images;
 
-namespace Glimpse.Xorg.State;
+namespace Glimpse.Common.Freedesktop.Xorg.State;
 
 public record AddWindowAction(WindowProperties WindowProperties);
 

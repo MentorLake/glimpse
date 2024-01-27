@@ -6,8 +6,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse.Common", "src\Glimp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse.UI", "src\Glimpse.UI\Glimpse.UI.csproj", "{3939A68C-16A3-4782-A36C-D650E744B0E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse.Configuration", "src\Glimpse.Configuration\Glimpse.Configuration.csproj", "{E3DEBC23-E8F4-4533-A41D-D85A2BE553E9}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse.Notifications", "src\Glimpse.Notifications\Glimpse.Notifications.csproj", "{9C22FBEF-CD78-406D-86A3-6BAC05DCCBAF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse.Taskbar", "src\Glimpse.Taskbar\Glimpse.Taskbar.csproj", "{FB909420-9D74-4431-9311-5CB879B8DC9B}"
@@ -34,10 +32,6 @@ Global
 		{3939A68C-16A3-4782-A36C-D650E744B0E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3939A68C-16A3-4782-A36C-D650E744B0E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3939A68C-16A3-4782-A36C-D650E744B0E7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E3DEBC23-E8F4-4533-A41D-D85A2BE553E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E3DEBC23-E8F4-4533-A41D-D85A2BE553E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E3DEBC23-E8F4-4533-A41D-D85A2BE553E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E3DEBC23-E8F4-4533-A41D-D85A2BE553E9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9C22FBEF-CD78-406D-86A3-6BAC05DCCBAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9C22FBEF-CD78-406D-86A3-6BAC05DCCBAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C22FBEF-CD78-406D-86A3-6BAC05DCCBAF}.Release|Any CPU.ActiveCfg = Release|Any CPU

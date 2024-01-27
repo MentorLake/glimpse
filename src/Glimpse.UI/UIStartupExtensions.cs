@@ -1,7 +1,7 @@
 using System.Reactive.Linq;
 using GLib;
 using Glimpse.Common.System.Reactive;
-using Glimpse.Freedesktop.Notifications;
+using Glimpse.Notifications;
 using Glimpse.StartMenu;
 using Glimpse.SystemTray;
 using Glimpse.Taskbar;

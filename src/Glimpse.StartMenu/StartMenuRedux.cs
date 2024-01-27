@@ -1,9 +1,9 @@
 using System.Collections.Immutable;
 using System.Reactive.Linq;
 using System.Text.Json;
+using Glimpse.Common.Configuration;
+using Glimpse.Common.Gtk;
 using Glimpse.Common.System.Collections.Immutable;
-using Glimpse.Configuration;
-using Glimpse.UI.State;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
@@ -49,7 +49,7 @@ public class StartMenuEffects(ReduxStore store, ConfigurationService configurati
 			{
 				var (a, s) = t;
 				var updatedConfig = s with { PinnedLaunchers = s.PinnedLaunchers.Toggle(a.DesktopFileId) };
-				var serializedConfig = JsonSerializer.SerializeToElement(updatedConfig, typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance);
+				var serializedConfig = JsonSerializer.SerializeToNode(updatedConfig, typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance)?.AsObject();
 				configurationService.Upsert(StartMenuConfiguration.ConfigKey, serializedConfig);
 			})),
 		EffectsFactory.Create(actions => actions
@@ -62,7 +62,7 @@ public class StartMenuEffects(ReduxStore store, ConfigurationService configurati
 				if (!s.PinnedLaunchers.SequenceEqual(a.DesktopFileKeys))
 				{
 					var updatedConfig = s with { PinnedLaunchers = a.DesktopFileKeys };
-					var serializedConfig = JsonSerializer.SerializeToElement(updatedConfig, typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance);
+					var serializedConfig = JsonSerializer.SerializeToNode(updatedConfig, typeof(StartMenuConfiguration), StartMenuSerializationContext.Instance)?.AsObject();
 					configurationService.Upsert(StartMenuConfiguration.ConfigKey, serializedConfig);
 				}
 			}))

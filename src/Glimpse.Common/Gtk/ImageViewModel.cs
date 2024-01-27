@@ -1,6 +1,6 @@
 using Glimpse.Common.Images;
 
-namespace Glimpse.UI.State;
+namespace Glimpse.Common.Gtk;
 
 public record ImageViewModel
 {

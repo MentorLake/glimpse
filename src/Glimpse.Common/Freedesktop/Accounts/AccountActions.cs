@@ -1,4 +1,4 @@
-namespace Glimpse.Freedesktop;
+namespace Glimpse.Common.Freedesktop.Accounts;
 
 public class UpdateUserAction
 {

@@ -1,6 +1,6 @@
-using Glimpse.Freedesktop.DBus.Core;
+using Glimpse.Common.Freedesktop.DBus.Core;
 
-namespace Glimpse.Freedesktop.DBus;
+namespace Glimpse.Common.Freedesktop.DBus;
 
 public class DbusMenuItem
 {

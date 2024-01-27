@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 using System.Reactive.Linq;
+using Glimpse.Common.Configuration;
 using Glimpse.Common.System.Collections;
 using Glimpse.Common.System.Collections.Immutable;
-using Glimpse.Configuration;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
@@ -40,6 +40,7 @@ public static class TaskbarSelectors
 	private static readonly ISelector<TaskbarState> s_taskbarState = SelectorFactory.CreateFeature<TaskbarState>();
 	internal static readonly ISelector<SlotReferences> StoredSlots = SelectorFactory.Create(s_taskbarState, s => s.StoredSlots);
 	internal static readonly ISelector<TaskbarConfiguration> s_configuration = SelectorFactory.Create(s_taskbarState, s => s.Configuration);
+	public static readonly ISelector<string> TaskManagerCommand = SelectorFactory.Create(s_configuration, s => s.TaskManagerCommand);
 	public static readonly ISelector<ImmutableList<string>> PinnedLaunchers = SelectorFactory.Create(
 		s_configuration,
 		s => s.PinnedLaunchers,

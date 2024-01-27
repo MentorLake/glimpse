@@ -1,11 +1,12 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Glimpse.Common.Gtk;
 using Gtk;
 using Pango;
 using Unit = System.Reactive.Unit;
 using WrapMode = Pango.WrapMode;
 
-namespace Glimpse.UI.Components.NotificationBubbles;
+namespace Glimpse.Notifications.Components.NotificationBubbles;
 
 public class NotificationBubbleContent : Bin
 {

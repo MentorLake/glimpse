@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 using System.Text.Json;
-using Glimpse.Freedesktop.Notifications;
+using System.Text.Json.Nodes;
 
-namespace Glimpse.Configuration;
+namespace Glimpse.Notifications;
 
 public record NotificationsConfiguration
 {
@@ -11,12 +11,12 @@ public record NotificationsConfiguration
 
 	public static readonly NotificationsConfiguration Empty = new();
 
-	public JsonElement ToJsonElement()
+	public JsonObject ToJsonElement()
 	{
-		return JsonSerializer.SerializeToElement(this, typeof(NotificationsConfiguration), NotificationsJsonSerializer.Instance);
+		return JsonSerializer.SerializeToNode(this, typeof(NotificationsConfiguration), NotificationsJsonSerializer.Instance)?.AsObject();
 	}
 
-	public static NotificationsConfiguration From(JsonElement element)
+	public static NotificationsConfiguration From(JsonObject element)
 	{
 		return element.Deserialize(typeof(NotificationsConfiguration), NotificationsJsonSerializer.Instance) as NotificationsConfiguration;
 	}

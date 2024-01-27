@@ -1,9 +1,9 @@
 using System.Xml.Linq;
 using System.Xml.XPath;
-using Glimpse.Freedesktop.DBus.Interfaces;
+using Glimpse.Common.Freedesktop.DBus.Interfaces;
 using Tmds.DBus.Protocol;
 
-namespace Glimpse.Freedesktop.DBus.Introspection;
+namespace Glimpse.Common.Freedesktop.DBus;
 
 public class IntrospectionService
 {

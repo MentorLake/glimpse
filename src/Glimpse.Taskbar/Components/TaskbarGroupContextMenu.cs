@@ -1,10 +1,8 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using Glimpse.Freedesktop.DesktopEntries;
-using Glimpse.UI;
-using Glimpse.UI.Components;
-using Glimpse.UI.State;
-using Glimpse.Xorg;
+using Glimpse.Common.Freedesktop.DesktopEntries;
+using Glimpse.Common.Freedesktop.Xorg;
+using Glimpse.Common.Gtk;
 using Gtk;
 using ReactiveMarbles.ObservableEvents;
 

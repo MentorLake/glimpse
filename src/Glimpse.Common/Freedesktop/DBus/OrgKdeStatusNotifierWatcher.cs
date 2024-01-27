@@ -1,9 +1,10 @@
 ﻿using System.Reactive.Subjects;
 using System.Text;
-using Glimpse.Freedesktop.DBus.Core;
+using Glimpse.Common.Freedesktop.DBus.Core;
+using Glimpse.Common.Freedesktop.DBus.Interfaces;
 using Tmds.DBus.Protocol;
 
-namespace Glimpse.Freedesktop.DBus.Interfaces;
+namespace Glimpse.Common.Freedesktop.DBus;
 
 public class OrgKdeStatusNotifierWatcher(OrgFreedesktopDBus dbusInterface, DBusConnections dBusConnections) : IMethodHandler
 {

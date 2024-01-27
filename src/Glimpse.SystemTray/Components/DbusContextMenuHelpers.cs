@@ -1,4 +1,4 @@
-using Glimpse.Freedesktop.DBus;
+using Glimpse.Common.Freedesktop.DBus;
 using Gtk;
 using Menu = Gtk.Menu;
 using MenuItem = Gtk.MenuItem;

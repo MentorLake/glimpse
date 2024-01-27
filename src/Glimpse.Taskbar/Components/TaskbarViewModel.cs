@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
-using Glimpse.Freedesktop.DesktopEntries;
-using Glimpse.UI.State;
-using Glimpse.Xorg;
+using Glimpse.Common.Freedesktop.DesktopEntries;
+using Glimpse.Common.Freedesktop.Xorg;
+using Glimpse.Common.Gtk;
 
 namespace Glimpse.Taskbar.Components;
 

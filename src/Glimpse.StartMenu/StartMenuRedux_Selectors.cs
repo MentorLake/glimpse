@@ -1,10 +1,9 @@
 using System.Collections.Immutable;
+using Glimpse.Common.Freedesktop.Accounts;
+using Glimpse.Common.Freedesktop.DesktopEntries;
+using Glimpse.Common.Gtk;
 using Glimpse.Common.System;
-using Glimpse.Configuration;
-using Glimpse.Freedesktop;
-using Glimpse.Freedesktop.DesktopEntries;
 using Glimpse.StartMenu.Components;
-using Glimpse.UI.State;
 using MentorLake.Redux.Selectors;
 using static MentorLake.Redux.Selectors.SelectorFactory;
 
@@ -21,7 +20,6 @@ public class StartMenuSelectors
 	private static readonly ISelector<string> s_settingsButtonCommand = Create(s_configuration, s => s.SettingsButtonCommand);
 	private static readonly ISelector<string> s_userSettingsCommand = Create(s_configuration, s => s.UserSettingsCommand);
 	private static readonly ISelector<string> s_searchTextSelector = Create(s_startMenuState, s => s.SearchText);
-	private static readonly ISelector<string> s_taskManagerCommandSelector = Create(ConfigurationSelectors.Configuration, s => s.TaskManagerCommand);
 	private static readonly ISelector<ImmutableDictionary<StartMenuChips, StartMenuAppFilteringChip>> s_chipsSelector = Create(s_startMenuState, s => s.Chips);
 
 	public ISelector<StartMenuViewModel> ViewModel { get; }
@@ -83,12 +81,10 @@ public class StartMenuSelectors
 			s_startMenuLaunchIconContextMenuItems,
 			s_powerButtonCommand,
 			s_settingsButtonCommand,
-			s_taskManagerCommandSelector,
-			(menuItems, powerButtonCommand, allSettingsCommands, taskManagerCommand) => menuItems
+			(menuItems, powerButtonCommand, allSettingsCommands) => menuItems
 				.Add(new() { DisplayText = "separator" })
-				.Add(new() { DisplayText = "Glimpse config", Executable = "xdg-open", Arguments = ConfigurationFile.FilePath })
+				.Add(new() { DisplayText = "Glimpse config", Executable = "xdg-open", Arguments = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "glimpse", "config.json") })
 				.Add(new() { DisplayText = "Settings", Executable = allSettingsCommands })
-				.Add(new() { DisplayText = "Task Manager", Executable = taskManagerCommand })
 				.Add(new() { DisplayText = "separator" })
 				.Add(new() { DisplayText = "Shutdown or sign out", Executable = powerButtonCommand }));
 

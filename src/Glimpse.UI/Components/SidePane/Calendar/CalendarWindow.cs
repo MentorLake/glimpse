@@ -1,6 +1,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using GLib;
+using Glimpse.Common.Gtk;
 using Gtk;
 using Microsoft.Extensions.DependencyInjection;
 using DateTime = System.DateTime;

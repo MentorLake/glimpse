@@ -1,12 +1,11 @@
 using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 using Glimpse.Common.Images;
-using Glimpse.Configuration;
 using MentorLake.Redux;
 using MentorLake.Redux.Reducers;
 using MentorLake.Redux.Selectors;
 
-namespace Glimpse.Freedesktop.Notifications;
+namespace Glimpse.Notifications;
 
 public record UpdateNotificationsConfigurationAction(NotificationsConfiguration Config);
 public record LoadNotificationHistoryAction(NotificationHistory History);

@@ -1,4 +1,4 @@
-namespace Glimpse.Freedesktop.DesktopEntries;
+namespace Glimpse.Common.Freedesktop.DesktopEntries;
 
 public class DesktopFileAction
 {

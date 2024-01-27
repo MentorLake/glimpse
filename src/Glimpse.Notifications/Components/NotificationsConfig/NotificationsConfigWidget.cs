@@ -1,10 +1,11 @@
 using System.Reactive.Linq;
 using GLib;
+using Glimpse.Common.Gtk;
 using Glimpse.Common.System.Reactive;
-using MentorLake.Redux;
 using Gtk;
+using MentorLake.Redux;
 
-namespace Glimpse.UI.Components.NotificationsConfig;
+namespace Glimpse.Notifications.Components.NotificationsConfig;
 
 public class NotificationsConfigWidget : Box
 {

@@ -1,12 +1,12 @@
 using System.Reactive.Linq;
+using Glimpse.Common.Freedesktop.Xorg.State;
+using Glimpse.Common.Freedesktop.Xorg.X11;
 using MentorLake.Redux;
-using Glimpse.Xorg.State;
-using Glimpse.Xorg.X11;
 using Microsoft.Extensions.Hosting;
 using DateTime = System.DateTime;
 using Task = System.Threading.Tasks.Task;
 
-namespace Glimpse.Xorg;
+namespace Glimpse.Common.Freedesktop.Xorg;
 
 internal class XorgHostedService(XLibAdaptorService xLibAdaptorService, ReduxStore store) : IHostedService
 {

@@ -1,14 +1,14 @@
 ﻿using System.CommandLine;
 using System.Reactive.Linq;
-using Glimpse.Configuration;
-using Glimpse.Freedesktop;
-using Glimpse.Freedesktop.DBus;
-using Glimpse.Freedesktop.DesktopEntries;
+using Glimpse.Common.Configuration;
+using Glimpse.Common.Freedesktop;
+using Glimpse.Common.Freedesktop.DBus;
+using Glimpse.Common.Freedesktop.DesktopEntries;
+using Glimpse.Common.Freedesktop.Xorg;
+using Glimpse.UI;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
-using Glimpse.UI;
-using Glimpse.Xorg;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -63,8 +63,8 @@ public static class Program
 
 			var host = builder.Build();
 
-
 			var store = host.Services.GetRequiredService<ReduxStore>();
+			store.RegisterReducers(host.Services.GetServices<IReducerFactory>().ToArray());
 			store.RegisterReducers(host.Services.GetServices<FeatureReducerCollection>().ToArray());
 			store.RegisterEffects(host.Services.GetServices<IEffectsFactory>().ToArray()
 				.SelectMany(e => e.Create())

@@ -4,7 +4,7 @@ using Unit = System.Reactive.Unit;
 using Window = Gtk.Window;
 using WindowType = Gtk.WindowType;
 
-namespace Glimpse.UI.Components.NotificationBubbles;
+namespace Glimpse.Notifications.Components.NotificationBubbles;
 
 public class NotificationBubbleWindow : Window
 {

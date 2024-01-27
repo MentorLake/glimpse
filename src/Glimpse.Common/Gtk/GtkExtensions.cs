@@ -2,14 +2,13 @@ using System.Reactive.Linq;
 using Cairo;
 using Gdk;
 using Glimpse.Common.Images;
-using Glimpse.UI.State;
 using Gtk;
 using ReactiveMarbles.ObservableEvents;
 using Monitor = Gdk.Monitor;
 using Rectangle = Gdk.Rectangle;
 using Window = Gtk.Window;
 
-namespace Glimpse.UI;
+namespace Glimpse.Common.Gtk;
 
 public static class GtkExtensions
 {
