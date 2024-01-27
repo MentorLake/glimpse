@@ -3,11 +3,12 @@ using Cairo;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.Gtk.ForEach;
 using Glimpse.Common.Images;
+using Glimpse.Taskbar.Components.WindowPicker;
 using Gtk;
 using ReactiveMarbles.ObservableEvents;
 using Color = Cairo.Color;
 
-namespace Glimpse.Taskbar.Components;
+namespace Glimpse.Taskbar.Components.ApplicationIcons;
 
 public class TaskbarGroupIcon : EventBox, IForEachDraggable
 {

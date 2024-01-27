@@ -7,11 +7,12 @@ using Glimpse.Common.Freedesktop.Xorg;
 using Glimpse.Common.Freedesktop.Xorg.State;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.Gtk.ForEach;
+using Glimpse.Taskbar.Components.WindowPicker;
 using Gtk;
 using MentorLake.Redux;
 using ReactiveMarbles.ObservableEvents;
 
-namespace Glimpse.Taskbar.Components;
+namespace Glimpse.Taskbar.Components.ApplicationIcons;
 
 public class TaskbarView : Box
 {

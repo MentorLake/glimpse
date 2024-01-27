@@ -8,7 +8,7 @@ using Glimpse.Common.System.Collections;
 using MentorLake.Redux.Selectors;
 using static MentorLake.Redux.Selectors.SelectorFactory;
 
-namespace Glimpse.Taskbar.Components;
+namespace Glimpse.Taskbar.Components.ApplicationIcons;
 
 public static class TaskbarViewModelSelectors
 {

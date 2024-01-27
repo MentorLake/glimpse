@@ -6,7 +6,7 @@ using Glimpse.Common.Gtk;
 using Gtk;
 using ReactiveMarbles.ObservableEvents;
 
-namespace Glimpse.Taskbar.Components;
+namespace Glimpse.Taskbar.Components.ApplicationIcons;
 
 public class TaskbarGroupContextMenu : Menu
 {

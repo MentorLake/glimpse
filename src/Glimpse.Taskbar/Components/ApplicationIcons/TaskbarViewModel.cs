@@ -3,7 +3,7 @@ using Glimpse.Common.Freedesktop.DesktopEntries;
 using Glimpse.Common.Freedesktop.Xorg;
 using Glimpse.Common.Gtk;
 
-namespace Glimpse.Taskbar.Components;
+namespace Glimpse.Taskbar.Components.ApplicationIcons;
 
 public record TaskbarViewModel
 {

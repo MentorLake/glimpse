@@ -5,7 +5,7 @@ using Glimpse.Common.System;
 using Glimpse.Notifications;
 using MentorLake.Redux.Selectors;
 
-namespace Glimpse.UI.Components.SidePane;
+namespace Glimpse.SidePane.Components.SidePane;
 
 public record NotificationsViewModel
 {

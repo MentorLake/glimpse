@@ -4,13 +4,14 @@ using Gdk;
 using Glimpse.Common.Freedesktop.Xorg;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.System.Reactive;
+using Glimpse.Taskbar.Components.ApplicationIcons;
 using Gtk;
 using Pango;
 using ReactiveMarbles.ObservableEvents;
 using Window = Gtk.Window;
 using WindowType = Gtk.WindowType;
 
-namespace Glimpse.Taskbar.Components;
+namespace Glimpse.Taskbar.Components.WindowPicker;
 
 public class TaskbarWindowPicker : Window
 {

@@ -1,16 +1,27 @@
 ﻿using System.CommandLine;
+using System.Reactive;
 using System.Reactive.Linq;
+using GLib;
 using Glimpse.Common.Configuration;
 using Glimpse.Common.Freedesktop;
 using Glimpse.Common.Freedesktop.DBus;
 using Glimpse.Common.Freedesktop.DesktopEntries;
 using Glimpse.Common.Freedesktop.Xorg;
+using Glimpse.Common.System.Reactive;
+using Glimpse.Notifications;
+using Glimpse.SidePane.Components.Calendar;
+using Glimpse.SidePane.Components.SidePane;
+using Glimpse.StartMenu;
+using Glimpse.SystemTray;
+using Glimpse.Taskbar;
+using Glimpse.Taskbar.Components.Panel;
 using Glimpse.UI;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Application = Gtk.Application;
 
 namespace Glimpse;
 
@@ -59,7 +70,32 @@ public static class Program
 			builder.AddFreedesktop();
 			builder.AddGlimpseConfiguration();
 			builder.AddXorg();
-			builder.AddGlimpseUI();
+			builder.Services.AddHostedService<GlimpseGtkApplication>();
+			builder.Services.AddTransient<Panel>();
+			builder.Services.AddSingleton<GlimpseGtkApplication>();
+			builder.Services.AddSingleton<IStartMenuDemands, StartMenuDemands>();
+			builder.Services.AddSingleton<CalendarWindow>();
+			builder.Services.AddSingleton<SidePaneWindow>();
+
+			builder.Services.AddKeyedSingleton(Timers.OneSecond, (c, _) =>
+			{
+				var host1 = c.GetRequiredService<IHostApplicationLifetime>();
+				var shuttingDown = Observable.Create<Unit>(obs => host1.ApplicationStopping.Register(() => obs.OnNext(Unit.Default)));
+				return TimerFactory.OneSecondTimer.TakeUntil(shuttingDown).Publish().AutoConnect();
+			});
+
+			builder.Services.AddSingleton(_ =>
+			{
+				var app = new Application("org.glimpse", ApplicationFlags.None);
+				app.AddAction(new SimpleAction("OpenStartMenu", null));
+				app.AddAction(new SimpleAction("LoadPanels", null));
+				return app;
+			});
+
+			builder.AddTaskbar();
+			builder.AddSystemTray();
+			builder.AddStartMenu();
+			builder.AddNotifications();
 
 			var host = builder.Build();
 
@@ -79,7 +115,10 @@ public static class Program
 			await host.UseXorg();
 			await host.UseGlimpseConfiguration();
 			await host.UseFreedesktop(Installation.DefaultInstallPath);
-			await host.UseGlimpseUI();
+			await host.UseTaskbar();
+			await host.UseSystemTray();
+			await host.UseStartMenu();
+			await host.UseNotifications();
 
 			await store.Dispatch(new InitializeStoreAction());
 			await host.RunAsync();

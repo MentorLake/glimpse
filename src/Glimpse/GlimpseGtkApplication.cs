@@ -7,10 +7,10 @@ using Glimpse.Common.Gtk;
 using Glimpse.Common.System.Reactive;
 using Glimpse.Notifications;
 using Glimpse.Notifications.Components.NotificationBubbles;
+using Glimpse.SidePane.Components.SidePane;
 using Glimpse.StartMenu;
 using Glimpse.StartMenu.Components;
-using Glimpse.UI.Components;
-using Glimpse.UI.Components.SidePane;
+using Glimpse.Taskbar.Components.Panel;
 using Gtk;
 using MentorLake.Redux;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +20,7 @@ using Application = Gtk.Application;
 using Monitor = Gdk.Monitor;
 using Task = System.Threading.Tasks.Task;
 
-namespace Glimpse.UI;
+namespace Glimpse;
 
 public class GlimpseGtkApplication(IServiceProvider serviceProvider, Application application, ReduxStore store) : IHostedService
 {

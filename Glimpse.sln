@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse", "src\Glimpse\Glim
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse.Common", "src\Glimpse.Common\Glimpse.Common.csproj", "{FAF6861C-CE9A-445A-A428-4256DA8B79FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse.UI", "src\Glimpse.UI\Glimpse.UI.csproj", "{3939A68C-16A3-4782-A36C-D650E744B0E7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse.SidePane", "src\Glimpse.SidePane\Glimpse.SidePane.csproj", "{3939A68C-16A3-4782-A36C-D650E744B0E7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse.Notifications", "src\Glimpse.Notifications\Glimpse.Notifications.csproj", "{9C22FBEF-CD78-406D-86A3-6BAC05DCCBAF}"
 EndProject

@@ -1,6 +1,7 @@
 using Glimpse.Common.Configuration;
 using Glimpse.Common.Microsoft.Extensions;
 using Glimpse.Taskbar.Components;
+using Glimpse.Taskbar.Components.ApplicationIcons;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using Microsoft.Extensions.DependencyInjection;

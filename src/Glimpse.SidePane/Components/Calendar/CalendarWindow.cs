@@ -2,11 +2,12 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using GLib;
 using Glimpse.Common.Gtk;
+using Glimpse.UI;
 using Gtk;
 using Microsoft.Extensions.DependencyInjection;
 using DateTime = System.DateTime;
 
-namespace Glimpse.UI.Components.SidePane.Calendar;
+namespace Glimpse.SidePane.Components.Calendar;
 
 public class CalendarWindow : Bin
 {

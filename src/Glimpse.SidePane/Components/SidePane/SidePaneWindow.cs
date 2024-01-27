@@ -4,14 +4,14 @@ using GLib;
 using Glimpse.Common.Freedesktop.Xorg.State;
 using Glimpse.Common.Gtk;
 using Glimpse.Notifications.Components.NotificationHistory;
-using MentorLake.Redux;
-using Glimpse.UI.Components.SidePane.Calendar;
+using Glimpse.SidePane.Components.Calendar;
 using Gtk;
+using MentorLake.Redux;
 using ReactiveMarbles.ObservableEvents;
 using Window = Gtk.Window;
 using WindowType = Gtk.WindowType;
 
-namespace Glimpse.UI.Components.SidePane;
+namespace Glimpse.SidePane.Components.SidePane;
 
 public class SidePaneWindow : Window
 {
@@ -54,27 +54,28 @@ public class SidePaneWindow : Window
 			.ObserveOn(new GLibSynchronizationContext())
 			.TakeUntilDestroyed(this)
 			.Where(action => IsVisible && action.WindowRef.Id != LibGdk3Interop.gdk_x11_window_get_xid(Window.Handle))
-			.Subscribe(_ => ToggleVisibility());
+			.Subscribe(_ => HideInternal());
 
 		ShowAll();
 		Hide();
 	}
 
-	public void ToggleVisibility()
+	private void HideInternal()
 	{
-		Display.GetPointer(out var x, out var y);
-		var eventMonitor = Display.GetMonitorAtPoint(x, y);
+		_layoutRevealer.RevealChild = false;
+		Observable.Timer(TimeSpan.FromMilliseconds(_layoutRevealer.TransitionDuration)).ObserveOn(new GLibSynchronizationContext()).Subscribe(_ => Hide());
+	}
 
+	public void ToggleVisibility(int right, int bottom)
+	{
 		if (IsVisible)
 		{
-			_layoutRevealer.RevealChild = false;
-			Observable.Timer(TimeSpan.FromMilliseconds(250)).ObserveOn(new GLibSynchronizationContext()).Subscribe(_ => Hide());
+			HideInternal();
 		}
 		else
 		{
 			Show();
-			var eventPanel = Application.Windows.OfType<Panel>().First(p => eventMonitor.Contains(p.Window));
-			Move(eventMonitor.Geometry.Right - Allocation.Width, eventMonitor.Geometry.Bottom - eventPanel.Window.Height - Allocation.Height - 8);
+			Move(right - Allocation.Width, bottom - Allocation.Height - 8);
 			_layoutRevealer.RevealChild = true;
 		}
 	}

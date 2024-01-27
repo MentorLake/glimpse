@@ -31,9 +31,14 @@
 		<EmbeddedResource Include="install.sh" LogicalName="%(Filename)%(Extension)" />
 		<EmbeddedResource Include="uninstall.sh" LogicalName="%(Filename)%(Extension)" />
 	</ItemGroup>
-	
+
 	<ItemGroup>
-		<ProjectReference Include="..\Glimpse.UI\Glimpse.UI.csproj" />
+		<ProjectReference Include="..\Glimpse.Common\Glimpse.Common.csproj" />
+		<ProjectReference Include="..\Glimpse.StartMenu\Glimpse.StartMenu.csproj" />
+		<ProjectReference Include="..\Glimpse.SystemTray\Glimpse.SystemTray.csproj" />
+		<ProjectReference Include="..\Glimpse.Taskbar\Glimpse.Taskbar.csproj" />
+		<ProjectReference Include="..\Glimpse.Notifications\Glimpse.Notifications.csproj"/>
+		<ProjectReference Include="..\Glimpse.SidePane\Glimpse.SidePane.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

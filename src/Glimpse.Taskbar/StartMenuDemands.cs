@@ -1,9 +1,8 @@
 using System.Collections.Immutable;
 using Glimpse.StartMenu;
-using Glimpse.Taskbar;
 using MentorLake.Redux.Selectors;
 
-namespace Glimpse.UI;
+namespace Glimpse.Taskbar;
 
 public class StartMenuDemands(TaskbarService taskbarService) : IStartMenuDemands
 {

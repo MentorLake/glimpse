@@ -4,13 +4,13 @@ using Gdk;
 using GLib;
 using Glimpse.Common.Freedesktop.DesktopEntries;
 using Glimpse.Common.Gtk;
+using Glimpse.SidePane.Components.SidePane;
 using Glimpse.StartMenu.Components;
 using Glimpse.SystemTray.Components;
-using Glimpse.Taskbar;
-using Glimpse.Taskbar.Components;
-using MentorLake.Redux;
-using Glimpse.UI.Components.SidePane;
+using Glimpse.Taskbar.Components.ApplicationIcons;
+using Glimpse.UI;
 using Gtk;
+using MentorLake.Redux;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveMarbles.ObservableEvents;
 using DateTime = System.DateTime;
@@ -19,7 +19,7 @@ using Monitor = Gdk.Monitor;
 using Window = Gtk.Window;
 using WindowType = Gtk.WindowType;
 
-namespace Glimpse.UI.Components;
+namespace Glimpse.Taskbar.Components.Panel;
 
 public class Panel : Window
 {
@@ -138,7 +138,9 @@ public class Panel : Window
 
 		clockButtonEventBox.ObserveButtonRelease().Where(e => e.Event.Button == 1).Subscribe(e =>
 		{
-			_sidePaneWindow.ToggleVisibility();
+			Display.GetPointer(out var x, out var y);
+			var eventMonitor = Display.GetMonitorAtPoint(x, y);
+			_sidePaneWindow.ToggleVisibility(eventMonitor.Geometry.Right, eventMonitor.Geometry.Bottom - AllocatedHeight);
 			e.RetVal = true;
 		});
 
