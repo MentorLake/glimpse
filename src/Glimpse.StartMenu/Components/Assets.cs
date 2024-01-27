@@ -2,7 +2,7 @@ using Glimpse.Common.Images;
 
 namespace Glimpse.StartMenu.Components;
 
-public class Assets
+internal static class Assets
 {
 	public static readonly IGlimpseImage Power;
 	public static readonly IGlimpseImage Person;

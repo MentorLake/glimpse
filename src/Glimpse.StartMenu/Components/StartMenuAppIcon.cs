@@ -7,7 +7,7 @@ using WrapMode = Pango.WrapMode;
 
 namespace Glimpse.StartMenu.Components;
 
-public class StartMenuAppIcon : EventBox, IForEachDraggable
+internal class StartMenuAppIcon : EventBox, IForEachDraggable
 {
 	public StartMenuAppIcon(IObservable<StartMenuAppViewModel> viewModelObservable)
 	{

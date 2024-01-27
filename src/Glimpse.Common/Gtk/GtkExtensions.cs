@@ -20,19 +20,13 @@ public static class GtkExtensions
 		}
 	}
 
-	public static bool Contains(this Monitor monitor, Gdk.Window window)
-	{
-		window.GetRootCoords(0, 0, out var x, out var y);
-		return monitor.Geometry.Contains(x, y);
-	}
-
 	public static void RemoveAllChildren(this Container widget)
 	{
 		var widgets = widget.Children.ToList();
 		widgets.ForEach(w => w.Destroy());
 	}
 
-	public static bool ContainsPoint(this Widget widget, int px, int py)
+	private static bool ContainsPoint(this Widget widget, int px, int py)
 	{
 		if (!widget.IsVisible) return false;
 		widget.Window.GetGeometry(out _, out _, out var width, out var height);
@@ -42,7 +36,6 @@ public static class GtkExtensions
 
 	public static bool IsPointerInside(this Widget widget)
 	{
-
 		widget.Display.GetPointer(out var px, out var py);
 		return widget.ContainsPoint(px, py);
 	}
@@ -104,17 +97,17 @@ public static class GtkExtensions
 		widget.ObserveEvent(w => w.Events().EnterNotifyEvent).Subscribe(_ => widget.QueueDraw());
 		widget.ObserveEvent(w => w.Events().LeaveNotifyEvent).Subscribe(_ => widget.QueueDraw());
 		widget.ObserveEvent(w => w.Events().ButtonPressEvent).Subscribe(_ => widget.QueueDraw());
-		widget.ObserveEvent(w => w.Events().ButtonPressEvent).WithLatestFrom(iconObservable).Subscribe(t =>
+		widget.ObserveEvent(w => w.Events().ButtonPressEvent).WithLatestFrom(iconObservable).Subscribe(_ =>
 		{
 			if (image.Pixbuf == null) image.PixelSize = size - 6;
 			else image.Pixbuf = ((GtkGlimpseImage)image.Data["Small"])?.Pixbuf;
 		});
-		widget.ObserveEvent(w => w.Events().ButtonReleaseEvent).WithLatestFrom(iconObservable).Subscribe(t =>
+		widget.ObserveEvent(w => w.Events().ButtonReleaseEvent).WithLatestFrom(iconObservable).Subscribe(_ =>
 		{
 			if (image.Pixbuf == null) image.PixelSize = size;
 			else image.Pixbuf = ((GtkGlimpseImage)image.Data["Big"])?.Pixbuf;
 		});
-		widget.ObserveEvent(w => w.Events().LeaveNotifyEvent).WithLatestFrom(iconObservable).Subscribe(t =>
+		widget.ObserveEvent(w => w.Events().LeaveNotifyEvent).WithLatestFrom(iconObservable).Subscribe(_ =>
 		{
 			if (image.Pixbuf == null) image.PixelSize = size;
 			else image.Pixbuf = ((GtkGlimpseImage)image.Data["Big"])?.Pixbuf;
@@ -184,7 +177,7 @@ public static class GtkExtensions
 			.Select(_ => true);
 
 		var popupMenuObs = widget.ObserveEvent(w => w.Events().PopupMenu)
-			.Select(e => true);
+			.Select(_ => true);
 
 		return buttonPressObs.Merge(popupMenuObs);
 	}
@@ -212,7 +205,7 @@ public static class GtkExtensions
 		cr.RoundedRectangle(x, y, width, height, cornerRadius, cornerRadius, cornerRadius, cornerRadius);
 	}
 
-	public static void RoundedRectangle(this Context cr, int x, int y, int width, int height, int upperRightRadius, int lowerRightRadius, int lowerLeftRadius, int upperLeftRadius)
+	private static void RoundedRectangle(this Context cr, int x, int y, int width, int height, int upperRightRadius, int lowerRightRadius, int lowerLeftRadius, int upperLeftRadius)
 	{
 		var degrees = Math.PI / 180.0;
 

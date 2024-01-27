@@ -1,22 +1,3 @@
-.start-menu__launch-icon {
-	border-radius: 5px;
-	min-width: 42px;
-	min-height: 42px;
-	margin-right: 2px;
-}
-
-.start-menu__launch-icon:hover {
-	background-color: rgba(255, 255, 255, 0.3);
-}
-
-.start-menu__launch-icon:active {
-	background-color: rgba(255, 255, 255, 0.1);
-}
-
-.start-menu__launch-icon--open {
-	background-color: rgba(255, 255, 255, 0.1);
-}
-
 .start-menu__window {
 	border: 1px solid #555555;
 	border-radius: 10px;

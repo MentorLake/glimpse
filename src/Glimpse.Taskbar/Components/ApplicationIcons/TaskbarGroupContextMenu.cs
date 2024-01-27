@@ -8,7 +8,7 @@ using ReactiveMarbles.ObservableEvents;
 
 namespace Glimpse.Taskbar.Components.ApplicationIcons;
 
-public class TaskbarGroupContextMenu : Menu
+internal class TaskbarGroupContextMenu : Menu
 {
 	private readonly Subject<bool> _pinSubject = new();
 	private readonly Subject<AllowedWindowActions> _windowAction = new();

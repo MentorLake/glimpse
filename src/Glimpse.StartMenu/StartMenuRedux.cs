@@ -10,7 +10,7 @@ using MentorLake.Redux.Reducers;
 
 namespace Glimpse.StartMenu;
 
-public record StartMenuState
+internal record StartMenuState
 {
 	public string SearchText { get; init; } = "";
 	public StartMenuConfiguration Configuration { get; set; } = StartMenuConfiguration.Empty;
@@ -24,21 +24,21 @@ public record StartMenuState
 	public virtual bool Equals(StartMenuState other) => ReferenceEquals(this, other);
 }
 
-public enum StartMenuChips
+internal enum StartMenuChips
 {
 	Pinned,
 	AllApps,
 	SearchResults
 }
 
-public class StartMenuOpenedAction();
-public record ToggleStartMenuPinningAction(string DesktopFileId);
-public record UpdateStartMenuSearchTextAction(string SearchText);
-public record UpdateStartMenuPinnedAppOrderingAction(ImmutableList<string> DesktopFileKeys);
-public record UpdateAppFilteringChip(StartMenuChips Chip);
-public record UpdateStartMenuConfiguration(StartMenuConfiguration Config);
+public record StartMenuOpenedAction();
+internal record ToggleStartMenuPinningAction(string DesktopFileId);
+internal record UpdateStartMenuSearchTextAction(string SearchText);
+internal record UpdateStartMenuPinnedAppOrderingAction(ImmutableList<string> DesktopFileKeys);
+internal record UpdateAppFilteringChip(StartMenuChips Chip);
+internal record UpdateStartMenuConfiguration(StartMenuConfiguration Config);
 
-public class StartMenuEffects(ReduxStore store, ConfigurationService configurationService) : IEffectsFactory
+internal class StartMenuEffects(ReduxStore store, ConfigurationService configurationService) : IEffectsFactory
 {
 	public IEnumerable<Effect> Create() => new[]
 	{

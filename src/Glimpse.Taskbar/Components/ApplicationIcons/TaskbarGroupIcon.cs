@@ -10,7 +10,7 @@ using Color = Cairo.Color;
 
 namespace Glimpse.Taskbar.Components.ApplicationIcons;
 
-public class TaskbarGroupIcon : EventBox, IForEachDraggable
+internal class TaskbarGroupIcon : EventBox, IForEachDraggable
 {
 	private readonly TaskbarWindowPicker _taskbarWindowPicker;
 	private SlotViewModel _currentViewModel;

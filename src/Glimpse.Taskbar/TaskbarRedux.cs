@@ -10,7 +10,7 @@ using MentorLake.Redux.Selectors;
 
 namespace Glimpse.Taskbar;
 
-public record SlotReferences
+internal record SlotReferences
 {
 	public ImmutableList<SlotRef> Refs = ImmutableList<SlotRef>.Empty;
 
@@ -20,14 +20,14 @@ public record SlotReferences
 	}
 }
 
-public record SlotRef
+internal record SlotRef
 {
 	public string PinnedDesktopFileId { get; init; } = "";
 	public string ClassHintName { get; init; } = "";
 	public string DiscoveredDesktopFileId { get; init; } = "";
 }
 
-public record TaskbarState
+internal record TaskbarState
 {
 	public SlotReferences StoredSlots = new();
 	public TaskbarConfiguration Configuration = new();
@@ -35,11 +35,13 @@ public record TaskbarState
 	public virtual bool Equals(TaskbarState other) => ReferenceEquals(this, other);
 }
 
-public static class TaskbarSelectors
+internal static class TaskbarSelectors
 {
 	private static readonly ISelector<TaskbarState> s_taskbarState = SelectorFactory.CreateFeature<TaskbarState>();
-	internal static readonly ISelector<SlotReferences> StoredSlots = SelectorFactory.Create(s_taskbarState, s => s.StoredSlots);
+	internal static readonly ISelector<SlotReferences> s_storedSlots = SelectorFactory.Create(s_taskbarState, s => s.StoredSlots);
 	internal static readonly ISelector<TaskbarConfiguration> s_configuration = SelectorFactory.Create(s_taskbarState, s => s.Configuration);
+	internal static readonly ISelector<ImmutableList<ContextMenuItem>> s_contextMenu = SelectorFactory.Create(s_configuration, s => s.ContextMenu);
+	internal static readonly ISelector<string> s_startMenuLaunchIconName = SelectorFactory.Create(s_configuration, s => s.StartMenuLaunchIconName);
 	public static readonly ISelector<string> TaskManagerCommand = SelectorFactory.Create(s_configuration, s => s.TaskManagerCommand);
 	public static readonly ISelector<ImmutableList<string>> PinnedLaunchers = SelectorFactory.Create(
 		s_configuration,
@@ -47,11 +49,11 @@ public static class TaskbarSelectors
 		(x, y) => CollectionComparer.Sequence(x, y));
 }
 
-public record UpdateTaskbarSlotOrderingBulkAction(ImmutableList<SlotRef> Slots);
-public record UpdateTaskbarConfigurationAction(TaskbarConfiguration Config);
-public record ToggleTaskbarPinningAction(string DesktopFileId);
+internal record UpdateTaskbarSlotOrderingBulkAction(ImmutableList<SlotRef> Slots);
+internal record UpdateTaskbarConfigurationAction(TaskbarConfiguration Config);
+internal record ToggleTaskbarPinningAction(string DesktopFileId);
 
-public static class TaskbarReducers
+internal static class TaskbarReducers
 {
 	internal static IList<TR> FullOuterJoin<TA, TB, TK, TR>(
 		this IEnumerable<TA> a,
@@ -133,13 +135,13 @@ public static class TaskbarReducers
 	];
 }
 
-public class TaskbarEffects(ReduxStore store, ConfigurationService configurationService) : IEffectsFactory
+internal class TaskbarEffects(ReduxStore store, ConfigurationService configurationService) : IEffectsFactory
 {
 	public IEnumerable<Effect> Create() => [
 		EffectsFactory.Create(actions => actions
 			.OfType<UpdateTaskbarSlotOrderingBulkAction>()
 			.WithLatestFrom(store.Select(TaskbarSelectors.s_configuration))
-			.WithLatestFrom(store.Select(TaskbarSelectors.StoredSlots))
+			.WithLatestFrom(store.Select(TaskbarSelectors.s_storedSlots))
 			.Do(t =>
 			{
 				var ((_, config), currentSlots) = t;
@@ -150,7 +152,7 @@ public class TaskbarEffects(ReduxStore store, ConfigurationService configuration
 		EffectsFactory.Create(actions => actions
 			.OfType<ToggleTaskbarPinningAction>()
 			.WithLatestFrom(store.Select(TaskbarSelectors.s_configuration))
-			.WithLatestFrom(store.Select(TaskbarSelectors.StoredSlots))
+			.WithLatestFrom(store.Select(TaskbarSelectors.s_storedSlots))
 			.Do(t =>
 			{
 				var ((_, config), currentSlots) = t;

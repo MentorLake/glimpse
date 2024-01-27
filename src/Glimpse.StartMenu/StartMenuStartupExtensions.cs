@@ -26,8 +26,7 @@ public static class StartMenuStartupExtensions
 
 	public static void AddStartMenu(this IHostApplicationBuilder builder)
 	{
-		builder.Services.AddTransient<StartMenuLaunchIcon>();
-		builder.Services.AddSingleton<StartMenuWindow>();
+		builder.Services.AddSingleton(c => new StartMenuWindow(c.GetRequiredService<ReduxStore>(), c.GetRequiredService<IStartMenuDemands>(), c.GetRequiredService<StartMenuSelectors>()));
 		builder.Services.AddSingleton<StartMenuSelectors>();
 		builder.Services.AddInstance(StartMenuReducers.AllReducers);
 		builder.Services.AddSingleton<IEffectsFactory, StartMenuEffects>();

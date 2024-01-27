@@ -13,7 +13,7 @@ public class ConfigurationService
 	private IObservable<Unit> _fileChangedObs;
 	private static readonly string s_fileName = "config.json";
 	private static readonly string s_dataDirectoryPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "glimpse");
-	private static readonly string s_filePath = Path.Join(s_dataDirectoryPath, s_fileName);
+	public static readonly string FilePath = Path.Join(s_dataDirectoryPath, s_fileName);
 
 	public void Initialize()
 	{
@@ -47,14 +47,14 @@ public class ConfigurationService
 	private void SaveFile()
 	{
 		EnsureDataDirectoryExists();
-		File.WriteAllText(s_filePath, JsonSerializer.Serialize(_sections, _sections.GetType(), ConfigurationSerializationContext.Instance));
+		File.WriteAllText(FilePath, JsonSerializer.Serialize(_sections, _sections.GetType(), ConfigurationSerializationContext.Instance));
 	}
 
 	private void LoadFile()
 	{
 		_sections = new Dictionary<string, JsonObject>();
 
-		var jsonRoot = JsonNode.Parse(File.ReadAllText(s_filePath));
+		var jsonRoot = JsonNode.Parse(File.ReadAllText(FilePath));
 
 		if (jsonRoot?.GetValueKind() == JsonValueKind.Object)
 		{

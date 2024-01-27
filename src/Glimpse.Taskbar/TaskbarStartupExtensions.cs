@@ -1,7 +1,7 @@
 using Glimpse.Common.Configuration;
 using Glimpse.Common.Microsoft.Extensions;
-using Glimpse.Taskbar.Components;
 using Glimpse.Taskbar.Components.ApplicationIcons;
+using Glimpse.Taskbar.Components.StartMenuIcon;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +26,7 @@ public static class TaskbarStartupExtensions
 
 	public static void AddTaskbar(this IHostApplicationBuilder builder)
 	{
+		builder.Services.AddTransient<StartMenuIcon>();
 		builder.Services.AddTransient<TaskbarView>();
 		builder.Services.AddSingleton<TaskbarService>();
 		builder.Services.AddSingleton<IEffectsFactory, TaskbarEffects>();

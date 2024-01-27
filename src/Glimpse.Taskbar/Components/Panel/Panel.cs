@@ -5,7 +5,6 @@ using GLib;
 using Glimpse.Common.Freedesktop.DesktopEntries;
 using Glimpse.Common.Gtk;
 using Glimpse.SidePane.Components.SidePane;
-using Glimpse.StartMenu.Components;
 using Glimpse.SystemTray.Components;
 using Glimpse.Taskbar.Components.ApplicationIcons;
 using Glimpse.UI;
@@ -32,7 +31,7 @@ public class Panel : Window
 	public Panel(
 		SystemTrayBox systemTrayBox,
 		TaskbarView taskbarView,
-		StartMenuLaunchIcon startMenuLaunchIcon,
+		StartMenuIcon.StartMenuIcon startMenuIcon,
 		ReduxStore store,
 		Monitor monitor,
 		[FromKeyedServices(Timers.OneSecond)] IObservable<DateTime> oneSecondTimer,
@@ -51,7 +50,7 @@ public class Panel : Window
 		this.ObserveButtonRelease().Subscribe(_ => Window.Focus(0));
 
 		var centerBox = new Box(Orientation.Horizontal, 0);
-		centerBox.PackStart(startMenuLaunchIcon, false, false, 0);
+		centerBox.PackStart(startMenuIcon, false, false, 0);
 		centerBox.PackStart(taskbarView, false, false, 0);
 		centerBox.Halign = Align.Start;
 

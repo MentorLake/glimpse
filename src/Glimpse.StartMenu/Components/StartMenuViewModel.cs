@@ -4,7 +4,7 @@ using Glimpse.Common.Gtk;
 
 namespace Glimpse.StartMenu.Components;
 
-public class ActionBarViewModel
+internal class ActionBarViewModel
 {
 	public string SettingsButtonCommand { get; set; }
 	public string UserSettingsCommand { get; set; }
@@ -12,7 +12,7 @@ public class ActionBarViewModel
 	public string PowerButtonCommand { get; set; }
 }
 
-public class StartMenuAppViewModel
+internal class StartMenuAppViewModel
 {
 	public int Index { get; set; }
 	public DesktopFile DesktopFile { get; set; }
@@ -23,13 +23,11 @@ public class StartMenuAppViewModel
 	public Dictionary<string, ImageViewModel> ActionIcons { get; set; }
 }
 
-public class StartMenuViewModel
+internal class StartMenuViewModel
 {
 	public ImmutableList<StartMenuAppViewModel> AllApps { get; set; }
 	public string SearchText { get; set; }
 	public bool DisableDragAndDrop { get; set; }
 	public ActionBarViewModel ActionBarViewModel { get; set; }
 	public ImmutableDictionary<StartMenuChips, StartMenuAppFilteringChip> Chips { get; set; }
-	public ImmutableList<StartMenuLaunchIconContextMenuItem> LaunchIconContextMenu { get; set; }
-	public string StartMenuLaunchIconName { get; set; }
 }

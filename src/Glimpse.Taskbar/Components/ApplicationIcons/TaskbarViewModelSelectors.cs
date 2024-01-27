@@ -10,7 +10,7 @@ using static MentorLake.Redux.Selectors.SelectorFactory;
 
 namespace Glimpse.Taskbar.Components.ApplicationIcons;
 
-public static class TaskbarViewModelSelectors
+internal static class TaskbarViewModelSelectors
 {
 	private static readonly ISelector<ImmutableList<WindowProperties>> s_windowPropertiesList = Create(
 		XorgSelectors.Windows,
@@ -19,7 +19,7 @@ public static class TaskbarViewModelSelectors
 	public static readonly ISelector<SlotReferences> CurrentSlots = Create(
 		DesktopFileSelectors.DesktopFiles,
 		s_windowPropertiesList.WithSequenceComparer((x, y) => x.WindowRef.Id == y.WindowRef.Id && x.ClassHintName == y.ClassHintName),
-		TaskbarSelectors.StoredSlots,
+		TaskbarSelectors.s_storedSlots,
 		(desktopFiles, windows, storedSlots) =>
 		{
 			var result = ImmutableList<SlotRef>.Empty.AddRange(storedSlots.Refs);
@@ -188,7 +188,7 @@ public static class TaskbarViewModelSelectors
 			})
 			.ToImmutableList());
 
-	public static readonly ISelector<TaskbarViewModel> ViewModel = Create(
+	internal static readonly ISelector<TaskbarViewModel> ViewModel = Create(
 		CurrentSlots,
 		s_slotToDesktopFile,
 		s_contextMenu,

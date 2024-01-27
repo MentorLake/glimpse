@@ -24,7 +24,7 @@ public class StartMenuWindow : Window
 
 	public IObservable<Point> WindowMoved { get; }
 
-	public StartMenuWindow(ReduxStore store, IStartMenuDemands startMenuDemands, StartMenuSelectors startMenuSelectors)
+	internal StartMenuWindow(ReduxStore store, IStartMenuDemands startMenuDemands, StartMenuSelectors startMenuSelectors)
 		: base(WindowType.Toplevel)
 	{
 		SkipPagerHint = true;

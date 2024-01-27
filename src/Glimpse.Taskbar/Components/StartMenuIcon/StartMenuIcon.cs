@@ -3,22 +3,24 @@ using System.Reactive.Linq;
 using GLib;
 using Glimpse.Common.Freedesktop.DesktopEntries;
 using Glimpse.Common.Gtk;
+using Glimpse.StartMenu.Components;
 using Gtk;
 using MentorLake.Redux;
 using ReactiveMarbles.ObservableEvents;
 using Menu = Gtk.Menu;
 using MenuItem = Gtk.MenuItem;
 
-namespace Glimpse.StartMenu.Components;
+namespace Glimpse.Taskbar.Components.StartMenuIcon;
 
-public class StartMenuLaunchIcon : EventBox
+public class StartMenuIcon : EventBox
 {
-	public StartMenuLaunchIcon(ReduxStore store, StartMenuWindow startMenuWindow, StartMenuSelectors startMenuSelectors)
+	public StartMenuIcon(ReduxStore store, StartMenuWindow startMenuWindow)
 	{
-		var viewModelObservable = store.Select(startMenuSelectors.ViewModel)
+		var viewModelObservable = store.Select(StartMenuIconViewModelSelectors.s_viewModel)
 			.TakeUntilDestroyed(this)
 			.ObserveOn(new SynchronizationContextScheduler(new GLibSynchronizationContext(), false))
-			.Replay(1);
+			.Replay(1)
+			.AutoConnect();
 
 		startMenuWindow.ObserveEvent(w => w.Events().Shown).TakeUntilDestroyed(this)
 			.Merge(startMenuWindow.ObserveEvent(w => w.Events().Hidden).TakeUntilDestroyed(this))
@@ -55,29 +57,30 @@ public class StartMenuLaunchIcon : EventBox
 
 		var launchIconMenu = new Menu();
 
-		viewModelObservable.Select(vm => vm.LaunchIconContextMenu).DistinctUntilChanged().Subscribe(menuItems =>
-		{
-			launchIconMenu.RemoveAllChildren();
-
-			foreach (var i in menuItems)
+		viewModelObservable
+			.Select(s => s.ContextMenuItems)
+			.DistinctUntilChanged()
+			.Subscribe(menuItems =>
 			{
-				if (i.DisplayText.Equals("separator", StringComparison.OrdinalIgnoreCase))
-				{
-					launchIconMenu.Add(new SeparatorMenuItem());
-				}
-				else
-				{
-					var menuItem = new MenuItem(i.DisplayText);
-					menuItem.ObserveEvent(w => w.Events().Activated).Subscribe(_ => DesktopFileRunner.Run(i.Executable + " " + i.Arguments));
-					launchIconMenu.Add(menuItem);
-				}
-			}
+				launchIconMenu.RemoveAllChildren();
 
-			launchIconMenu.ShowAll();
-		});
+				foreach (var i in menuItems)
+				{
+					if (i.DisplayText.Equals("separator", StringComparison.OrdinalIgnoreCase))
+					{
+						launchIconMenu.Add(new SeparatorMenuItem());
+					}
+					else
+					{
+						var menuItem = new MenuItem(i.DisplayText);
+						menuItem.ObserveEvent(w => w.Events().Activated).Subscribe(_ => DesktopFileRunner.Run(i.Executable + " " + i.Arguments));
+						launchIconMenu.Add(menuItem);
+					}
+				}
+
+				launchIconMenu.ShowAll();
+			});
 
 		this.CreateContextMenuObservable().Subscribe(_ => launchIconMenu.Popup());
-
-		viewModelObservable.Connect();
 	}
 }

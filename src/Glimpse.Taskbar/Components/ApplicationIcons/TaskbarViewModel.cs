@@ -5,12 +5,12 @@ using Glimpse.Common.Gtk;
 
 namespace Glimpse.Taskbar.Components.ApplicationIcons;
 
-public record TaskbarViewModel
+internal record TaskbarViewModel
 {
 	public ImmutableList<SlotViewModel> Groups { get; init; } = ImmutableList<SlotViewModel>.Empty;
 }
 
-public class WindowViewModel
+internal class WindowViewModel
 {
 	public string Title { get; init; }
 	public ImageViewModel Icon { get; init; }
@@ -20,7 +20,7 @@ public class WindowViewModel
 	public bool DemandsAttention { get; init; }
 }
 
-public class TaskbarGroupContextMenuViewModel
+internal class TaskbarGroupContextMenuViewModel
 {
 	public bool IsPinned { get; init; }
 	public Dictionary<string, ImageViewModel> ActionIcons { get; set; }
@@ -29,7 +29,7 @@ public class TaskbarGroupContextMenuViewModel
 	public bool CanClose { get; set; }
 }
 
-public record SlotViewModel
+internal record SlotViewModel
 {
 	public ImmutableList<WindowViewModel> Tasks { get; init; } = ImmutableList<WindowViewModel>.Empty;
 	public SlotRef SlotRef { get; set; }

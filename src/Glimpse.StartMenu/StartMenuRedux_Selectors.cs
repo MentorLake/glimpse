@@ -9,13 +9,11 @@ using static MentorLake.Redux.Selectors.SelectorFactory;
 
 namespace Glimpse.StartMenu;
 
-public class StartMenuSelectors
+internal class StartMenuSelectors
 {
 	private static readonly ISelector<StartMenuState> s_startMenuState = CreateFeature<StartMenuState>();
 	internal static readonly ISelector<StartMenuConfiguration> s_configuration = Create(s_startMenuState, s => s.Configuration);
-	private static readonly ISelector<string> s_startMenuLaunchIconName = Create(s_configuration, s => s.StartMenuLaunchIconName);
 	private static readonly ISelector<ImmutableList<string>> s_pinnedLaunchers = Create(s_configuration, s => s.PinnedLaunchers);
-	private static readonly ISelector<ImmutableList<StartMenuLaunchIconContextMenuItem>> s_startMenuLaunchIconContextMenuItems = Create(s_configuration, s => s.StartMenuLaunchIconContextMenu);
 	private static readonly ISelector<string> s_powerButtonCommand = Create(s_configuration, s => s.PowerButtonCommand);
 	private static readonly ISelector<string> s_settingsButtonCommand = Create(s_configuration, s => s.SettingsButtonCommand);
 	private static readonly ISelector<string> s_userSettingsCommand = Create(s_configuration, s => s.UserSettingsCommand);
@@ -77,25 +75,12 @@ public class StartMenuSelectors
 				return results.OrderBy(r => r.Index).ToImmutableList();
 			});
 
-		var menuItemsSelector = Create(
-			s_startMenuLaunchIconContextMenuItems,
-			s_powerButtonCommand,
-			s_settingsButtonCommand,
-			(menuItems, powerButtonCommand, allSettingsCommands) => menuItems
-				.Add(new() { DisplayText = "separator" })
-				.Add(new() { DisplayText = "Glimpse config", Executable = "xdg-open", Arguments = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "glimpse", "config.json") })
-				.Add(new() { DisplayText = "Settings", Executable = allSettingsCommands })
-				.Add(new() { DisplayText = "separator" })
-				.Add(new() { DisplayText = "Shutdown or sign out", Executable = powerButtonCommand }));
-
 		ViewModel = Create(
 			allAppsSelector,
 			s_searchTextSelector,
 			actionBarViewModelSelector,
 			s_chipsSelector,
-			menuItemsSelector,
-			s_startMenuLaunchIconName,
-			(allApps, searchText, actionBarViewModel, chips, menuItems, startMenuLaunchIconName) =>
+			(allApps, searchText, actionBarViewModel, chips) =>
 			{
 				return new StartMenuViewModel()
 				{
@@ -104,8 +89,6 @@ public class StartMenuSelectors
 					DisableDragAndDrop = searchText.Length > 0,
 					ActionBarViewModel = actionBarViewModel,
 					Chips = chips,
-					LaunchIconContextMenu = menuItems,
-					StartMenuLaunchIconName = startMenuLaunchIconName
 				};
 			});
 	}

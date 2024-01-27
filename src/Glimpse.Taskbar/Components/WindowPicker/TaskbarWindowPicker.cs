@@ -13,7 +13,7 @@ using WindowType = Gtk.WindowType;
 
 namespace Glimpse.Taskbar.Components.WindowPicker;
 
-public class TaskbarWindowPicker : Window
+internal class TaskbarWindowPicker : Window
 {
 	private readonly Subject<IWindowRef> _previewWindowClicked = new();
 	private readonly Subject<IWindowRef> _closeWindow = new();
@@ -33,7 +33,7 @@ public class TaskbarWindowPicker : Window
 
 		var layout = new Box(Orientation.Horizontal, 0);
 		Add(layout);
-		this.ObserveEvent(w => ObservableGeneratorExtensions.Events((TaskbarWindowPicker)w).FocusOutEvent).Subscribe(_ => ClosePopup());
+		this.ObserveEvent(w => w.Events().FocusOutEvent).Subscribe(_ => ClosePopup());
 
 		viewModelObservable.Select(vm => vm.Tasks).UnbundleMany(t => t.WindowRef.Id).RemoveIndex().Subscribe(taskObservable =>
 		{

@@ -13,7 +13,7 @@ using Menu = Gtk.Menu;
 
 namespace Glimpse.StartMenu.Components;
 
-public class StartMenuContent : Bin
+internal class StartMenuContent : Bin
 {
 	private readonly Menu _contextMenu;
 	private readonly Entry _hiddenEntry;
