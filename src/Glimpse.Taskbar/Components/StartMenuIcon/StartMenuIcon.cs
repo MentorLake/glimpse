@@ -48,7 +48,7 @@ public class StartMenuIcon : EventBox
 		image.SetSizeRequest(42, 42);
 		Add(image);
 
-		this.AppIcon(image, iconObservable, 26);
+		this.AppIcon(image, iconObservable, 32);
 		this.ObserveEvent(w => w.Events().ButtonReleaseEvent).Where(e => e.Event.Button == 1).Subscribe(e =>
 		{
 			startMenuWindow.ToggleVisibility();
