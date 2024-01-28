@@ -72,7 +72,7 @@ public class StartMenuIcon : EventBox
 					}
 					else
 					{
-						var menuItem = new MenuItem(i.DisplayText);
+						var menuItem = ContextMenuHelper.CreateMenuItem(i.DisplayText, new ImageViewModel() { IconNameOrPath = i.Icon });
 						menuItem.ObserveEvent(w => w.Events().Activated).Subscribe(_ => DesktopFileRunner.Run(i.Executable + " " + i.Arguments));
 						launchIconMenu.Add(menuItem);
 					}

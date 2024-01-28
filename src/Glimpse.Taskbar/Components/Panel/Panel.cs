@@ -86,7 +86,7 @@ public class Panel : Window
 			.TakeUntilDestroyed(this)
 			.ObserveOn(new SynchronizationContextScheduler(new GLibSynchronizationContext(), false));
 
-		var taskManagerMenuItem = ContextMenuHelper.CreateMenuItem("Task Manager", new ImageViewModel() { IconNameOrPath = "utilities-system-monitor-symbolic" });
+		var taskManagerMenuItem = ContextMenuHelper.CreateMenuItem("Task Manager", new ImageViewModel() { IconNameOrPath = "utilities-system-monitor" });
 		taskManagerMenuItem.ObserveButtonRelease().WithLatestFrom(taskManagerObs).Subscribe(t => DesktopFileRunner.Run(t.Second));
 
 		_menu = new Menu();
