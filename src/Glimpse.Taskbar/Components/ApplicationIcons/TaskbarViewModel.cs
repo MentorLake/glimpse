@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
-using Glimpse.Common.Freedesktop.DesktopEntries;
-using Glimpse.Common.Freedesktop.Xorg;
+using Glimpse.Common.DesktopEntries;
 using Glimpse.Common.Gtk;
+using Glimpse.Common.Xorg;
 
 namespace Glimpse.Taskbar.Components.ApplicationIcons;
 

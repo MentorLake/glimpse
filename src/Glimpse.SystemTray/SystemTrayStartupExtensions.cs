@@ -1,7 +1,7 @@
 using Glimpse.Common.Configuration;
+using Glimpse.Common.StatusNotifierWatcher;
 using Glimpse.SystemTray.Components;
 using MentorLake.Redux;
-using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,7 +12,7 @@ public static class SystemTrayStartupExtensions
 {
 	public static async Task UseSystemTray(this IHost host)
 	{
-		await host.Services.GetRequiredService<DBusSystemTrayService>().InitializeAsync();
+		await host.Services.GetRequiredService<StatusNotifierWatcherService>().InitializeAsync();
 
 		var store = host.Services.GetRequiredService<ReduxStore>();
 		var configurationService = host.Services.GetRequiredService<ConfigurationService>();
@@ -26,8 +26,6 @@ public static class SystemTrayStartupExtensions
 	public static void AddSystemTray(this IHostApplicationBuilder builder)
 	{
 		builder.Services.AddTransient<IReducerFactory, SystemTrayItemStateReducers>();
-		builder.Services.AddSingleton<IEffectsFactory, SystemTrayItemStateEffects>();
-		builder.Services.AddTransient<DBusSystemTrayService>();
 		builder.Services.AddTransient<SystemTrayBox>();
 	}
 }

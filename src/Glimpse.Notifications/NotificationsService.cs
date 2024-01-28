@@ -1,7 +1,6 @@
 using System.Reactive.Linq;
 using System.Text.Json;
-using Glimpse.Common.Freedesktop.DBus;
-using Glimpse.Common.Freedesktop.DBus.Interfaces;
+using Glimpse.Common.DBus;
 using Glimpse.Common.System.Reactive;
 using MentorLake.Redux;
 

@@ -1,10 +1,10 @@
 using System.Collections.Immutable;
-using Glimpse.Common.Freedesktop.DesktopEntries;
-using Glimpse.Common.Freedesktop.Xorg;
-using Glimpse.Common.Freedesktop.Xorg.State;
+using Glimpse.Common.DesktopEntries;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.Images;
 using Glimpse.Common.System.Collections;
+using Glimpse.Common.Xorg;
+using Glimpse.Common.Xorg.State;
 using MentorLake.Redux.Selectors;
 using static MentorLake.Redux.Selectors.SelectorFactory;
 
@@ -56,7 +56,7 @@ internal static class TaskbarViewModelSelectors
 			return new SlotReferences { Refs = result };
 		});
 
-	private static readonly ISelector<ImmutableList<(SlotRef Slot, Common.Freedesktop.DesktopEntries.DesktopFile DesktopFile)>> s_slotToDesktopFile = Create(
+	private static readonly ISelector<ImmutableList<(SlotRef Slot, Common.DesktopEntries.DesktopFile DesktopFile)>> s_slotToDesktopFile = Create(
 		CurrentSlots,
 		DesktopFileSelectors.DesktopFiles,
 		(slots, desktopFiles) =>

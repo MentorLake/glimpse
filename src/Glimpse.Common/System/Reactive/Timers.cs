@@ -1,4 +1,4 @@
-namespace Glimpse.UI;
+namespace Glimpse.Common.System.Reactive;
 
 public enum Timers
 {

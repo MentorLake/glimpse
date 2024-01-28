@@ -1,5 +1,5 @@
 using System.Collections.Immutable;
-using Glimpse.Common.Freedesktop.DBus;
+using Glimpse.Common.DBus;
 using Glimpse.Common.Gtk;
 
 namespace Glimpse.SystemTray.Components;

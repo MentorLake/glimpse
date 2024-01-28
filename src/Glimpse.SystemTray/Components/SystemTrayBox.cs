@@ -1,7 +1,8 @@
 using System.Reactive.Linq;
 using GLib;
-using Glimpse.Common.Freedesktop.DesktopEntries;
+using Glimpse.Common.DesktopEntries;
 using Glimpse.Common.Gtk;
+using Glimpse.Common.StatusNotifierWatcher;
 using Glimpse.Common.System.Reactive;
 using Gtk;
 using MentorLake.Redux;
@@ -11,7 +12,7 @@ namespace Glimpse.SystemTray.Components;
 
 public class SystemTrayBox : Box
 {
-	public SystemTrayBox(ReduxStore store) : base(Orientation.Horizontal, 0)
+	public SystemTrayBox(ReduxStore store, StatusNotifierWatcherService statusNotifierWatcherService) : base(Orientation.Horizontal, 0)
 	{
 		StyleContext.AddClass("system-tray__taskbar-container");
 
@@ -45,12 +46,12 @@ public class SystemTrayBox : Box
 
 				systemTrayIcon.MenuItemActivated.TakeUntilDestroyed(this).WithLatestFrom(itemObservable).Subscribe(t =>
 				{
-					store.Dispatch(new ActivateMenuItemAction() { DbusObjectDescription = t.Second.DbusMenuDescription, MenuItemId = t.First });
+					statusNotifierWatcherService.ActivateMenuItemAsync(t.Second.DbusMenuDescription, t.First);
 				});
 
 				systemTrayIcon.ApplicationActivated.TakeUntilDestroyed(this).WithLatestFrom(itemObservable).Subscribe(t =>
 				{
-					store.Dispatch(new ActivateApplicationAction() { DbusObjectDescription = t.Second.StatusNotifierItemDescription, X = t.First.Item1, Y = t.First.Item2 });
+					statusNotifierWatcherService.ActivateSystemTrayItemAsync(t.Second.StatusNotifierItemDescription, t.First.Item1, t.First.Item2);
 				});
 
 				itemObservable.TakeLast(1).Subscribe(_ => systemTrayIcon.Destroy());

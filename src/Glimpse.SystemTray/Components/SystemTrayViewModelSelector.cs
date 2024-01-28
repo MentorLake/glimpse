@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
-using Glimpse.Common.Freedesktop.DBus;
 using Glimpse.Common.Gtk;
+using Glimpse.Common.StatusNotifierWatcher;
 using MentorLake.Redux.Selectors;
 
 namespace Glimpse.SystemTray.Components;
@@ -8,7 +8,7 @@ namespace Glimpse.SystemTray.Components;
 public class SystemTrayViewModelSelector
 {
 	public static readonly ISelector<SystemTrayViewModel> ViewModel = SelectorFactory.Create(
-		SelectorFactory.CreateFeature<SystemTrayState>(),
+		StatusNotifierWatcherSelectors.StatusNotifierWatcherState,
 		state =>
 		{
 			return new SystemTrayViewModel()

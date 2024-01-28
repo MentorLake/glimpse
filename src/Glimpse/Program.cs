@@ -2,12 +2,14 @@
 using System.Reactive;
 using System.Reactive.Linq;
 using GLib;
+using Glimpse.Common.Accounts;
 using Glimpse.Common.Configuration;
-using Glimpse.Common.Freedesktop;
-using Glimpse.Common.Freedesktop.DBus;
-using Glimpse.Common.Freedesktop.DesktopEntries;
-using Glimpse.Common.Freedesktop.Xorg;
+using Glimpse.Common.DBus;
+using Glimpse.Common.DesktopEntries;
+using Glimpse.Common.StatusNotifierWatcher;
 using Glimpse.Common.System.Reactive;
+using Glimpse.Common.Xorg;
+using Glimpse.Common.XSessionManagement;
 using Glimpse.Notifications;
 using Glimpse.SidePane.Components.Calendar;
 using Glimpse.SidePane.Components.SidePane;
@@ -15,7 +17,6 @@ using Glimpse.StartMenu;
 using Glimpse.SystemTray;
 using Glimpse.Taskbar;
 using Glimpse.Taskbar.Components.Panel;
-using Glimpse.UI;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
@@ -67,7 +68,10 @@ public static class Program
 			builder.Services.AddSingleton<ReduxStore>();
 			builder.AddXorg();
 			builder.AddDesktopFiles();
-			builder.AddFreedesktop();
+			builder.AddDBus();
+			builder.AddStatusNotifier();
+			builder.AddXSessionManagement("org_glimpse");
+			builder.AddAccounts();
 			builder.AddGlimpseConfiguration();
 			builder.AddXorg();
 			builder.Services.AddHostedService<GlimpseGtkApplication>();
@@ -111,10 +115,13 @@ public static class Program
 				})
 				.ToArray());
 
+			await host.UseDBus();
 			await host.UseDesktopFiles();
 			await host.UseXorg();
 			await host.UseGlimpseConfiguration();
-			await host.UseFreedesktop(Installation.DefaultInstallPath);
+			await host.UseXSessionManagement(Installation.DefaultInstallPath);
+			await host.UseAccounts();
+			await host.UseStatusNotifier();
 			await host.UseTaskbar();
 			await host.UseSystemTray();
 			await host.UseStartMenu();

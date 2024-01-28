@@ -1,8 +1,8 @@
 using System.Reactive.Linq;
 using Gdk;
 using GLib;
-using Glimpse.Common.Freedesktop.Xorg.State;
 using Glimpse.Common.Gtk;
+using Glimpse.Common.Xorg.State;
 using Glimpse.Notifications.Components.NotificationHistory;
 using Glimpse.SidePane.Components.Calendar;
 using Gtk;

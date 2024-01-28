@@ -1,5 +1,5 @@
 using System.Collections.Immutable;
-using Glimpse.Common.Freedesktop.DesktopEntries;
+using Glimpse.Common.DesktopEntries;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.System;
 using Glimpse.Notifications;

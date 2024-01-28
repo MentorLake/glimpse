@@ -1,5 +1,5 @@
 using System.Reactive.Linq;
-using Glimpse.Common.Freedesktop.DesktopEntries;
+using Glimpse.Common.DesktopEntries;
 using Gtk;
 
 namespace Glimpse.Common.Gtk;

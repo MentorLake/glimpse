@@ -1,6 +1,6 @@
 ﻿using System.Reactive.Subjects;
-using Glimpse.Common.Freedesktop.DBus;
-using Glimpse.Common.Freedesktop.DBus.Core;
+using Glimpse.Common.DBus;
+using Glimpse.Common.DBus.Core;
 using Glimpse.Common.Images;
 using MentorLake.Redux;
 using Tmds.DBus.Protocol;

@@ -1,9 +1,9 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Gdk;
-using Glimpse.Common.Freedesktop.Xorg;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.System.Reactive;
+using Glimpse.Common.Xorg;
 using Glimpse.Taskbar.Components.ApplicationIcons;
 using Gtk;
 using Pango;
