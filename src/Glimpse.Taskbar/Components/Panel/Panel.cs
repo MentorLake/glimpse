@@ -1,9 +1,11 @@
+using System.Collections.Immutable;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using Gdk;
 using GLib;
 using Glimpse.Common.DesktopEntries;
 using Glimpse.Common.Gtk;
+using Glimpse.Common.Gtk.ContextMenu;
 using Glimpse.Common.System.Reactive;
 using Glimpse.SidePane.Components.SidePane;
 using Glimpse.SystemTray.Components;
@@ -13,7 +15,6 @@ using MentorLake.Redux;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveMarbles.ObservableEvents;
 using DateTime = System.DateTime;
-using Menu = Gtk.Menu;
 using Monitor = Gdk.Monitor;
 using Window = Gtk.Window;
 using WindowType = Gtk.WindowType;
@@ -25,7 +26,7 @@ public class Panel : Window
 	private readonly Monitor _monitor;
 	private readonly IObservable<DateTime> _oneSecondTimer;
 	private readonly SidePaneWindow _sidePaneWindow;
-	private readonly Menu _menu;
+	private readonly ContextMenu<ContextMenuItemViewModel> _menu;
 	private const string ClockFormat = "h:mm tt\nM/d/yyyy";
 
 	public Panel(
@@ -86,15 +87,16 @@ public class Panel : Window
 			.TakeUntilDestroyed(this)
 			.ObserveOn(new SynchronizationContextScheduler(new GLibSynchronizationContext(), false));
 
-		var taskManagerMenuItem = ContextMenuHelper.CreateMenuItem("Task Manager", new ImageViewModel() { IconNameOrPath = "utilities-system-monitor" });
-		taskManagerMenuItem.ObserveButtonRelease().WithLatestFrom(taskManagerObs).Subscribe(t => DesktopFileRunner.Run(t.Second));
+		var contextMenuViewModel = Observable
+			.Return(ImmutableList<ContextMenuItemViewModel>.Empty
+				.Add(new ContextMenuItemViewModel()
+				{
+					DisplayText = "Task Manager",
+					Icon = new ImageViewModel() { IconNameOrPath = "utilities-system-monitor" }
+				}));
 
-		_menu = new Menu();
-		_menu.ReserveToggleSize = false;
-		_menu.Add(taskManagerMenuItem);
-		_menu.ShowAll();
-
-		this.CreateContextMenuObservable().Subscribe(t => _menu.Popup());
+		_menu = ContextMenuFactory.Create(this, contextMenuViewModel);
+		_menu.ItemActivated.WithLatestFrom(taskManagerObs).Subscribe(t => DesktopFileRunner.Run(t.Second));
 	}
 
 	protected override void OnDestroyed()

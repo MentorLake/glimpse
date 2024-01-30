@@ -113,26 +113,61 @@ internal static class TaskbarViewModelSelectors
 		},
 		(x, y) => CollectionComparer.Sequence(x, y, (i, j) => i.Slot == j.Slot && i.CanClose == j.CanClose));
 
-	private static readonly ISelector<ImmutableList<(SlotRef Slot, TaskbarGroupContextMenuViewModel ViewModel)>> s_contextMenu = Create(
+	private static readonly ISelector<ImmutableList<(SlotRef Slot, ImmutableList<SlotContextMenuItemViewModel> ViewModel)>> s_contextMenu = Create(
 		CurrentSlots,
 		s_slotToCanClose,
 		s_slotToDesktopFile,
-		s_slotToIcon,
-		(slots, canClose, desktopFiles, icons) =>
+		(slots, canClose, desktopFiles) =>
 		{
 			return slots.Refs.Select(slot =>
 			{
 				var desktopFile = desktopFiles.First(f => f.Slot == slot).DesktopFile;
-				var icon = icons.First(s => s.Slot == slot).Icon;
+				var isPinned = !string.IsNullOrEmpty(slot.PinnedDesktopFileId);
+				var closeable = canClose.First(w => w.Slot == slot).CanClose;
 
-				return (slot, new TaskbarGroupContextMenuViewModel
+				var contextMenuItems = new List<SlotContextMenuItemViewModel>();
+
+				if (desktopFile.Actions.Any())
 				{
-					IsPinned = !string.IsNullOrEmpty(slot.PinnedDesktopFileId),
-					DesktopFile = desktopFile,
-					LaunchIcon = icon,
-					CanClose = canClose.First(w => w.Slot == slot).CanClose,
-					ActionIcons = desktopFile.Actions.ToDictionary(a => a.ActionName, a => icon)
+					contextMenuItems.Add(new SlotContextMenuItemViewModel() { DisplayText = "Tasks", Id = "header", });
+					contextMenuItems.AddRange(desktopFile.Actions.Select(a => new SlotContextMenuItemViewModel()
+					{
+						Id = a.DesktopFilePath,
+						DisplayText = a.ActionName,
+						Icon = new ImageViewModel() { IconNameOrPath = desktopFile.IconName },
+						DesktopAction = a
+					}));
+					contextMenuItems.Add(new SlotContextMenuItemViewModel() { DisplayText = "separator" });
+				}
+
+				contextMenuItems.Add(new SlotContextMenuItemViewModel()
+				{
+					Id = "Launch",
+					DisplayText = desktopFile.Name,
+					Icon = new ImageViewModel() { IconNameOrPath = desktopFile.IconName },
+					DesktopFilePath = desktopFile.FilePath
 				});
+
+				contextMenuItems.Add(new SlotContextMenuItemViewModel()
+				{
+					Id = "Pin",
+					DisplayText = isPinned ? "Unpin from taskbar" : "Pin to taskbar",
+					Icon = new ImageViewModel() { IconNameOrPath = isPinned ? "list-remove-symbolic" : "list-add-symbolic" },
+					DesktopFilePath = desktopFile.FilePath
+				});
+
+				if (closeable)
+				{
+					contextMenuItems.Add(new SlotContextMenuItemViewModel()
+					{
+						Id = "Close",
+						DisplayText = "Close Window",
+						Icon = new ImageViewModel() { IconNameOrPath = "window-close-symbolic" },
+						DesktopFilePath = desktopFile.FilePath
+					});
+				}
+
+				return (slot, contextMenuItems.ToImmutableList());
 			}).ToImmutableList();
 		},
 		(x, y) => CollectionComparer.Sequence(x, y));
@@ -208,7 +243,7 @@ internal static class TaskbarViewModelSelectors
 						Icon = slotsToIcon.First(s => s.Slot == slot).Icon,
 						Tasks = windowViewModelsForSlot,
 						DemandsAttention = windowViewModelsForSlot.Any(w => w.DemandsAttention),
-						ContextMenu = contextMenuViewModels.First(vm => vm.Slot == slot).ViewModel
+						ContextMenuItems = contextMenuViewModels.First(vm => vm.Slot == slot).ViewModel
 					};
 				})
 				.ToImmutableList()

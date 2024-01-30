@@ -97,7 +97,7 @@ internal class TaskbarWindowPicker : Window
 			.AddButtonStates();
 
 		taskObservable.Select(t => t.Title).DistinctUntilChanged().Subscribe(t => appName.Text = t);
-		appIcon.BindViewModel(taskObservable.Select(t => t.Icon).DistinctUntilChanged(), ThemeConstants.MenuItemIconSize);
+		appIcon.BindViewModel(taskObservable.Select(t => t.Icon).DistinctUntilChanged(), 18);
 		closeIconBox.ObserveButtonRelease().WithLatestFrom(taskObservable).Subscribe(t => _closeWindow.OnNext(t.Second.WindowRef));
 		screenshotImage.BindViewModel(taskObservable.Select(s => s.Screenshot).DistinctUntilChanged(), 200, 100);
 		appPreview.ObserveButtonRelease().WithLatestFrom(taskObservable).Subscribe(t => _previewWindowClicked.OnNext(t.Second.WindowRef));

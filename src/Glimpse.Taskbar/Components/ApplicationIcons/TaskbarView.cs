@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 using GLib;
 using Glimpse.Common.DesktopEntries;
 using Glimpse.Common.Gtk;
+using Glimpse.Common.Gtk.ContextMenu;
 using Glimpse.Common.Gtk.ForEach;
 using Glimpse.Common.Xorg;
 using Glimpse.Common.Xorg.State;
@@ -22,14 +23,15 @@ public class TaskbarView : Box
 			.Select(TaskbarViewModelSelectors.ViewModel)
 			.TakeUntilDestroyed(this)
 			.ObserveOn(new GLibSynchronizationContext())
-			.Replay(1);
+			.Replay(1)
+			.AutoConnect();
 
 		var forEachGroup = ForEachExtensions.Create(viewModelSelector.Select(g => g.Groups).DistinctUntilChanged(), i => i.SlotRef, viewModelObservable =>
 		{
 			var replayLatestViewModelObservable = viewModelObservable.Replay(1);
-			var contextMenu = new TaskbarGroupContextMenu(viewModelObservable.Select(vm => vm.ContextMenu).DistinctUntilChanged());
 			var windowPicker = new TaskbarWindowPicker(viewModelObservable);
 			var groupIcon = new TaskbarGroupIcon(viewModelObservable, windowPicker);
+			var contextMenu = ContextMenuFactory.Create(groupIcon, viewModelObservable.Select(vm => vm.ContextMenuItems));
 
 			viewModelObservable.TakeLast(1).Subscribe(_ =>
 			{
@@ -83,9 +85,6 @@ public class TaskbarView : Box
 				.Where(_ => !windowPicker.IsPointerInside())
 				.Subscribe(_ => windowPicker.ClosePopup());
 
-			groupIcon.CreateContextMenuObservable()
-				.Subscribe(_ => contextMenu.Popup());
-
 			groupIcon.ObserveEvent(w => w.Events().ButtonPressEvent)
 				.Subscribe(_ => windowPicker.ClosePopup());
 
@@ -100,27 +99,31 @@ public class TaskbarView : Box
 				.Subscribe(t => displayServer.ToggleWindowVisibility(t.Second.Tasks.First().WindowRef));
 
 			 groupIcon.ObserveButtonRelease()
-			 	.WithLatestFrom(viewModelObservable)
-			 	.Where(t => t.First.Event.Button == 1 && t.Second.Tasks.Count > 1 && !windowPicker.Visible)
-			 	.Subscribe(t =>
-			 	{
-			 		store.Dispatch(new TakeScreenshotAction() { Windows = t.Second.Tasks.Select(x => x.WindowRef).ToList() });
-			 		windowPicker.Popup();
-			 	});
+				.WithLatestFrom(viewModelObservable)
+				.Where(t => t.First.Event.Button == 1 && t.Second.Tasks.Count > 1 && !windowPicker.Visible)
+				.Subscribe(t =>
+				{
+					store.Dispatch(new TakeScreenshotAction() { Windows = t.Second.Tasks.Select(x => x.WindowRef).ToList() });
+					windowPicker.Popup();
+				});
 
-			 contextMenu.WindowAction
-			 	.WithLatestFrom(viewModelObservable)
-			 	.Subscribe(t => t.Second.Tasks.ForEach(task => displayServer.CloseWindow(task.WindowRef)));
+			 contextMenu.ItemActivated
+				.Where(i => i.Id == "Close")
+				.WithLatestFrom(viewModelObservable)
+				.Subscribe(t => t.Second.Tasks.ForEach(task => displayServer.CloseWindow(task.WindowRef)));
 
-			 contextMenu.DesktopFileAction
-			 	.WithLatestFrom(viewModelObservable)
-			 	.Subscribe(t => DesktopFileRunner.Run(t.First));
+			 contextMenu.ItemActivated
+				.Where(i => i.DesktopAction != null)
+				.WithLatestFrom(viewModelObservable)
+				.Subscribe(t => DesktopFileRunner.Run(t.First.DesktopAction));
 
-			 contextMenu.Pin
+			 contextMenu.ItemActivated
+				.Where(i => i.Id == "Pin")
 				.WithLatestFrom(viewModelObservable)
 				.Subscribe(t => store.Dispatch(new ToggleTaskbarPinningAction(t.Second.DesktopFile.Id)));
 
-			 contextMenu.Launch
+			 contextMenu.ItemActivated
+				.Where(i => i.Id == "Launch")
 			 	.WithLatestFrom(viewModelObservable)
 			 	.Subscribe(t => DesktopFileRunner.Run(t.Second.DesktopFile));
 
@@ -145,7 +148,5 @@ public class TaskbarView : Box
 		forEachGroup.DragBeginObservable.TakeUntilDestroyed(this).Subscribe(icon => icon.CloseWindowPicker());
 
 		Add(forEachGroup);
-
-		viewModelSelector.Connect();
 	}
 }

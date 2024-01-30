@@ -1,4 +1,3 @@
-
 .header-menu-item {
 	background-color: transparent;
 	margin-left: 6px;
@@ -16,6 +15,11 @@ scrollbar {
 
 menuitem + menuitem, separator + menuitem, separator {
 	margin-top: 6px;
+}
+
+menuitem {
+	margin-left: 4px;
+	margin-right: 4px;
 }
 
 menuitem label {

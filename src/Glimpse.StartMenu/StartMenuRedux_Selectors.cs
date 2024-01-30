@@ -68,7 +68,33 @@ internal class StartMenuSelectors
 					appViewModel.IsVisible = isVisible;
 					appViewModel.Index = (isShowingSearchResults || isShowingAllApps) && isVisible ? index++ : pinnedIndex;
 					appViewModel.ActionIcons = f.Actions.ToDictionary(a => a.ActionName, a => new ImageViewModel() { IconNameOrPath = f.IconName });
-
+					appViewModel.ContextMenuItems = f.Actions
+						.Select(a => new StartMenuAppContextMenuItem()
+						{
+							Id = a.DesktopFilePath,
+							DisplayText = a.ActionName,
+							Icon = new ImageViewModel() { IconNameOrPath = f.IconName },
+							DesktopAction = a
+						})
+						.Concat(new[]
+						{
+							new StartMenuAppContextMenuItem() { DisplayText = "separator" },
+							new StartMenuAppContextMenuItem()
+							{
+								Id = StartMenuAppContextMenuItem.ToggleStartMenuAppId,
+								DisplayText = appViewModel.IsPinnedToStartMenu ? "Unpin from Start" : "Pin to Start",
+								Icon = new ImageViewModel() { IconNameOrPath = appViewModel.IsPinnedToStartMenu ? "list-remove-symbolic" : "list-add-symbolic" },
+								DesktopFilePath = appViewModel.DesktopFile.FilePath
+							},
+							new StartMenuAppContextMenuItem()
+							{
+								Id = StartMenuAppContextMenuItem.ToggleTaskbarAppId,
+								DisplayText = appViewModel.IsPinnedToTaskbar ? "Unpin from taskbar" : "Pin to taskbar",
+								Icon = new ImageViewModel() { IconNameOrPath = appViewModel.IsPinnedToTaskbar ? "list-remove-symbolic" : "list-add-symbolic" },
+								DesktopFilePath = appViewModel.DesktopFile.FilePath
+							}
+						})
+						.ToImmutableList();
 					results.AddLast(appViewModel);
 				}
 

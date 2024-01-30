@@ -15,7 +15,6 @@ namespace Glimpse.StartMenu.Components;
 
 internal class StartMenuContent : Bin
 {
-	private readonly Menu _contextMenu;
 	private readonly Entry _hiddenEntry;
 	private readonly Subject<DesktopFileAction> _runActionSubject = new();
 	private readonly Subject<DesktopFile> _appLaunch = new();
@@ -40,8 +39,6 @@ internal class StartMenuContent : Bin
 
 	public StartMenuContent(IObservable<StartMenuViewModel> viewModelObservable, StartMenuActionBar actionBar)
 	{
-		_contextMenu = new Menu() { ReserveToggleSize = false };
-
 		_hiddenEntry = new Entry();
 		_hiddenEntry.IsEditable = false;
 
@@ -79,10 +76,23 @@ internal class StartMenuContent : Bin
 		_apps = ForEachExtensions.Create(viewModelObservable.Select(vm => vm.AllApps).DistinctUntilChanged(), i => i.DesktopFile.FilePath, appObs =>
 		{
 			var appIcon = new StartMenuAppIcon(appObs);
-
-			appIcon.ContextMenuRequested
-				.WithLatestFrom(viewModelObservable)
-				.Subscribe(t => OpenDesktopFileContextMenu(t.First, t.Second));
+			appIcon.ContextMenuItemActivated
+				.TakeUntilDestroyed(appIcon)
+				.Subscribe(i =>
+				{
+					if (i.Id == StartMenuAppContextMenuItem.ToggleTaskbarAppId)
+					{
+						_toggleTaskbarPinningSubject.OnNext(i.DesktopFilePath);
+					}
+					else if (i.Id == StartMenuAppContextMenuItem.ToggleStartMenuAppId)
+					{
+						_toggleStartMenuPinningSubject.OnNext(i.DesktopFilePath);
+					}
+					else
+					{
+						_runActionSubject.OnNext(i.DesktopAction);
+					}
+				});
 
 			return appIcon;
 		});
@@ -130,39 +140,6 @@ internal class StartMenuContent : Bin
 		Add(layout);
 		ShowAll();
 		_hiddenEntry.Hide();
-	}
-
-	private void OpenDesktopFileContextMenu(StartMenuAppViewModel appViewModel, StartMenuViewModel startMenuViewModel)
-	{
-		var menuItems = ContextMenuHelper.CreateDesktopFileActions(appViewModel.DesktopFile);
-
-		menuItems.ForEach(m =>
-		{
-			var action = (DesktopFileAction)m.Data["DesktopFileAction"];
-			m.ObserveButtonRelease().Subscribe(_ => _runActionSubject.OnNext(action));
-		});
-
-		var isPinnedToStart = startMenuViewModel.AllApps.Any(f => f.IsPinnedToStartMenu && f.DesktopFile == appViewModel.DesktopFile);
-		var isPinnedToTaskbar = startMenuViewModel.AllApps.Any(f => f.IsPinnedToTaskbar && f.DesktopFile == appViewModel.DesktopFile);
-		var pinStartIcon = isPinnedToStart ? "list-remove-symbolic" : "list-add-symbolic";
-		var pinTaskbarIcon = isPinnedToTaskbar ? "list-remove-symbolic" : "list-add-symbolic";
-		var pinStart = ContextMenuHelper.CreateMenuItem(isPinnedToStart ? "Unpin from Start" : "Pin to Start", new ImageViewModel() { IconNameOrPath = pinStartIcon });
-		pinStart.ObserveButtonRelease().Subscribe(_ => _toggleStartMenuPinningSubject.OnNext(appViewModel.DesktopFile.Id));
-		var pinTaskbar = ContextMenuHelper.CreateMenuItem(isPinnedToTaskbar ? "Unpin from taskbar" : "Pin to taskbar", new ImageViewModel() { IconNameOrPath = pinTaskbarIcon });
-		pinTaskbar.ObserveButtonRelease().Subscribe(_ => _toggleTaskbarPinningSubject.OnNext(appViewModel.DesktopFile.Id));
-
-		_contextMenu.RemoveAllChildren();
-
-		if (menuItems.Any())
-		{
-			menuItems.ForEach(_contextMenu.Add);
-			_contextMenu.Add(new SeparatorMenuItem());
-		}
-
-		_contextMenu.Add(pinStart);
-		_contextMenu.Add(pinTaskbar);
-		_contextMenu.ShowAll();
-		_contextMenu.Popup();
 	}
 
 	public void HandleWindowShown()

@@ -1,24 +1,19 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Glimpse.Common.Gtk;
+using Glimpse.Common.Gtk.ContextMenu;
 using Gtk;
-using Menu = Gtk.Menu;
 
 namespace Glimpse.SystemTray.Components;
 
 public class SystemTrayIcon : Button
 {
-	private readonly Menu _contextMenu;
 	private readonly Subject<int> _menuItemActivatedSubject = new();
 	private readonly Subject<(int, int)> _applicationActivated = new();
 
 	public SystemTrayIcon(IObservable<SystemTrayItemViewModel> viewModelObservable)
 	{
-		_contextMenu = new Menu();
-
-		this.CreateContextMenuObservable()
-			.Where(_ => _contextMenu.Children.Any())
-			.Subscribe(_ => _contextMenu.Popup());
+		var contextMenu = ContextMenuFactory.Create(this, viewModelObservable.Select(s => s.ContextMenuItems));
 
 		Valign = Align.Center;
 		StyleContext.AddClass("system-tray__icon");
@@ -34,12 +29,9 @@ public class SystemTrayIcon : Button
 			HasTooltip = !string.IsNullOrEmpty(TooltipText);
 		});
 
-		viewModelObservable.TakeUntilDestroyed(this).Select(s => s.RootMenuItem).DistinctUntilChanged().Subscribe(menuState =>
+		contextMenu.ItemActivated.Subscribe(i =>
 		{
-			_contextMenu.RemoveAllChildren();
-			DbusContextMenuHelpers.PopulateMenu(_contextMenu, menuState);
-			var allMenuItems = DbusContextMenuHelpers.GetAllMenuItems(_contextMenu);
-			foreach (var i in allMenuItems) i.Activated += (_, _) => _menuItemActivatedSubject.OnNext(i.GetDbusMenuItem().Id);
+			_menuItemActivatedSubject.OnNext(i.DBusId);
 		});
 
 		this.ObserveButtonRelease()
@@ -51,7 +43,7 @@ public class SystemTrayIcon : Button
 		this.ObserveButtonRelease()
 			.WithLatestFrom(viewModelObservable)
 			.Where(t => !t.Second.CanActivate && t.First.Event.Button == 1)
-			.Subscribe(_ => _contextMenu.Popup());
+			.Subscribe(_ => contextMenu.Popup());
 
 		ShowAll();
 	}
@@ -65,6 +57,5 @@ public class SystemTrayIcon : Button
 
 		_menuItemActivatedSubject.OnCompleted();
 		_applicationActivated.OnCompleted();
-		_contextMenu.Destroy();
 	}
 }

@@ -34,7 +34,8 @@ internal class TaskbarGroupIcon : EventBox, IForEachDraggable
 			.CombineLatest(this.ObserveEvent(w => w.Events().SizeAllocated).DistinctUntilChanged(a => a.Allocation.Width))
 			.Select(t => t.First)
 			.TakeUntil(viewModel.TakeLast(1))
-			.Replay(1);
+			.Replay(1)
+			.AutoConnect();
 
 		var image = new Image();
 		Add(image);
@@ -46,8 +47,6 @@ internal class TaskbarGroupIcon : EventBox, IForEachDraggable
 		this.AppIcon(image, iconObservable, 26);
 		this.ObserveEvent(w => w.Events().ButtonReleaseEvent).Subscribe(e => e.RetVal = true);
 		IconWhileDragging = iconObservable.Select(i => i with { Image = (IGlimpseImage) image.Data["Big"] });
-
-		iconObservable.Connect();
 	}
 
 	public void CloseWindowPicker()

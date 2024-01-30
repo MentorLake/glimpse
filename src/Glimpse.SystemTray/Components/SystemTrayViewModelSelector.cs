@@ -1,5 +1,7 @@
 using System.Collections.Immutable;
+using Glimpse.Common.DBus;
 using Glimpse.Common.Gtk;
+using Glimpse.Common.Images;
 using Glimpse.Common.StatusNotifierWatcher;
 using MentorLake.Redux.Selectors;
 
@@ -7,6 +9,24 @@ namespace Glimpse.SystemTray.Components;
 
 public class SystemTrayViewModelSelector
 {
+	private static SystemTrayContextMenuItemViewModel CreateContextMenuItemViewModel(DbusMenuItem dbusMenuItem)
+	{
+		if (dbusMenuItem.Type == "separator")
+		{
+			return new SystemTrayContextMenuItemViewModel() { DisplayText = "separator" };
+		}
+
+		var image = dbusMenuItem.IconData == null ? null : GlimpseImageFactory.From(dbusMenuItem.IconData);
+
+		return new SystemTrayContextMenuItemViewModel()
+		{
+			DBusId = dbusMenuItem.Id,
+			DisplayText = dbusMenuItem.Label,
+			Icon = new ImageViewModel() { IconNameOrPath = dbusMenuItem.IconName ?? "", Image = image },
+			Children = dbusMenuItem.Children.Select(CreateContextMenuItemViewModel).ToImmutableList()
+		};
+	}
+
 	public static readonly ISelector<SystemTrayViewModel> ViewModel = SelectorFactory.Create(
 		StatusNotifierWatcherSelectors.StatusNotifierWatcherState,
 		state =>
@@ -34,7 +54,7 @@ public class SystemTrayViewModelSelector
 						CanActivate = x.StatusNotifierItemDescription.InterfaceHasMethod(OrgKdeStatusNotifierItem.Interface, "Activate"),
 						StatusNotifierItemDescription = x.StatusNotifierItemDescription,
 						DbusMenuDescription = x.DbusMenuDescription,
-						RootMenuItem = x.RootMenuItem
+						ContextMenuItems = x.RootMenuItem.Children.Select(CreateContextMenuItemViewModel).ToImmutableList()
 					};
 				}).ToImmutableList()
 			};

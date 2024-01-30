@@ -40,15 +40,15 @@ public static class GtkExtensions
 		return widget.ContainsPoint(px, py);
 	}
 
-	public static Image BindViewModel(this Image image, IObservable<ImageViewModel> imageViewModel, int size)
+	public static Image BindViewModel(this Image image, IObservable<ImageViewModel> imageViewModel, int size, bool useMissingImage = true)
 	{
-		image.BindViewModel(imageViewModel, size, size);
+		image.BindViewModel(imageViewModel, size, size, useMissingImage);
 		return image;
 	}
 
 	public static readonly string MissingIconName = Guid.NewGuid().ToString();
 
-	public static void BindViewModel(this Image image, IObservable<ImageViewModel> imageViewModel, int width, int height)
+	public static void BindViewModel(this Image image, IObservable<ImageViewModel> imageViewModel, int width, int height, bool useMissingImage = true)
 	{
 		imageViewModel.Subscribe(vm =>
 		{
@@ -62,7 +62,7 @@ public static class GtkExtensions
 			}
 			else
 			{
-				image.SetFromIconName(string.IsNullOrEmpty(vm.IconNameOrPath) ? MissingIconName : vm.IconNameOrPath, IconSize.LargeToolbar);
+				image.SetFromIconName(string.IsNullOrEmpty(vm.IconNameOrPath) ? (useMissingImage ? MissingIconName : "") : vm.IconNameOrPath, IconSize.LargeToolbar);
 				image.PixelSize = width;
 			}
 		});
@@ -167,19 +167,6 @@ public static class GtkExtensions
 	public static IObservable<T> ObserveEvent<TWidget, T>(this TWidget widget, Func<TWidget, IObservable<T>> f) where TWidget : Widget
 	{
 		return f(widget).TakeUntilDestroyed(widget);
-	}
-
-	public static IObservable<bool> CreateContextMenuObservable(this Widget widget)
-	{
-		var buttonPressObs = widget.ObserveEvent(w => w.Events().ButtonReleaseEvent)
-			.Where(e => e.Event.Button == 3 && e.Event.Type == EventType.ButtonRelease)
-			.Do(e => e.RetVal = true)
-			.Select(_ => true);
-
-		var popupMenuObs = widget.ObserveEvent(w => w.Events().PopupMenu)
-			.Select(_ => true);
-
-		return buttonPressObs.Merge(popupMenuObs);
 	}
 
 	public static T AddClass<T>(this T widget, params string[] classes) where T : Widget

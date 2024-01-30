@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+using Glimpse.Common.Gtk;
 using MentorLake.Redux.Selectors;
 
 namespace Glimpse.Taskbar.Components.StartMenuIcon;
@@ -9,7 +11,15 @@ internal static class StartMenuIconViewModelSelectors
 		TaskbarSelectors.s_startMenuLaunchIconName,
 		(contextMenuItems, startMenuLaunchIconName) => new StartMenuIconViewModel()
 		{
-			ContextMenuItems = contextMenuItems,
+			ContextMenuItems = contextMenuItems
+				.Select(i => new StartMenuIconContextMenuItem()
+				{
+					DisplayText = i.DisplayText,
+					Icon = new ImageViewModel() { IconNameOrPath = i.Icon },
+					Executable = i.Executable,
+					Arguments = i.Arguments
+				})
+				.ToImmutableList(),
 			StartMenuLaunchIconName = startMenuLaunchIconName
 		});
 }

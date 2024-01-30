@@ -1,5 +1,6 @@
 using System.Reactive.Linq;
 using Glimpse.Common.Gtk;
+using Glimpse.Common.Gtk.ContextMenu;
 using Glimpse.Common.Gtk.ForEach;
 using Gtk;
 using Pango;
@@ -12,6 +13,7 @@ internal class StartMenuAppIcon : EventBox, IForEachDraggable
 	public StartMenuAppIcon(IObservable<StartMenuAppViewModel> viewModelObservable)
 	{
 		CanFocus = false;
+		IconWhileDragging = viewModelObservable.Select(vm => vm.Icon).DistinctUntilChanged().Replay(1).AutoConnect();
 
 		this.AddClass("start-menu__app-icon-container");
 
@@ -23,7 +25,6 @@ internal class StartMenuAppIcon : EventBox, IForEachDraggable
 		name.MaxWidthChars = 1;
 		name.Justify = Justification.Center;
 
-		var iconObservable = viewModelObservable.Select(vm => vm.Icon).DistinctUntilChanged().Replay(1);
 		var image = new Image();
 		image.SetSizeRequest(36, 36);
 
@@ -34,20 +35,15 @@ internal class StartMenuAppIcon : EventBox, IForEachDraggable
 
 		Add(appIconContainer);
 
-		ContextMenuRequested = this.CreateContextMenuObservable()
-			.TakeUntilDestroyed(this)
-			.WithLatestFrom(viewModelObservable)
-			.Select(t => t.Second);
-
 		viewModelObservable
 			.TakeUntilDestroyed(this)
 			.Subscribe(f => name.Text = f.DesktopFile.Name);
 
-		this.AppIcon(image, iconObservable, 36);
-		iconObservable.Connect();
-		IconWhileDragging = iconObservable;
+		this.AppIcon(image, IconWhileDragging, 36);
+		var contextMenu = ContextMenuFactory.Create(this, viewModelObservable.Select(s => s.ContextMenuItems));
+		ContextMenuItemActivated = contextMenu.ItemActivated;
 	}
 
-	public IObservable<StartMenuAppViewModel> ContextMenuRequested { get; }
+	public IObservable<StartMenuAppContextMenuItem> ContextMenuItemActivated { get; }
 	public IObservable<ImageViewModel> IconWhileDragging { get; }
 }

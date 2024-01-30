@@ -3,12 +3,11 @@ using System.Reactive.Linq;
 using GLib;
 using Glimpse.Common.DesktopEntries;
 using Glimpse.Common.Gtk;
+using Glimpse.Common.Gtk.ContextMenu;
 using Glimpse.StartMenu.Components;
 using Gtk;
 using MentorLake.Redux;
 using ReactiveMarbles.ObservableEvents;
-using Menu = Gtk.Menu;
-using MenuItem = Gtk.MenuItem;
 
 namespace Glimpse.Taskbar.Components.StartMenuIcon;
 
@@ -55,32 +54,7 @@ public class StartMenuIcon : EventBox
 			e.RetVal = true;
 		});
 
-		var launchIconMenu = new Menu();
-
-		viewModelObservable
-			.Select(s => s.ContextMenuItems)
-			.DistinctUntilChanged()
-			.Subscribe(menuItems =>
-			{
-				launchIconMenu.RemoveAllChildren();
-
-				foreach (var i in menuItems)
-				{
-					if (i.DisplayText.Equals("separator", StringComparison.OrdinalIgnoreCase))
-					{
-						launchIconMenu.Add(new SeparatorMenuItem());
-					}
-					else
-					{
-						var menuItem = ContextMenuHelper.CreateMenuItem(i.DisplayText, new ImageViewModel() { IconNameOrPath = i.Icon });
-						menuItem.ObserveEvent(w => w.Events().Activated).Subscribe(_ => DesktopFileRunner.Run(i.Executable + " " + i.Arguments));
-						launchIconMenu.Add(menuItem);
-					}
-				}
-
-				launchIconMenu.ShowAll();
-			});
-
-		this.CreateContextMenuObservable().Subscribe(_ => launchIconMenu.Popup());
+		var contextMenu = ContextMenuFactory.Create(this, viewModelObservable.Select(i => i.ContextMenuItems));
+		contextMenu.ItemActivated.Subscribe(i => DesktopFileRunner.Run(i.Executable + " " + i.Arguments));
 	}
 }
