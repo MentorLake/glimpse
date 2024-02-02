@@ -100,7 +100,7 @@ public class NotificationsService(
 
 	public void ClearHistory()
 	{
-		store.Dispatch(new ClearNotificationHistory());
+		store.Dispatch(new ClearNotificationHistoryAction());
 	}
 
 	public void RemoveHistoryForApplication(string appName)

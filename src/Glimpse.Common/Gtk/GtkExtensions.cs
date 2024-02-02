@@ -1,3 +1,4 @@
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Cairo;
 using Gdk;
@@ -44,6 +45,30 @@ public static class GtkExtensions
 	{
 		image.BindViewModel(imageViewModel, size, size, useMissingImage);
 		return image;
+	}
+
+	public static Switch BindViewModel(this Switch sw, IObservable<bool> viewModelObs)
+	{
+		viewModelObs.TakeUntilDestroyed(sw).Subscribe(val => sw.State = val);
+		return sw;
+	}
+
+	public static TWidget Signal<TWidget>(this TWidget widget, string name, Action<TWidget, EventArgs> handler)
+		where TWidget : Widget
+	{
+
+		widget.AddSignalHandler<EventArgs>(name).Subscribe(e => handler(widget, e));
+		return widget;
+	}
+
+	private static IObservable<T> AddSignalHandler<T>(this Widget widget, string name) where T : EventArgs
+	{
+		return Observable.Create((IObserver<T> obs) =>
+		{
+			widget.AddSignalHandler(name, (object sender, T eventArgs) => obs.OnNext(eventArgs));
+			widget.Events().Destroyed.Take(1).Subscribe(_ => obs.OnCompleted());
+			return Disposable.Create(obs.OnCompleted);
+		});
 	}
 
 	public static readonly string MissingIconName = Guid.NewGuid().ToString();

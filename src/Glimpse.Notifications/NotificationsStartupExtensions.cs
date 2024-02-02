@@ -1,8 +1,9 @@
 using Glimpse.Common.Configuration;
-using Glimpse.Common.Microsoft.Extensions;
 using Glimpse.Notifications.Components.NotificationHistory;
 using Glimpse.Notifications.Components.NotificationsConfig;
 using MentorLake.Redux;
+using MentorLake.Redux.Effects;
+using MentorLake.Redux.Reducers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -25,11 +26,12 @@ public static class NotificationsStartupExtensions
 
 	public static void AddNotifications(this IHostApplicationBuilder builder)
 	{
-		builder.Services.AddInstance(NotificationsReducers.AllReducers);
 		builder.Services.AddSingleton<OrgFreedesktopNotifications>();
 		builder.Services.AddSingleton<NotificationsService>();
 		builder.Services.AddSingleton<NotificationHistoryWindow>();
 		builder.Services.AddSingleton<NotificationsConfigWidget>();
 		builder.Services.AddSingleton<NotificationsConfigWindow>();
+		builder.Services.AddTransient<IEffectsFactory, NotificationsEffects>();
+		builder.Services.AddTransient<IReducerFactory, NotificationsReducers>();
 	}
 }

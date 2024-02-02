@@ -7,7 +7,7 @@ namespace Glimpse.Notifications;
 public record NotificationsConfiguration
 {
 	public ImmutableList<NotificationApplicationConfig> Applications { get; set; } = ImmutableList<NotificationApplicationConfig>.Empty;
-	public static string ConfigKey { get; set; } = "Notifications";
+	public static string ConfigKey => "Notifications";
 
 	public static readonly NotificationsConfiguration Empty = new();
 
@@ -25,6 +25,6 @@ public record NotificationsConfiguration
 public record NotificationApplicationConfig
 {
 	public string Name { get; set; }
-	public bool ShowPopupBubbles { get; set; }
-	public bool ShowInHistory { get; set; }
+	public bool ShowPopupBubbles { get; set; } = true;
+	public bool ShowInHistory { get; set; } = true;
 }
