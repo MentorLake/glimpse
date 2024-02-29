@@ -37,6 +37,8 @@ public static class Program
 			Installation.RunScript(Installation.InstallScriptResourceName);
 
 			var builder = Host.CreateApplicationBuilder(Array.Empty<string>());
+			builder.AddDBus();
+			builder.AddXSessionManagement("org_glimpse");
 			var host = builder.Build();
 
 			var connections = host.Services.GetRequiredService<DBusConnections>();

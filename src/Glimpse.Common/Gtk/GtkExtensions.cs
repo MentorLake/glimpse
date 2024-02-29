@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using Cairo;
 using Gdk;
 using Glimpse.Common.Images;
+using Glimpse.Common.System;
 using Gtk;
 using ReactiveMarbles.ObservableEvents;
 using Monitor = Gdk.Monitor;
@@ -81,7 +82,7 @@ public static class GtkExtensions
 			{
 				image.Pixbuf = vm.Image.ScaleToFit(width, height).Pixbuf;
 			}
-			else if (vm.IconNameOrPath.StartsWith("/"))
+			else if (vm.IconNameOrPath.Or("").StartsWith("/"))
 			{
 				image.Pixbuf = new Pixbuf(vm.IconNameOrPath).ScaleToFit(width, height);
 			}

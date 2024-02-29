@@ -55,3 +55,4 @@ EOF
 echo
 echo "Installation complete"
 echo "*** If you use a saved X session then you will need to save a new one with Glimpse running"
+echo "Glimpse panel should automatically start"
