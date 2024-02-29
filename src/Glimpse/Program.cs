@@ -40,13 +40,8 @@ public static class Program
 			builder.AddDBus();
 			builder.AddXSessionManagement("org_glimpse");
 			var host = builder.Build();
-
-			var connections = host.Services.GetRequiredService<DBusConnections>();
-			await connections.System.ConnectAsync();
-			await connections.Session.ConnectAsync();
-
-			var xSessionManager = host.Services.GetRequiredService<XSessionManager>();
-			await xSessionManager.Register(Installation.DefaultInstallPath);
+			await host.UseDBus();
+			await host.UseXSessionManagement(Installation.DefaultInstallPath);
 		});
 
 		var uninstallCommand = new Command("uninstall", "Uninstall Glimpse");

@@ -8,7 +8,7 @@ public class Installation
 {
 	public const string InstallScriptResourceName = "install.sh";
 	public const string UninstallScriptResourceName = "uninstall.sh";
-	public const string DefaultInstallPath = "~/.local/bin/Glimpse";
+	public const string DefaultInstallPath = "~/.local/bin/glimpse";
 	private const string InstallScriptTmpPath = "/tmp/glimpse-{scriptName}.sh";
 
 	public static void RunScript(string scriptName)

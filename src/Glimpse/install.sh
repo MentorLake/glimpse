@@ -15,6 +15,8 @@ echo "### Updating SUPER_L shortcut"
 xfconf-query \
 	-c xfce4-keyboard-shortcuts \
 	-p "/commands/custom/<Primary>Escape" \
+	-n \
+	-t string \
 	-s "gdbus call --session --dest org.glimpse --object-path /org/glimpse --method org.gtk.Actions.Activate \"OpenStartMenu\" [] {}"
 
 echo
@@ -55,4 +57,3 @@ EOF
 echo
 echo "Installation complete"
 echo "*** If you use a saved X session then you will need to save a new one with Glimpse running"
-echo "Glimpse panel should automatically start"
