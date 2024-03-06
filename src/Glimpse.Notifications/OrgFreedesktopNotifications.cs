@@ -299,7 +299,7 @@ public class OrgFreedesktopNotifications(DBusConnections dBusConnections) : IMet
 			Transient = hints.TryGetValue("transient", out var transient) && (transient.Value as DBusBoolItem).Value,
 			X = hints.TryGetValue("x", out var x) ? (x.Value as DBusInt32Item).Value : null,
 			Y = hints.TryGetValue("y", out var y) ? (y.Value as DBusInt32Item).Value : null,
-			Urgency = hints.TryGetValue("urgency", out var urgencyHint) ? (NotificationUrgency) (urgencyHint.Value as DBusByteItem).Value : NotificationUrgency.Normal,
+			Urgency = hints.TryGetValue("urgency", out var urgencyHint) ? (NotificationUrgency) ((urgencyHint.Value as DBusByteItem)?.Value ?? 1) : NotificationUrgency.Normal,
 			CreationDate = DateTime.UtcNow
 		};
 
