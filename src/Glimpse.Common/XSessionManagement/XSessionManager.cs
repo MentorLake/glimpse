@@ -5,7 +5,20 @@ namespace Glimpse.Common.XSessionManagement;
 
 public class XSessionManager(OrgXfceSessionManager xfceSessionManager, OrgXfceSessionClient xfceSessionClient)
 {
-	public async Task Register(string assemblyPath)
+	public Task Register(string assemblyPath)
+	{
+		_ = Task.Run(async () =>
+		{
+			while (!await TryRegister(assemblyPath))
+			{
+				await Task.Delay(TimeSpan.FromSeconds(1));
+			}
+		});
+
+		return Task.CompletedTask;
+	}
+
+	private async Task<bool> TryRegister(string assemblyPath)
 	{
 		try
 		{
@@ -19,18 +32,17 @@ public class XSessionManager(OrgXfceSessionManager xfceSessionManager, OrgXfceSe
 				["RestartStyleHint"] = new("y", new DBusByteItem(0))
 			});
 
-			#if !DEBUG
+#if !DEBUG
 			await xfceSessionClient.SetSmPropertiesAsync(new()
 			{
 				["RestartStyleHint"] = new("y", new DBusByteItem(2))
 			});
-			#endif
+#endif
+			return true;
 		}
 		catch (Exception e)
 		{
-			Console.WriteLine(e);
-			throw;
+			return false;
 		}
-
 	}
 }

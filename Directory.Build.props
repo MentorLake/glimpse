@@ -21,7 +21,8 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="System.Reactive" Version="6.0.1-preview.1"/>
-		<PackageReference Include="Tmds.DBus.Protocol" Version="0.15.1-292-1999cdf58d65ac2cc534228f34f0ee3a032a6388" />
+		<PackageReference Include="Tmds.DBus.Protocol" Version="0.16.0" />
+		<PackageReference Include="Tmds.Systemd.Logging" Version="0.8.0" />
 	</ItemGroup>
 
 </Project>

@@ -3,11 +3,13 @@ using Glimpse.Common.DBus;
 using Glimpse.Common.DBus.Core;
 using Glimpse.Common.Images;
 using MentorLake.Redux;
+using Microsoft.Extensions.Logging;
 using Tmds.DBus.Protocol;
 
 namespace Glimpse.Common.StatusNotifierWatcher;
 
 public class StatusNotifierWatcherService(
+	ILogger<StatusNotifierWatcherService> logger,
 	DBusConnections dBusConnections,
 	IntrospectionService introspectionService,
 	ReduxStore store,
@@ -40,7 +42,7 @@ public class StatusNotifierWatcherService(
 		}
 		catch (Exception e)
 		{
-			Console.WriteLine(e);
+			logger.LogError(e.ToString());
 		}
 
 		return null;

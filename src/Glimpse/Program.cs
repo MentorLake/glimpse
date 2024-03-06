@@ -22,6 +22,7 @@ using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Application = Gtk.Application;
 
 namespace Glimpse;
@@ -58,11 +59,15 @@ public static class Program
 
 	private static async Task<int> RunGlimpseAsync()
 	{
+		using var bootstrapLoggerFactory = LoggerFactory.Create(b => b.AddConsole().AddJournal());
+		var bootstrapLogger = bootstrapLoggerFactory.CreateLogger("glimpse");
+
 		try
 		{
-			AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) => Console.WriteLine(eventArgs.ExceptionObject);
+			AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) => bootstrapLogger.LogError(eventArgs.ExceptionObject.ToString());
 			var builder = Host.CreateApplicationBuilder(Array.Empty<string>());
 			builder.Services.AddSingleton<ReduxStore>();
+			builder.Services.AddLogging(b => b.AddConsole().AddJournal());
 			builder.AddXorg();
 			builder.AddDesktopFiles();
 			builder.AddDBus();
@@ -107,7 +112,7 @@ public static class Program
 				.SelectMany(e => e.Create())
 				.Select(oldEffect => new Effect()
 				{
-					Run = _ => oldEffect.Run(store.Actions).Do(_ => { }, exception => Console.WriteLine(exception)),
+					Run = _ => oldEffect.Run(store.Actions).Do(_ => { }, exception => bootstrapLogger.LogError(exception.ToString())),
 					Config = oldEffect.Config
 				})
 				.ToArray());
@@ -130,7 +135,7 @@ public static class Program
 		}
 		catch (Exception e)
 		{
-			Console.WriteLine(e);
+			bootstrapLogger.LogError(e.ToString());
 			return 1;
 		}
 	}

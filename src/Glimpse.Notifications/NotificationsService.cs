@@ -3,6 +3,7 @@ using System.Text.Json;
 using Glimpse.Common.DBus;
 using Glimpse.Common.System.Reactive;
 using MentorLake.Redux;
+using Microsoft.Extensions.Logging;
 
 namespace Glimpse.Notifications;
 
@@ -15,6 +16,7 @@ public enum NotificationCloseReason : int
 }
 
 public class NotificationsService(
+	ILogger<NotificationsService> logger,
 	OrgFreedesktopNotifications freedesktopNotifications,
 	DBusConnections dBusConnections,
 	OrgFreedesktopDBus orgFreedesktopDBus,
@@ -77,7 +79,7 @@ public class NotificationsService(
 				}
 				catch (Exception e)
 				{
-					Console.WriteLine(e);
+					logger.LogError(e.ToString());
 				}
 			});
 	}

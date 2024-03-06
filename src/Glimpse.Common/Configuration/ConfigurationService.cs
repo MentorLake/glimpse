@@ -3,11 +3,12 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
 using ReactiveMarbles.ObservableEvents;
 
 namespace Glimpse.Common.Configuration;
 
-public class ConfigurationService
+public class ConfigurationService(ILogger<ConfigurationService> logger)
 {
 	private Dictionary<string, JsonObject> _sections = new();
 	private IObservable<Unit> _fileChangedObs;
@@ -28,7 +29,7 @@ public class ConfigurationService
 			.Do(_ => LoadFile())
 			.Select(_ => Unit.Default)
 			.RetryWhen(errorObs => errorObs
-				.Do(Console.WriteLine)
+				.Do(e => logger.LogError(e.ToString()))
 				.Select(_ => Observable.Timer(TimeSpan.FromSeconds(1))))
 			.Publish()
 			.AutoConnect();

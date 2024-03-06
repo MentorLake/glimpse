@@ -17,11 +17,13 @@ public class OrgKdeStatusNotifierWatcher(OrgFreedesktopDBus dbusInterface, DBusC
 	public IObservable<string> ItemRemoved => _itemRemoved;
 	public Properties BackingProperties { get; } = new();
 
+	private List<(string Id, string Name)> KnownServices = new ();
+
 	public void Initialize()
 	{
 		dbusInterface.NameChanged.Subscribe(t =>
 		{
-			var matchingItem = BackingProperties.RegisteredStatusNotifierItems.FirstOrDefault(s => s == t.Item1 && string.IsNullOrEmpty(t.Item3));
+			var matchingItem = KnownServices.FirstOrDefault(s => s.Id == t.Item1).Id;
 
 			if (!string.IsNullOrEmpty(matchingItem))
 			{
@@ -42,6 +44,7 @@ public class OrgKdeStatusNotifierWatcher(OrgFreedesktopDBus dbusInterface, DBusC
 
 	private ValueTask OnRegisterStatusNotifierItemAsync(string sender, string service)
 	{
+		KnownServices.Add((sender, service));
 		BackingProperties.RegisteredStatusNotifierItems = BackingProperties.RegisteredStatusNotifierItems.Concat(new[] { service }).ToArray();
 		EmitStatusNotifierItemRegistered(service);
 		_itemRegistered.OnNext((sender, service));

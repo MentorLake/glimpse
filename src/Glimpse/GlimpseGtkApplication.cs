@@ -15,6 +15,7 @@ using Gtk;
 using MentorLake.Redux;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using ReactiveMarbles.ObservableEvents;
 using Application = Gtk.Application;
 using Monitor = Gdk.Monitor;
@@ -22,7 +23,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Glimpse;
 
-public class GlimpseGtkApplication(IServiceProvider serviceProvider, Application application, ReduxStore store) : IHostedService
+public class GlimpseGtkApplication(ILogger<GlimpseGtkApplication> logger, IServiceProvider serviceProvider, Application application, ReduxStore store) : IHostedService
 {
 	private List<Panel> _panels = new();
 
@@ -42,8 +43,7 @@ public class GlimpseGtkApplication(IServiceProvider serviceProvider, Application
 	{
 		ExceptionManager.UnhandledException += args =>
 		{
-			Console.WriteLine("Unhandled Exception:");
-			Console.WriteLine(args.ExceptionObject);
+			logger.LogError(args.ExceptionObject.ToString());
 			args.ExitApplication = false;
 		};
 
@@ -159,7 +159,7 @@ public class GlimpseGtkApplication(IServiceProvider serviceProvider, Application
 				}
 				catch (Exception e)
 				{
-					Console.WriteLine(e);
+					logger.LogError(e.ToString());
 				}
 			});
 	}
