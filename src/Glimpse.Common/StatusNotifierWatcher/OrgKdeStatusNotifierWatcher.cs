@@ -23,13 +23,13 @@ public class OrgKdeStatusNotifierWatcher(OrgFreedesktopDBus dbusInterface, DBusC
 	{
 		dbusInterface.NameChanged.Subscribe(t =>
 		{
-			var matchingItem = KnownServices.FirstOrDefault(s => s.Id == t.Item1).Id;
+			var matchingItem = KnownServices.FirstOrDefault(s => (s.Id == t.Item1 || s.Name == t.Item1) || (s.Id == t.Item3 || s.Name == t.Item3));
 
-			if (!string.IsNullOrEmpty(matchingItem))
+			if (!string.IsNullOrEmpty(matchingItem.Id))
 			{
-				BackingProperties.RegisteredStatusNotifierItems = BackingProperties.RegisteredStatusNotifierItems.Where(s => s != matchingItem).ToArray();
-				_itemRemoved.OnNext(matchingItem);
-				EmitStatusNotifierItemUnregistered(matchingItem);
+				BackingProperties.RegisteredStatusNotifierItems = BackingProperties.RegisteredStatusNotifierItems.Where(s => s != matchingItem.Name).ToArray();
+				_itemRemoved.OnNext(matchingItem.Id);
+				EmitStatusNotifierItemUnregistered(matchingItem.Name);
 			}
 		});
 	}

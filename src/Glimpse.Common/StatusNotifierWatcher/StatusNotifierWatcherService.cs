@@ -34,11 +34,11 @@ public class StatusNotifierWatcherService(
 		await orgFreedesktopDBus.RequestNameAsync("org.kde.StatusNotifierWatcher", 0);
 	}
 
-	private async Task<StatusNotifierWatcherItem> CreateTrayItemState(string sender, string statusNotifierObjectPath)
+	private async Task<StatusNotifierWatcherItem> CreateTrayItemState(string serviceId, string serviceName)
 	{
 		try
 		{
-			return await CreateTrayItemStateInternal(sender, statusNotifierObjectPath);
+			return await CreateTrayItemStateInternal(serviceId, serviceName);
 		}
 		catch (Exception e)
 		{
@@ -48,16 +48,15 @@ public class StatusNotifierWatcherService(
 		return null;
 	}
 
-	private async Task<StatusNotifierWatcherItem> CreateTrayItemStateInternal(string sender, string statusNotifierObjectPath)
+	private async Task<StatusNotifierWatcherItem> CreateTrayItemStateInternal(string serviceId, string serviceName)
 	{
-		var serviceName = !statusNotifierObjectPath.Contains("/") ? statusNotifierObjectPath : sender;
-		var statusNotifierItemDesc = await introspectionService.FindDBusObjectDescription(serviceName, "/", i => i == "org.kde.StatusNotifierItem");
+		var statusNotifierItemDesc = await introspectionService.FindDBusObjectDescription(serviceId, "/", i => i == "org.kde.StatusNotifierItem");
 		var statusNotifierItemProxy = new OrgKdeStatusNotifierItem(_connection, statusNotifierItemDesc.ServiceName, statusNotifierItemDesc.ObjectPath);
 		var menuObjectPath = await statusNotifierItemProxy.GetMenuPropertyAsync();
 		var dbusMenuDescription = await introspectionService.FindDBusObjectDescription(statusNotifierItemDesc.ServiceName, menuObjectPath, p => p == "com.canonical.dbusmenu");
 		var dbusMenuProxy = new ComCanonicalDbusmenu(_connection, dbusMenuDescription.ServiceName, dbusMenuDescription.ObjectPath);
 		var dbusMenuLayout = await dbusMenuProxy.GetLayoutAsync(0, -1, Array.Empty<string>());
-		var itemRemovedObservable = watcher.ItemRemoved.Where(s => s == serviceName).Take(1);
+		var itemRemovedObservable = watcher.ItemRemoved.Where(s => s == serviceId).Take(1);
 
 		statusNotifierItemProxy.PropertyChanged
 			.TakeUntil(itemRemovedObservable)
@@ -66,7 +65,7 @@ public class StatusNotifierWatcherService(
 				store.Dispatch(new UpdateStatusNotifierItemPropertiesAction()
 				{
 					Properties = CreateProperties(props),
-					ServiceName = serviceName
+					ServiceName = serviceId
 				});
 			});
 
@@ -75,13 +74,13 @@ public class StatusNotifierWatcherService(
 			.Throttle(TimeSpan.FromMilliseconds(250))
 			.Subscribe(menu =>
 			{
-				store.Dispatch(new UpdateMenuLayoutAction(serviceName, DbusMenuItem.From(menu.layout)));
+				store.Dispatch(new UpdateMenuLayoutAction(serviceId, DbusMenuItem.From(menu.layout)));
 			});
 
 		itemRemovedObservable
 			.Subscribe(_ =>
 			{
-				store.Dispatch(new RemoveTrayItemAction(serviceName));
+				store.Dispatch(new RemoveTrayItemAction(serviceId));
 			});
 
 		return new StatusNotifierWatcherItem()
