@@ -68,7 +68,7 @@ public class CalendarWindow : Bin
 			layout.Add(currentDateTimeGrid);
 		});
 
-		this.ObserveEvent(w => w.Events().Unmapped).Subscribe(_ =>
+		this.ObserveEvent(w => w.Events().Mapped).Subscribe(_ =>
 		{
 			displayedDateTimeObs.OnNext(DateTime.Now);
 		});
