@@ -6,6 +6,7 @@ using Glimpse.Common.System.Reactive;
 using Gtk;
 using Microsoft.Extensions.DependencyInjection;
 using DateTime = System.DateTime;
+using ReactiveMarbles.ObservableEvents;
 
 namespace Glimpse.SidePane.Components.Calendar;
 
@@ -65,6 +66,11 @@ public class CalendarWindow : Bin
 			if (currentDateTimeGrid != null) currentDateTimeGrid.Destroy();
 			currentDateTimeGrid = CreateDateGrid(dt);
 			layout.Add(currentDateTimeGrid);
+		});
+
+		this.ObserveEvent(w => w.Events().Unmapped).Subscribe(_ =>
+		{
+			displayedDateTimeObs.OnNext(DateTime.Now);
 		});
 	}
 
