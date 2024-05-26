@@ -8,8 +8,8 @@ using Glimpse.Common.DBus;
 using Glimpse.Common.DesktopEntries;
 using Glimpse.Common.StatusNotifierWatcher;
 using Glimpse.Common.System.Reactive;
+using Glimpse.Common.Xfce.SessionManagement;
 using Glimpse.Common.Xorg;
-using Glimpse.Common.XSessionManagement;
 using Glimpse.Notifications;
 using Glimpse.SidePane.Components.Calendar;
 using Glimpse.SidePane.Components.SidePane;
@@ -33,17 +33,7 @@ public static class Program
 	{
 		var installCommand = new Command("install", "Install Glimpse");
 		installCommand.AddAlias("i");
-		installCommand.SetHandler(async _ =>
-		{
-			Installation.RunScript(Installation.InstallScriptResourceName);
-
-			var builder = Host.CreateApplicationBuilder(Array.Empty<string>());
-			builder.AddDBus();
-			builder.AddXSessionManagement("org_glimpse");
-			var host = builder.Build();
-			await host.UseDBus();
-			await host.UseXSessionManagement(Installation.DefaultInstallPath);
-		});
+		installCommand.SetHandler(_ => Installation.RunScript(Installation.InstallScriptResourceName));
 
 		var uninstallCommand = new Command("uninstall", "Uninstall Glimpse");
 		uninstallCommand.AddAlias("u");
@@ -52,6 +42,7 @@ public static class Program
 		var rootCommand = new RootCommand("Glimpse");
 		rootCommand.AddCommand(installCommand);
 		rootCommand.AddCommand(uninstallCommand);
+		rootCommand.AddOption(new Option<string>("--sm-client-id"));
 		rootCommand.SetHandler(async c => c.ExitCode = await RunGlimpseAsync());
 
 		return await rootCommand.InvokeAsync(args);
@@ -59,7 +50,7 @@ public static class Program
 
 	private static async Task<int> RunGlimpseAsync()
 	{
-		using var bootstrapLoggerFactory = LoggerFactory.Create(b => b.AddConsole().AddJournal());
+		using var bootstrapLoggerFactory = LoggerFactory.Create(b => b.AddConsole().AddJournal(o => o.SyslogIdentifier = "glimpse"));
 		var bootstrapLogger = bootstrapLoggerFactory.CreateLogger("glimpse");
 
 		try
@@ -67,12 +58,12 @@ public static class Program
 			AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) => bootstrapLogger.LogError(eventArgs.ExceptionObject.ToString());
 			var builder = Host.CreateApplicationBuilder(Array.Empty<string>());
 			builder.Services.AddSingleton<ReduxStore>();
-			builder.Services.AddLogging(b => b.AddConsole().AddJournal());
+			builder.Services.AddLogging(b => b.AddConsole().AddJournal(o => o.SyslogIdentifier = "glimpse"));
 			builder.AddXorg();
 			builder.AddDesktopFiles();
 			builder.AddDBus();
 			builder.AddStatusNotifier();
-			builder.AddXSessionManagement("org_glimpse");
+			builder.AddXSessionManagement();
 			builder.AddAccounts();
 			builder.AddGlimpseConfiguration();
 			builder.AddXorg();
@@ -121,7 +112,6 @@ public static class Program
 			await host.UseDesktopFiles();
 			await host.UseXorg();
 			await host.UseGlimpseConfiguration();
-			await host.UseXSessionManagement(Installation.DefaultInstallPath);
 			await host.UseAccounts();
 			await host.UseStatusNotifier();
 			await host.UseTaskbar();

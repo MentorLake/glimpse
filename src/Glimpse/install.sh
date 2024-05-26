@@ -40,7 +40,7 @@ echo
 echo "### Disable xfce4-notifyd.service"
 systemctl --user mask xfce4-notifyd.service
 pkill -9 xfce4-notifyd
-sudo tee ~/.config/autostart/xfce4-notifyd.desktop << EOF
+tee ~/.config/autostart/xfce4-notifyd.desktop << EOF
 [Desktop Entry]
 Hidden=true
 EOF
@@ -49,7 +49,7 @@ echo
 echo "### Disable ayatana-indicator-application.service"
 systemctl --user mask ayatana-indicator-application
 pkill -9 ayatana-indicat
-sudo tee ~/.config/autostart/ayatana-indicator-application.desktop << EOF
+tee ~/.config/autostart/ayatana-indicator-application.desktop << EOF
 [Desktop Entry]
 Hidden=true
 EOF
@@ -57,3 +57,5 @@ EOF
 echo
 echo "Installation complete"
 echo "*** If you use a saved X session then you will need to save a new one with Glimpse running"
+
+setsid ${installationDirectory}/glimpse &

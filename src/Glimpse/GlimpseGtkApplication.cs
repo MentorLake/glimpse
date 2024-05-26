@@ -5,6 +5,7 @@ using Gdk;
 using GLib;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.System.Reactive;
+using Glimpse.Common.Xfce.SessionManagement;
 using Glimpse.Notifications;
 using Glimpse.Notifications.Components.NotificationBubbles;
 using Glimpse.SidePane.Components.SidePane;
@@ -23,14 +24,15 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Glimpse;
 
-public class GlimpseGtkApplication(ILogger<GlimpseGtkApplication> logger, IServiceProvider serviceProvider, Application application, ReduxStore store) : IHostedService
+public class GlimpseGtkApplication(ILogger<GlimpseGtkApplication> logger, IServiceProvider serviceProvider, Application application, ReduxStore store, OrgXfceSessionClient sessionClient) : IHostedService
 {
 	private List<Panel> _panels = new();
 
 	public Task StartAsync(CancellationToken cancellationToken)
 	{
-		Task.Run(StartInternal);
-		return Task.CompletedTask;
+		var taskCompletionSource = new TaskCompletionSource();
+		StartInternal(taskCompletionSource);
+		return taskCompletionSource.Task;
 	}
 
 	public Task StopAsync(CancellationToken cancellationToken)
@@ -39,7 +41,7 @@ public class GlimpseGtkApplication(ILogger<GlimpseGtkApplication> logger, IServi
 		return Task.CompletedTask;
 	}
 
-	private void StartInternal()
+	private void StartInternal(TaskCompletionSource taskCompletionSource)
 	{
 		ExceptionManager.UnhandledException += args =>
 		{
@@ -47,8 +49,11 @@ public class GlimpseGtkApplication(ILogger<GlimpseGtkApplication> logger, IServi
 			args.ExitApplication = false;
 		};
 
-		Application.Init();
+		var commandLineArgs = Environment.GetCommandLineArgs();
+		Application.Init("glimpse", ref commandLineArgs);
 		application.Register(Cancellable.Current);
+		sessionClient.Register(Installation.DefaultInstallPath);
+
 		LoadCss();
 		WatchNotifications();
 
@@ -64,7 +69,13 @@ public class GlimpseGtkApplication(ILogger<GlimpseGtkApplication> logger, IServi
 		application.AddWindow(serviceProvider.GetRequiredService<StartMenuWindow>());
 		application.AddWindow(serviceProvider.GetRequiredService<SidePaneWindow>());
 		LoadPanels(display);
-		Application.Run();
+		taskCompletionSource.SetResult();
+
+		Task.Run(async () =>
+		{
+			Application.Run();
+		});
+
 	}
 
 	private void LoadCss()
