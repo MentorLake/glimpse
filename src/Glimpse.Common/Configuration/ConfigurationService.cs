@@ -12,15 +12,18 @@ public class ConfigurationService(ILogger<ConfigurationService> logger)
 {
 	private Dictionary<string, JsonObject> _sections = new();
 	private IObservable<Unit> _fileChangedObs;
-	private static readonly string s_fileName = "config.json";
-	private static readonly string s_dataDirectoryPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "glimpse");
-	public static readonly string FilePath = Path.Join(s_dataDirectoryPath, s_fileName);
+	private string _directory;
+	private string _fileName;
+	private string _fullPath;
 
-	public void Initialize()
+	public void Initialize(string configFilePath)
 	{
+		_directory = Path.GetDirectoryName(configFilePath);
+		_fileName = Path.GetFileName(configFilePath);
+		_fullPath = configFilePath;
 		EnsureDataDirectoryExists();
 
-		var watcher = new FileSystemWatcher(s_dataDirectoryPath, s_fileName);
+		var watcher = new FileSystemWatcher(_directory, _fileName);
 		watcher.EnableRaisingEvents = true;
 		watcher.IncludeSubdirectories = false;
 
@@ -39,23 +42,28 @@ public class ConfigurationService(ILogger<ConfigurationService> logger)
 
 	private void EnsureDataDirectoryExists()
 	{
-		if (!Directory.Exists(s_dataDirectoryPath))
+		if (!Directory.Exists(_directory))
 		{
-			Directory.CreateDirectory(s_dataDirectoryPath);
+			Directory.CreateDirectory(_directory);
 		}
 	}
 
 	private void SaveFile()
 	{
 		EnsureDataDirectoryExists();
-		File.WriteAllText(FilePath, JsonSerializer.Serialize(_sections, _sections.GetType(), ConfigurationSerializationContext.Instance));
+		File.WriteAllText(_fullPath, JsonSerializer.Serialize(_sections, _sections.GetType(), ConfigurationSerializationContext.Instance));
 	}
 
 	private void LoadFile()
 	{
+		if (!File.Exists(_fileName))
+		{
+			SaveFile();
+		}
+
 		_sections = new Dictionary<string, JsonObject>();
 
-		var jsonRoot = JsonNode.Parse(File.ReadAllText(FilePath));
+		var jsonRoot = JsonNode.Parse(File.ReadAllText(_fullPath));
 
 		if (jsonRoot?.GetValueKind() == JsonValueKind.Object)
 		{

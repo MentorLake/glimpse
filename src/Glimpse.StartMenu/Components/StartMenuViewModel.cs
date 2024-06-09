@@ -5,7 +5,7 @@ using Glimpse.Common.Gtk.ContextMenu;
 
 namespace Glimpse.StartMenu.Components;
 
-internal record StartMenuAppContextMenuItem : IContextMenuItemViewModel<StartMenuAppContextMenuItem>
+public record StartMenuAppContextMenuItem : IContextMenuItemViewModel<StartMenuAppContextMenuItem>
 {
 	public const string ToggleTaskbarAppId = "ToggleTaskbarAppId";
 	public const string ToggleStartMenuAppId = "ToggleStartMenuAppId";
@@ -18,7 +18,7 @@ internal record StartMenuAppContextMenuItem : IContextMenuItemViewModel<StartMen
 	public ImmutableList<StartMenuAppContextMenuItem> Children { get; set; } = ImmutableList<StartMenuAppContextMenuItem>.Empty;
 }
 
-internal class ActionBarViewModel
+public class ActionBarViewModel
 {
 	public string SettingsButtonCommand { get; set; }
 	public string UserSettingsCommand { get; set; }
@@ -26,7 +26,7 @@ internal class ActionBarViewModel
 	public string PowerButtonCommand { get; set; }
 }
 
-internal class StartMenuAppViewModel
+public class StartMenuAppViewModel
 {
 	public int Index { get; set; }
 	public DesktopFile DesktopFile { get; set; }
@@ -38,7 +38,7 @@ internal class StartMenuAppViewModel
 	public ImmutableList<StartMenuAppContextMenuItem> ContextMenuItems { get; set; } = ImmutableList<StartMenuAppContextMenuItem>.Empty;
 }
 
-internal class StartMenuViewModel
+public class StartMenuViewModel
 {
 	public ImmutableList<StartMenuAppViewModel> AllApps { get; set; } = ImmutableList<StartMenuAppViewModel>.Empty;
 	public string SearchText { get; set; }

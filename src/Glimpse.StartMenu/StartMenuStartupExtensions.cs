@@ -24,8 +24,9 @@ public static class StartMenuStartupExtensions
 		return Task.CompletedTask;
 	}
 
-	public static void AddStartMenu(this IHostApplicationBuilder builder)
+	public static void AddStartMenu<T>(this IHostApplicationBuilder builder) where T : class, IStartMenuDemands
 	{
+		builder.Services.AddSingleton<IStartMenuDemands, T>();
 		builder.Services.AddSingleton(c => new StartMenuWindow(c.GetRequiredService<ReduxStore>(), c.GetRequiredService<IStartMenuDemands>(), c.GetRequiredService<StartMenuSelectors>()));
 		builder.Services.AddSingleton<StartMenuSelectors>();
 		builder.Services.AddInstance(StartMenuReducers.AllReducers);

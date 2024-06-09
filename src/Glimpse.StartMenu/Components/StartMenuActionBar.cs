@@ -5,7 +5,7 @@ using Gtk;
 
 namespace Glimpse.StartMenu.Components;
 
-internal class StartMenuActionBar : Box
+public class StartMenuActionBar : Box
 {
 	public IObservable<string> CommandInvoked { get; private set; }
 

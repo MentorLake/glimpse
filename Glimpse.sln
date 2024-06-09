@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse.SystemTray", "src\G
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse.StartMenu", "src\Glimpse.StartMenu\Glimpse.StartMenu.csproj", "{BE232019-C1DF-49BE-B0ED-1348C4854C7D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Glimpse.Tests", "src\Glimpse.Tests\Glimpse.Tests.csproj", "{AC19B281-95F1-4D20-9D8F-FDF5A80CF3B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{BE232019-C1DF-49BE-B0ED-1348C4854C7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE232019-C1DF-49BE-B0ED-1348C4854C7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE232019-C1DF-49BE-B0ED-1348C4854C7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC19B281-95F1-4D20-9D8F-FDF5A80CF3B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC19B281-95F1-4D20-9D8F-FDF5A80CF3B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC19B281-95F1-4D20-9D8F-FDF5A80CF3B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC19B281-95F1-4D20-9D8F-FDF5A80CF3B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -88,19 +88,25 @@ public class TaskbarView : Box
 			groupIcon.ObserveEvent(w => w.Events().ButtonPressEvent)
 				.Subscribe(_ => windowPicker.ClosePopup());
 
-			groupIcon.ObserveButtonRelease()
+			var primaryMouseButton = new GestureMultiPress(groupIcon);
+			primaryMouseButton.Button = 1;
+
+			var dragGesture = new GestureDrag(groupIcon);
+			dragGesture.Events().DragUpdate.Subscribe(_ => primaryMouseButton.Reset());
+
+			primaryMouseButton.Events().Released
 				.WithLatestFrom(viewModelObservable)
-				.Where(t => t.First.Event.Button == 1 && t.Second.Tasks.Count == 0)
+				.Where(t => t.Second.Tasks.Count == 0)
 				.Subscribe(t => DesktopFileRunner.Run(t.Second.DesktopFile));
 
-			groupIcon.ObserveButtonRelease()
+			primaryMouseButton.Events().Released
 				.WithLatestFrom(viewModelObservable)
-				.Where(t => t.First.Event.Button == 1 && t.Second.Tasks.Count == 1)
+				.Where(t => t.Second.Tasks.Count == 1)
 				.Subscribe(t => displayServer.ToggleWindowVisibility(t.Second.Tasks.First().WindowRef));
 
-			 groupIcon.ObserveButtonRelease()
+			primaryMouseButton.Events().Released
 				.WithLatestFrom(viewModelObservable)
-				.Where(t => t.First.Event.Button == 1 && t.Second.Tasks.Count > 1 && !windowPicker.Visible)
+				.Where(t => t.Second.Tasks.Count > 1 && !windowPicker.Visible)
 				.Subscribe(t =>
 				{
 					store.Dispatch(new TakeScreenshotAction() { Windows = t.Second.Tasks.Select(x => x.WindowRef).ToList() });
@@ -131,22 +137,22 @@ public class TaskbarView : Box
 			return groupIcon;
 		});
 
-		forEachGroup.ColumnSpacing = 0;
-		forEachGroup.MaxChildrenPerLine = 100;
-		forEachGroup.MinChildrenPerLine = 100;
-		forEachGroup.RowSpacing = 0;
-		forEachGroup.Orientation = Orientation.Horizontal;
-		forEachGroup.Homogeneous = false;
-		forEachGroup.Valign = Align.Center;
-		forEachGroup.Halign = Align.Start;
-		forEachGroup.SelectionMode = SelectionMode.None;
-		forEachGroup.Expand = false;
-		forEachGroup.AddClass("taskbar__container");
+		forEachGroup.Widget.ColumnSpacing = 0;
+		forEachGroup.Widget.MaxChildrenPerLine = 100;
+		forEachGroup.Widget.MinChildrenPerLine = 100;
+		forEachGroup.Widget.RowSpacing = 0;
+		forEachGroup.Widget.Orientation = Orientation.Horizontal;
+		forEachGroup.Widget.Homogeneous = false;
+		forEachGroup.Widget.Valign = Align.Center;
+		forEachGroup.Widget.Halign = Align.Start;
+		forEachGroup.Widget.SelectionMode = SelectionMode.None;
+		forEachGroup.Widget.Expand = false;
+		forEachGroup.Widget.AddClass("taskbar__container");
 		forEachGroup.OrderingChanged
 			.TakeUntilDestroyed(this)
 			.Subscribe(ordering => store.Dispatch(new UpdateTaskbarSlotOrderingBulkAction(ordering.Select(s => s.SlotRef).ToImmutableList())));
 		forEachGroup.DragBeginObservable.TakeUntilDestroyed(this).Subscribe(icon => icon.CloseWindowPicker());
 
-		Add(forEachGroup);
+		Add(forEachGroup.Root);
 	}
 }

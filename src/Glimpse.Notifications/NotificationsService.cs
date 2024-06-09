@@ -22,7 +22,7 @@ public class NotificationsService(
 	OrgFreedesktopDBus orgFreedesktopDBus,
 	ReduxStore store)
 {
-	public async Task InitializeAsync()
+	public async Task InitializeAsync(string notificationsFilePath)
 	{
 		dBusConnections.Session.AddMethodHandler(freedesktopNotifications);
 		await orgFreedesktopDBus.RequestNameAsync("org.freedesktop.Notifications", 0);
@@ -58,12 +58,9 @@ public class NotificationsService(
 				});
 		});
 
-		var glimpseDataDirectory = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "glimpse");
-		var historyPath = Path.Join(glimpseDataDirectory, "notification-history.json");
-
-		if (File.Exists(historyPath))
+		if (File.Exists(notificationsFilePath))
 		{
-			var historyJson = await File.ReadAllTextAsync(historyPath);
+			var historyJson = await File.ReadAllTextAsync(notificationsFilePath);
 			var history = JsonSerializer.Deserialize(historyJson, typeof(NotificationHistory), NotificationsJsonSerializer.Instance) as NotificationHistory;
 			await store.Dispatch(new LoadNotificationHistoryAction(history));
 		}
@@ -74,8 +71,9 @@ public class NotificationsService(
 			{
 				try
 				{
-					if (!Directory.Exists(glimpseDataDirectory)) Directory.CreateDirectory(glimpseDataDirectory);
-					File.WriteAllText(historyPath, JsonSerializer.Serialize(history, typeof(NotificationHistory), NotificationsJsonSerializer.Instance));
+					var directory = Path.GetDirectoryName(notificationsFilePath);
+					if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
+					File.WriteAllText(notificationsFilePath, JsonSerializer.Serialize(history, typeof(NotificationHistory), NotificationsJsonSerializer.Instance));
 				}
 				catch (Exception e)
 				{

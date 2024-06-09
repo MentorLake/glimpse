@@ -9,11 +9,10 @@ using Glimpse.Common.Gtk.ForEach;
 using Gtk;
 using ReactiveMarbles.ObservableEvents;
 using Key = Gdk.Key;
-using Menu = Gtk.Menu;
 
 namespace Glimpse.StartMenu.Components;
 
-internal class StartMenuContent : Bin
+public class StartMenuContent : Bin
 {
 	private readonly Entry _hiddenEntry;
 	private readonly Subject<DesktopFileAction> _runActionSubject = new();
@@ -58,9 +57,9 @@ internal class StartMenuContent : Bin
 			.DistinctUntilChanged();
 
 		var chipsObs = viewModelObservable.Select(vm => vm.Chips).DistinctUntilChanged();
-		var pinnedChip = new Chip("Pinned", chipsObs.Select(c => c[StartMenuChips.Pinned]));
-		var allAppsChip = new Chip("All Apps", chipsObs.Select(c => c[StartMenuChips.AllApps]));
-		var searchResultsChip = new Chip("Search results", chipsObs.Select(c => c[StartMenuChips.SearchResults]));
+		var pinnedChip = Chip.Create("Pinned", chipsObs.Select(c => c[StartMenuChips.Pinned]));
+		var allAppsChip = Chip.Create("All Apps", chipsObs.Select(c => c[StartMenuChips.AllApps]));
+		var searchResultsChip = Chip.Create("Search results", chipsObs.Select(c => c[StartMenuChips.SearchResults]));
 
 		ChipActivated = pinnedChip.ObserveButtonRelease().Select(_ => StartMenuChips.Pinned)
 			.Merge(allAppsChip.ObserveButtonRelease().Select(_ => StartMenuChips.AllApps))
@@ -97,22 +96,22 @@ internal class StartMenuContent : Bin
 			return appIcon;
 		});
 
-		_apps.RowSpacing = 0;
-		_apps.ColumnSpacing = 0;
-		_apps.MaxChildrenPerLine = 6;
-		_apps.MinChildrenPerLine = 6;
-		_apps.SelectionMode = SelectionMode.Single;
-		_apps.Orientation = Orientation.Horizontal;
-		_apps.Homogeneous = true;
-		_apps.Valign = Align.Start;
-		_apps.Halign = Align.Start;
-		_apps.ActivateOnSingleClick = true;
-		_apps.FilterFunc = c => _apps.GetViewModel(c)?.IsVisible ?? true;
-		_apps.AddClass("start-menu__apps");
+		_apps.Widget.RowSpacing = 0;
+		_apps.Widget.ColumnSpacing = 0;
+		_apps.Widget.MaxChildrenPerLine = 6;
+		_apps.Widget.MinChildrenPerLine = 6;
+		_apps.Widget.SelectionMode = SelectionMode.Single;
+		_apps.Widget.Orientation = Orientation.Horizontal;
+		_apps.Widget.Homogeneous = true;
+		_apps.Widget.Valign = Align.Start;
+		_apps.Widget.Halign = Align.Start;
+		_apps.Widget.ActivateOnSingleClick = true;
+		_apps.Widget.FilterFunc = c => _apps.GetViewModel(c)?.IsVisible ?? true;
+		_apps.Widget.AddClass("start-menu__apps");
 		_apps.DisableDragAndDrop = viewModelObservable.Select(vm => vm.DisableDragAndDrop).DistinctUntilChanged();
-		this.ObserveEvent(w => w.Events().FocusChildSet).Subscribe(_ => _apps.UnselectAll());
+		this.ObserveEvent(w => w.Events().FocusChildSet).Subscribe(_ => _apps.Widget.UnselectAll());
 
-		_apps.ObserveEvent(w => w.Events().ChildActivated)
+		_apps.Widget.ObserveEvent(w => w.Events().ChildActivated)
 			.Select(e => _apps.GetViewModel(e.Child))
 			.Subscribe(vm => _appLaunch.OnNext(vm.DesktopFile));
 
@@ -124,7 +123,7 @@ internal class StartMenuContent : Bin
 
 		var pinnedAppsScrolledWindow = new ScrolledWindow();
 		pinnedAppsScrolledWindow.Vexpand = true;
-		pinnedAppsScrolledWindow.Add(_apps);
+		pinnedAppsScrolledWindow.Add(_apps.Root);
 		pinnedAppsScrolledWindow.AddClass("start-menu__apps-scroll-window");
 
 		var layout = new Grid();

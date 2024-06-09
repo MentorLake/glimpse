@@ -7,6 +7,7 @@ using Glimpse.Common.System;
 using Gtk;
 using ReactiveMarbles.ObservableEvents;
 using Monitor = Gdk.Monitor;
+using Point = Gdk.Point;
 using Rectangle = Gdk.Rectangle;
 using Window = Gtk.Window;
 
@@ -14,6 +15,49 @@ namespace Glimpse.Common.Gtk;
 
 public static class GtkExtensions
 {
+	public static Rectangle TrimSides(this Rectangle r, int amount)
+	{
+		var copy = r;
+		copy.Width -= amount * 2;
+		copy.X += amount;
+		copy.Height -= amount * 2;
+		copy.Y += amount;
+		return copy;
+	}
+
+	public static Point LowerRight(this Rectangle r)
+	{
+		return new Point(r.Right, r.Bottom);
+	}
+
+	public static Point LowerLeft(this Rectangle r)
+	{
+		return new Point(r.X, r.Bottom);
+	}
+
+	public static Point UpperRight(this Rectangle r)
+	{
+		return new Point(r.Right, r.Y);
+	}
+
+	public static Point UpperLeft(this Rectangle r)
+	{
+		return new Point(r.X, r.Y);
+	}
+
+	public static Point Constrain(this Rectangle container, Rectangle item)
+	{
+		var x = item.X;
+		var y = item.Y;
+
+		if (item.Right >= container.Width) x = container.Width - item.Width;
+		if (item.Left <= 0) x = 0;
+		if (item.Top <= 0) y = 0;
+		if (item.Bottom >= container.Bottom) y = container.Bottom - item.Height + 1;
+
+		return new Point(x, y);
+	}
+
 	public static IEnumerable<Monitor> GetMonitors(this Display display)
 	{
 		for (var i = 0; i < display.NMonitors; i++)
@@ -78,20 +122,25 @@ public static class GtkExtensions
 	{
 		imageViewModel.Subscribe(vm =>
 		{
-			if (vm.Image != null)
-			{
-				image.Pixbuf = vm.Image.ScaleToFit(width, height).Pixbuf;
-			}
-			else if (vm.IconNameOrPath.Or("").StartsWith("/"))
-			{
-				image.Pixbuf = new Pixbuf(vm.IconNameOrPath).ScaleToFit(width, height);
-			}
-			else
-			{
-				image.SetFromIconName(string.IsNullOrEmpty(vm.IconNameOrPath) ? (useMissingImage ? MissingIconName : "") : vm.IconNameOrPath, IconSize.LargeToolbar);
-				image.PixelSize = width;
-			}
+			image.ApplyViewModel(vm, width, height, useMissingImage);
 		});
+	}
+
+	public static void ApplyViewModel(this Image image, ImageViewModel vm, int width, int height, bool useMissingImage = true)
+	{
+		if (vm.Image != null)
+		{
+			image.Pixbuf = vm.Image.ScaleToFit(width, height).Pixbuf;
+		}
+		else if (vm.IconNameOrPath.Or("").StartsWith("/"))
+		{
+			image.Pixbuf = new Pixbuf(vm.IconNameOrPath).ScaleToFit(width, height);
+		}
+		else
+		{
+			image.SetFromIconName(string.IsNullOrEmpty(vm.IconNameOrPath) ? (useMissingImage ? MissingIconName : "") : vm.IconNameOrPath, IconSize.LargeToolbar);
+			image.PixelSize = width;
+		}
 	}
 
 	public static T Prop<T>(this T widget, Action<T> action) where T : Widget

@@ -3,24 +3,24 @@ using Gtk;
 
 namespace Glimpse.Common.Gtk;
 
-public class Chip : Box
+public class Chip
 {
-	private readonly Label _label;
-
-	public Chip(string text, IObservable<StartMenuAppFilteringChip> viewModelObs)
+	public static Widget Create(string text, IObservable<StartMenuAppFilteringChip> viewModelObs)
 	{
-		_label = new Label(text);
-		_label.AddClass("chip__label");
+		var container = new Box(Orientation.Horizontal, 0);
+		var label = new Label(text);
+		label.AddClass("chip__label");
 
 		var labelEventBox = new EventBox();
-		labelEventBox.Add(_label);
+		labelEventBox.Add(label);
 		labelEventBox.AddButtonStates();
 
 		var labelEventBoxBem = BlockElementModifier.Create(labelEventBox, "chip__label-container");
 		viewModelObs.Select(vm => vm.IsSelected).DistinctUntilChanged().Subscribe(isSelected => labelEventBoxBem.UpdateSelected(isSelected));
-		viewModelObs.Select(vm => vm.IsVisible).DistinctUntilChanged().Subscribe(visible => this.Visible = visible);
+		viewModelObs.Select(vm => vm.IsVisible).DistinctUntilChanged().Subscribe(visible => container.Visible = visible);
 
-		Add(labelEventBox);
-		this.AddClass("chip__container");
+		container.Add(labelEventBox);
+		container.AddClass("chip__container");
+		return container;
 	}
 }

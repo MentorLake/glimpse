@@ -24,7 +24,7 @@ internal record StartMenuState
 	public virtual bool Equals(StartMenuState other) => ReferenceEquals(this, other);
 }
 
-internal enum StartMenuChips
+public enum StartMenuChips
 {
 	Pinned,
 	AllApps,

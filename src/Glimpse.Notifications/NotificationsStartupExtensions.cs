@@ -6,6 +6,7 @@ using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace Glimpse.Notifications;
 
@@ -13,7 +14,8 @@ public static class NotificationsStartupExtensions
 {
 	public static async Task UseNotifications(this IHost host)
 	{
-		await host.Services.GetRequiredService<NotificationsService>().InitializeAsync();
+		await host.Services.GetRequiredService<NotificationsService>().InitializeAsync(
+			host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>().Value.NotificationsFilePath);
 
 		var store = host.Services.GetRequiredService<ReduxStore>();
 		var configurationService = host.Services.GetRequiredService<ConfigurationService>();

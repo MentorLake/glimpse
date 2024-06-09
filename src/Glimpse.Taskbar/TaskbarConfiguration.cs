@@ -19,19 +19,9 @@ internal record TaskbarConfiguration
 	public static readonly TaskbarConfiguration Empty = new();
 
 	public string TaskManagerCommand { get; set; } = "";
-	public string StartMenuLaunchIconName { get; set; } = "start-here";
+	public string StartMenuLaunchIconName { get; set; } = "";
 	public ImmutableList<string> PinnedLaunchers { get; set; } = ImmutableList<string>.Empty;
-
-	public ImmutableList<ContextMenuItem> ContextMenu { get; set; } = ImmutableList.Create<ContextMenuItem>(
-		new() { DisplayText = "Terminal", Executable = "x-terminal-emulator", Icon = "terminal"},
-		new() { DisplayText = "Display", Executable = "xfce4-display-settings", Icon = "display"},
-		new() { DisplayText = "Network Connections", Executable = "nm-connection-editor", Icon = "network-wireless"},
-		new() { DisplayText = "Session & Startup", Executable = "xfce4-settings-manager", Arguments = "-d xfce-session-settings", Icon = "gnome-session"},
-		new() { DisplayText = "separator" },
-		new() { DisplayText = "Edit Glimpse config", Executable = "xdg-open", Arguments = ConfigurationService.FilePath, Icon = "edit" },
-		new() { DisplayText = "System Settings", Executable = "xfce4-settings-manager", Icon = "system-settings"},
-		new() { DisplayText = "separator" },
-		new() { DisplayText = "Shutdown or sign out", Executable = "xfce4-session-logout", Icon = "system-shutdown" });
+	public ImmutableList<ContextMenuItem> ContextMenu { get; set; } = ImmutableList<ContextMenuItem>.Empty;
 
 	public JsonObject ToJsonElement()
 	{
@@ -41,5 +31,25 @@ internal record TaskbarConfiguration
 	public static TaskbarConfiguration From(JsonObject element)
 	{
 		return element.Deserialize(typeof(TaskbarConfiguration), TaskbarSerializationContext.Instance) as TaskbarConfiguration;
+	}
+
+	public static TaskbarConfiguration New(string configFilePath)
+	{
+		return new TaskbarConfiguration()
+		{
+			TaskManagerCommand = "",
+			StartMenuLaunchIconName = "start-here",
+			PinnedLaunchers = ImmutableList<string>.Empty,
+			ContextMenu = ImmutableList.Create<ContextMenuItem>(
+				new() { DisplayText = "Terminal", Executable = "x-terminal-emulator", Icon = "terminal" },
+				new() { DisplayText = "Display", Executable = "xfce4-display-settings", Icon = "display" },
+				new() { DisplayText = "Network Connections", Executable = "nm-connection-editor", Icon = "network-wireless" },
+				new() { DisplayText = "Session & Startup", Executable = "xfce4-settings-manager", Arguments = "-d xfce-session-settings", Icon = "gnome-session" },
+				new() { DisplayText = "separator" },
+				new() { DisplayText = "Edit Glimpse config", Executable = "xdg-open", Arguments = configFilePath, Icon = "edit" },
+				new() { DisplayText = "System Settings", Executable = "xfce4-settings-manager", Icon = "system-settings" },
+				new() { DisplayText = "separator" },
+				new() { DisplayText = "Shutdown or sign out", Executable = "xfce4-session-logout", Icon = "system-shutdown" })
+		};
 	}
 }

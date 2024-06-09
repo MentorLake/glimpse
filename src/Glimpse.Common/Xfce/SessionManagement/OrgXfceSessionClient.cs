@@ -8,9 +8,13 @@ public class OrgXfceSessionClient(IHostApplicationLifetime applicationLifetime, 
 {
 	private readonly XfceSMClient _client = new(XfceSMClientHandle.Get());
 
-	public void Register(string assemblyPath)
+	public void Register(string assemblyPath, GlimpseXfceOptions options)
 	{
-		_client.SetRestartStyle((int) LibXfce4UIExterns.RestartStyle.Immediately);
+		var restartStyle = Enum.TryParse(options.RestartStyle, true, out LibXfce4UIExterns.RestartStyle parsedRestartStyle)
+			? parsedRestartStyle
+			: LibXfce4UIExterns.RestartStyle.IfRunning;
+
+		_client.SetRestartStyle((int) restartStyle);
 		_client.SetPriority(25);
 		_client.SetRestartCommand([Path.GetFileName(assemblyPath)]);
 		_client.SetCurrentDirectory(Path.GetDirectoryName(assemblyPath));

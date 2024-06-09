@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Text;
 using Gdk;
 using GLib;
+using Glimpse.Common.Configuration;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.System.Reactive;
 using Glimpse.Common.Xfce.SessionManagement;
@@ -17,6 +18,7 @@ using MentorLake.Redux;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using ReactiveMarbles.ObservableEvents;
 using Application = Gtk.Application;
 using Monitor = Gdk.Monitor;
@@ -24,15 +26,14 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Glimpse;
 
-public class GlimpseGtkApplication(ILogger<GlimpseGtkApplication> logger, IServiceProvider serviceProvider, Application application, ReduxStore store, OrgXfceSessionClient sessionClient) : IHostedService
+public class GlimpseGtkApplication(ILogger<GlimpseGtkApplication> logger, IServiceProvider serviceProvider, Application application, ReduxStore store, OrgXfceSessionClient sessionClient, IOptions<GlimpseAppSettings> appSettings) : IHostedService
 {
 	private List<Panel> _panels = new();
 
 	public Task StartAsync(CancellationToken cancellationToken)
 	{
-		var taskCompletionSource = new TaskCompletionSource();
-		StartInternal(taskCompletionSource);
-		return taskCompletionSource.Task;
+		StartInternal();
+		return Task.CompletedTask;
 	}
 
 	public Task StopAsync(CancellationToken cancellationToken)
@@ -41,7 +42,7 @@ public class GlimpseGtkApplication(ILogger<GlimpseGtkApplication> logger, IServi
 		return Task.CompletedTask;
 	}
 
-	private void StartInternal(TaskCompletionSource taskCompletionSource)
+	private void StartInternal()
 	{
 		ExceptionManager.UnhandledException += args =>
 		{
@@ -50,9 +51,9 @@ public class GlimpseGtkApplication(ILogger<GlimpseGtkApplication> logger, IServi
 		};
 
 		var commandLineArgs = Environment.GetCommandLineArgs();
-		Application.Init("glimpse", ref commandLineArgs);
+		Application.Init(appSettings.Value.AppName, ref commandLineArgs);
 		application.Register(Cancellable.Current);
-		sessionClient.Register(Installation.DefaultInstallPath);
+		sessionClient.Register(Installation.DefaultInstallPath, appSettings.Value.Xfce);
 
 		LoadCss();
 		WatchNotifications();
@@ -69,13 +70,7 @@ public class GlimpseGtkApplication(ILogger<GlimpseGtkApplication> logger, IServi
 		application.AddWindow(serviceProvider.GetRequiredService<StartMenuWindow>());
 		application.AddWindow(serviceProvider.GetRequiredService<SidePaneWindow>());
 		LoadPanels(display);
-		taskCompletionSource.SetResult();
-
-		Task.Run(async () =>
-		{
-			Application.Run();
-		});
-
+		Task.Run(Application.Run);
 	}
 
 	private void LoadCss()

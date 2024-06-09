@@ -4,7 +4,6 @@
 		<OutputType>Exe</OutputType>
 		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
 		<RootNamespace>Glimpse</RootNamespace>
-		<AssemblyName>glimpse</AssemblyName>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
@@ -24,6 +23,22 @@
 		<PublishAot>false</PublishAot>
 		<TrimmerSingleWarn>false</TrimmerSingleWarn>
 	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+		<AssemblyName>glimpse_dev</AssemblyName>
+	</PropertyGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		<AssemblyName>glimpse</AssemblyName>
+	</PropertyGroup>
+
+	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+		<EmbeddedResource Include="appsettings.development.json" LogicalName="appsettings.json" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+		<EmbeddedResource Include="appsettings.production.json" LogicalName="appsettings.json" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<EmbeddedResource Include="Assets/*" LogicalName="%(Filename)%(Extension)" />

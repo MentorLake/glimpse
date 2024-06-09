@@ -1,7 +1,6 @@
 ﻿using System.CommandLine;
-using System.Reactive;
 using System.Reactive.Linq;
-using GLib;
+using System.Reflection;
 using Glimpse.Common.Accounts;
 using Glimpse.Common.Configuration;
 using Glimpse.Common.DBus;
@@ -11,19 +10,18 @@ using Glimpse.Common.System.Reactive;
 using Glimpse.Common.Xfce.SessionManagement;
 using Glimpse.Common.Xorg;
 using Glimpse.Notifications;
-using Glimpse.SidePane.Components.Calendar;
-using Glimpse.SidePane.Components.SidePane;
+using Glimpse.SidePane;
 using Glimpse.StartMenu;
 using Glimpse.SystemTray;
 using Glimpse.Taskbar;
-using Glimpse.Taskbar.Components.Panel;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Application = Gtk.Application;
+using Microsoft.Extensions.Options;
 
 namespace Glimpse;
 
@@ -50,15 +48,22 @@ public static class Program
 
 	private static async Task<int> RunGlimpseAsync()
 	{
-		using var bootstrapLoggerFactory = LoggerFactory.Create(b => b.AddConsole().AddJournal(o => o.SyslogIdentifier = "glimpse"));
-		var bootstrapLogger = bootstrapLoggerFactory.CreateLogger("glimpse");
+		var configuration = new ConfigurationBuilder()
+			.AddEnvironmentVariables()
+			.AddJsonStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("appsettings.json")!)
+			.Build();
+
+		var appName = configuration.GetValue<string>("Glimpse:ApplicationName");
+		using var bootstrapLoggerFactory = LoggerFactory.Create(b => b.AddConsole().AddJournal(o => o.SyslogIdentifier = appName));
+		var bootstrapLogger = bootstrapLoggerFactory.CreateLogger(appName);
 
 		try
 		{
 			AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) => bootstrapLogger.LogError(eventArgs.ExceptionObject.ToString());
-			var builder = Host.CreateApplicationBuilder(Array.Empty<string>());
+			var builder = Host.CreateApplicationBuilder([]);
+			builder.Configuration.AddConfiguration(configuration);
 			builder.Services.AddSingleton<ReduxStore>();
-			builder.Services.AddLogging(b => b.AddConsole().AddJournal(o => o.SyslogIdentifier = "glimpse"));
+			builder.Services.AddLogging(b => b.AddConsole().AddJournal(o => o.SyslogIdentifier = appName));
 			builder.AddXorg();
 			builder.AddDesktopFiles();
 			builder.AddDBus();
@@ -67,32 +72,13 @@ public static class Program
 			builder.AddAccounts();
 			builder.AddGlimpseConfiguration();
 			builder.AddXorg();
-			builder.Services.AddHostedService<GlimpseGtkApplication>();
-			builder.Services.AddTransient<Panel>();
-			builder.Services.AddSingleton<GlimpseGtkApplication>();
-			builder.Services.AddSingleton<IStartMenuDemands, StartMenuDemands>();
-			builder.Services.AddSingleton<CalendarWindow>();
-			builder.Services.AddSingleton<SidePaneWindow>();
-
-			builder.Services.AddKeyedSingleton(Timers.OneSecond, (c, _) =>
-			{
-				var host1 = c.GetRequiredService<IHostApplicationLifetime>();
-				var shuttingDown = Observable.Create<Unit>(obs => host1.ApplicationStopping.Register(() => obs.OnNext(Unit.Default)));
-				return TimerFactory.OneSecondTimer.TakeUntil(shuttingDown).Publish().AutoConnect();
-			});
-
-			builder.Services.AddSingleton(_ =>
-			{
-				var app = new Application("org.glimpse", ApplicationFlags.None);
-				app.AddAction(new SimpleAction("OpenStartMenu", null));
-				app.AddAction(new SimpleAction("LoadPanels", null));
-				return app;
-			});
-
 			builder.AddTaskbar();
 			builder.AddSystemTray();
-			builder.AddStartMenu();
+			builder.AddStartMenu<StartMenuDemands>();
 			builder.AddNotifications();
+			builder.AddSidePane();
+			builder.AddGlimpseApplication();
+			builder.AddReactiveTimers();
 
 			var host = builder.Build();
 
@@ -114,10 +100,12 @@ public static class Program
 			await host.UseGlimpseConfiguration();
 			await host.UseAccounts();
 			await host.UseStatusNotifier();
-			await host.UseTaskbar();
+			await host.UseTaskbar(host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>().Value.ConfigurationFilePath);
 			await host.UseSystemTray();
 			await host.UseStartMenu();
 			await host.UseNotifications();
+			await host.UseSidePane();
+			await host.UseGlimpseApplication();
 
 			await store.Dispatch(new InitializeStoreAction());
 			await host.RunAsync();

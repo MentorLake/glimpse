@@ -4,18 +4,22 @@ using Gdk;
 using Glimpse.Common.System.Reactive;
 using Gtk;
 using ReactiveMarbles.ObservableEvents;
-using Drag = Gtk.Drag;
 
 namespace Glimpse.Common.Gtk.ForEach;
 
-public class ForEachFlowBox<TViewModel, TWidget, TKey> : FlowBox where TWidget : Widget, IForEachDraggable where TKey : IEquatable<TKey>
+public class ForEachFlowBox<TViewModel, TWidget, TKey> where TWidget : Widget, IForEachDraggable where TKey : IEquatable<TKey>
 {
 	private readonly Subject<List<TViewModel>> _orderingChangedSubject = new();
 	private readonly Subject<TWidget> _dragBeginSubject = new();
-	private readonly FlowBoxChild _draggingPlaceholderWidget = new FlowBoxChild() { Visible = true }.AddClass("foreach__dragging-placeholder");
-	private readonly string _dragIconTargetName;
-	private readonly TargetList _dragTargets;
 	private readonly ObservableProperty<bool> _disableDragAndDrop = new(false);
+	private readonly FlowBox _flowBox;
+	private readonly Image _dragIconImage;
+	private readonly Fixed _rootContainer;
+	private ImageViewModel _dragImageViewModel;
+	private bool _dragInitialized;
+
+	public Fixed Root => _rootContainer;
+	public FlowBox Widget => _flowBox;
 
 	public IObservable<List<TViewModel>> OrderingChanged => _orderingChangedSubject;
 	public IObservable<TWidget> DragBeginObservable => _dragBeginSubject;
@@ -28,45 +32,42 @@ public class ForEachFlowBox<TViewModel, TWidget, TKey> : FlowBox where TWidget :
 
 	public ForEachFlowBox(IObservable<IList<TViewModel>> itemsObservable, Func<TViewModel, TKey> trackBy, Func<IObservable<TViewModel>, TWidget> widgetFactory)
 	{
-		_dragIconTargetName = Guid.NewGuid().ToString();
-		_dragTargets = new(new[] { new TargetEntry(_dragIconTargetName, TargetFlags.Widget, 0) });
-		_draggingPlaceholderWidget.Data[ForEachDataKeys.Index] = 0;
-		Add(_draggingPlaceholderWidget);
-		SortFunc = SortByItemIndex;
+		_dragIconImage = new Image().AddClass("taskbar__item");
 
-		Drag.DestSet(this, 0, null, DragAction.Move);
-		Drag.DestSetTargetList(this, _dragTargets);
+		_flowBox = new FlowBox();
+		_flowBox.SortFunc = SortByItemIndex;
+
+		_rootContainer = new Fixed();
+		_rootContainer.Put(_flowBox, 0, 0);
+		_rootContainer.Put(_dragIconImage, 0, 0);
 
 		itemsObservable.UnbundleMany(trackBy).Subscribe(itemObservable =>
 		{
 			var childWidget = widgetFactory(itemObservable.Select(i => i.Item1).DistinctUntilChanged());
-			var flowBoxChild = new FlowBoxChild().AddMany(childWidget);
+			var flowBoxChild = new FlowBoxChild().AddMany(childWidget).AddClass("taskbar__item");
 			flowBoxChild.Data[ForEachDataKeys.Index] = 0;
-			Add(flowBoxChild);
 			flowBoxChild.ShowAll();
+			_flowBox.Add(flowBoxChild);
 
-			flowBoxChild
-				.ObserveEvent(w => w.Events().DragBegin)
+			var childDragGesture = new GestureDrag(childWidget);
+
+			childDragGesture.Events().DragUpdate
+				.Subscribe(e => OnDragMotion(childDragGesture, flowBoxChild, (int) e.OffsetX, (int) e.OffsetY));
+
+			childDragGesture.Events().DragBegin
 				.WithLatestFrom(childWidget.IconWhileDragging)
 				.Subscribe(t =>
 				{
-					if (t.Second.Image != null) Drag.SourceSetIconPixbuf(flowBoxChild, t.Second.Image.Pixbuf);
-					else Drag.SourceSetIconName(flowBoxChild, t.Second.IconNameOrPath);
+					_dragImageViewModel = t.Second;
+					_dragInitialized = false;
 				});
 
-			flowBoxChild
-				.ObserveEvent(w => w.Events().DragBegin)
-				.Subscribe(_ => OnDragBeginInternal(flowBoxChild));
+			childDragGesture.Events().DragEnd
+				.Subscribe(e => OnDragEndInternal(flowBoxChild));
 
-			flowBoxChild
-				.ObserveEvent(w => w.Events().DragEnd)
-				.Subscribe(_ => OnDragEndInternal(flowBoxChild));
-
-			flowBoxChild
-				.ObserveEvent(w => w.Events().DragFailed)
-				.Subscribe(e => e.RetVal = true);
-
-			DisableDragAndDrop.TakeUntil(itemObservable.TakeLast(1)).Subscribe(b => ToggleDragSource(flowBoxChild, b));
+			_disableDragAndDrop
+				.TakeUntil(itemObservable.TakeLast(1))
+				.Subscribe(b => ToggleDragSource(flowBoxChild, b));
 
 			itemObservable
 				.Select(i => i.Item1)
@@ -81,59 +82,31 @@ public class ForEachFlowBox<TViewModel, TWidget, TKey> : FlowBox where TWidget :
 
 		itemsObservable.Subscribe(_ =>
 		{
-			InvalidateSort();
-			InvalidateFilter();
+			_flowBox.InvalidateSort();
+			_flowBox.InvalidateFilter();
 		});
-	}
 
-	protected override void Dispose(bool disposing)
-	{
-		if (disposing)
+		_flowBox.Events().Destroyed.Take(1).Subscribe(_ =>
 		{
 			_disableDragAndDrop.Dispose();
-		}
-
-		base.Dispose(disposing);
-	}
-
-	protected override void OnShowAll()
-	{
-		base.OnShowAll();
-		_draggingPlaceholderWidget.Visible = false;
+		});
 	}
 
 	private void ToggleDragSource(FlowBoxChild flowBoxChild, bool disabledDragAndDrop)
 	{
 		if (disabledDragAndDrop)
 		{
-			Drag.SourceUnset(flowBoxChild);
+
 		}
 		else
 		{
-			Drag.SourceSet(flowBoxChild, ModifierType.Button1Mask, null, DragAction.Move);
-			Drag.SourceSetTargetList(flowBoxChild, _dragTargets);
+
 		}
 	}
 
-	private void OnDragBeginInternal(FlowBoxChild flowBoxChild)
+	private void EmitOrderingChanged()
 	{
-		_draggingPlaceholderWidget.Data[ForEachDataKeys.Index] = flowBoxChild.Index;
-		_draggingPlaceholderWidget.Visible = true;
-		flowBoxChild.Visible = false;
-		InvalidateSort();
-		_dragBeginSubject.OnNext(flowBoxChild.Child as TWidget);
-	}
-
-	private void OnDragEndInternal(FlowBoxChild flowBoxChild)
-	{
-		var newIndex = _draggingPlaceholderWidget.Index;
-		if (newIndex < flowBoxChild.Index) newIndex--;
-		flowBoxChild.Data[ForEachDataKeys.Index] = newIndex;
-		flowBoxChild.Visible = true;
-
-		_draggingPlaceholderWidget.Visible = false;
-
-		var newOrdering = Children
+		var newOrdering = _flowBox.Children
 			.Where(c => c.IsMapped)
 			.Cast<FlowBoxChild>()
 			.OrderBy(c => c.Data[ForEachDataKeys.Index])
@@ -141,25 +114,60 @@ public class ForEachFlowBox<TViewModel, TWidget, TKey> : FlowBox where TWidget :
 			.ToList();
 
 		_orderingChangedSubject.OnNext(newOrdering);
-		InvalidateSort();
 	}
 
-	protected override bool OnDragMotion(DragContext context, int x, int y, uint time)
+	private void OnDragEndInternal(FlowBoxChild flowBoxChild)
 	{
-		if (context.ListTargets().All(t => t.Name != _dragIconTargetName)) return false;
-		var hoveringOverFlowBoxChild = GetChildAtPos(x, y);
-		if (hoveringOverFlowBoxChild == null) return false;
+		_dragIconImage.Hide();
+		flowBoxChild.Child.Opacity = 1;
+		EmitOrderingChanged();
+	}
 
-		if (hoveringOverFlowBoxChild != _draggingPlaceholderWidget)
+	private void OnDragMotion(GestureDrag dragGesture, FlowBoxChild flowBoxChild, int iconX, int iconY)
+	{
+		var lastPosition = _dragIconImage.Allocation;
+
+		if (!_dragInitialized)
 		{
-			var newIndex = hoveringOverFlowBoxChild.Index;
-			if (newIndex < _draggingPlaceholderWidget.Index) newIndex--;
-			_draggingPlaceholderWidget.Data[ForEachDataKeys.Index] = newIndex;
-			InvalidateSort();
+			var size = (int) (flowBoxChild.Allocation.Height);
+			_dragIconImage.ApplyViewModel(_dragImageViewModel, size, size);
+			_dragIconImage.ShowAll();
+			_dragBeginSubject.OnNext(flowBoxChild.Child as TWidget);
+			_dragInitialized = true;
+			flowBoxChild.Child.Opacity = 0;
+			dragGesture.GetStartPoint(out var startX, out var startY);
+			lastPosition.Location = new Point((int) startX, (int) startY);
 		}
 
-		Gdk.Drag.Status(context, context.SuggestedAction, time);
-		return true;
+		flowBoxChild.TranslateCoordinates(_flowBox, iconX, iconY, out var x, out var y);
+		var imageRect = new Rectangle(_flowBox.Allocation.Constrain(new Rectangle(new Point(x, y), lastPosition.Size)), lastPosition.Size);
+		var children = _flowBox.Children.Where(c => c.IsMapped).Cast<FlowBoxChild>().OrderBy(c => c.Index).ToList();
+		var movedLeft = imageRect.X < lastPosition.X;
+		var movedRight = imageRect.X > lastPosition.X;
+		var movedUp = imageRect.Y < lastPosition.Y;
+		var movedDown = imageRect.Y > lastPosition.Y;
+		var shrunkenImageRect = imageRect.TrimSides((int)(imageRect.Width * .5));
+
+		Point? corner = null;
+
+		if (movedUp && movedRight) corner = shrunkenImageRect.UpperRight();
+		else if (movedUp && movedLeft) corner = shrunkenImageRect.UpperLeft();
+		else if (movedDown && movedLeft) corner = shrunkenImageRect.LowerLeft();
+		else if (movedDown && movedRight) corner = shrunkenImageRect.LowerRight();
+		else if (movedLeft) corner = shrunkenImageRect.UpperLeft();
+		else if (movedRight) corner = shrunkenImageRect.UpperRight();
+		else if (movedUp) corner = shrunkenImageRect.UpperLeft();
+		else if (movedDown) corner = shrunkenImageRect.LowerLeft();
+
+		if (corner.HasValue && children.FirstOrDefault(c => c.Allocation.Contains(corner.Value)) is {} hovered)
+		{
+			children.Remove(flowBoxChild);
+			children.Insert(hovered.Index, flowBoxChild);
+			for (var i=0; i<children.Count; i++) children[i].Data[ForEachDataKeys.Index] = i;
+			_flowBox.InvalidateSort();
+		}
+
+		_rootContainer.Move(_dragIconImage, imageRect.X, imageRect.Y);
 	}
 
 	private int SortByItemIndex(FlowBoxChild child1, FlowBoxChild child2)
