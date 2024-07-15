@@ -9,6 +9,7 @@ using Glimpse.Common.StatusNotifierWatcher;
 using Glimpse.Common.System.Reactive;
 using Glimpse.Common.Xfce.SessionManagement;
 using Glimpse.Common.Xorg;
+using Glimpse.Host;
 using Glimpse.Notifications;
 using Glimpse.SidePane;
 using Glimpse.StartMenu;
@@ -60,25 +61,23 @@ public static class Program
 		try
 		{
 			AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) => bootstrapLogger.LogError(eventArgs.ExceptionObject.ToString());
-			var builder = Host.CreateApplicationBuilder([]);
+			var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder([]);
 			builder.Configuration.AddConfiguration(configuration);
 			builder.Services.AddSingleton<ReduxStore>();
-			builder.Services.AddLogging(b => b.AddConsole().AddJournal(o => o.SyslogIdentifier = appName));
+			builder.AddReactiveTimers();
+			builder.AddDBus();
 			builder.AddXorg();
 			builder.AddDesktopFiles();
-			builder.AddDBus();
+			builder.AddGlimpseHost("org.glimpse");
 			builder.AddStatusNotifier();
 			builder.AddXSessionManagement();
 			builder.AddAccounts();
 			builder.AddGlimpseConfiguration();
-			builder.AddXorg();
 			builder.AddTaskbar();
 			builder.AddSystemTray();
 			builder.AddStartMenu<StartMenuDemands>();
 			builder.AddNotifications();
 			builder.AddSidePane();
-			builder.AddGlimpseApplication();
-			builder.AddReactiveTimers();
 
 			var host = builder.Build();
 
@@ -94,6 +93,9 @@ public static class Program
 				})
 				.ToArray());
 
+			var appSettings = host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>();
+
+			await host.UseXSessionManagement(Environment.CurrentDirectory, appSettings.Value.Xfce);
 			await host.UseDBus();
 			await host.UseDesktopFiles();
 			await host.UseXorg();
@@ -105,9 +107,13 @@ public static class Program
 			await host.UseStartMenu();
 			await host.UseNotifications();
 			await host.UseSidePane();
-			await host.UseGlimpseApplication();
+			await host.UseGlimpseHost();
 
 			await store.Dispatch(new InitializeStoreAction());
+
+			var orchestrator = host.Services.GetRequiredService<DisplayOrchestrator>();
+			orchestrator.WatchMonitorChanges();
+
 			await host.RunAsync();
 			return 0;
 		}

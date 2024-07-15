@@ -56,7 +56,7 @@ public class ConfigurationService(ILogger<ConfigurationService> logger)
 
 	private void LoadFile()
 	{
-		if (!File.Exists(_fileName))
+		if (!File.Exists(_fullPath))
 		{
 			SaveFile();
 		}

@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Gdk;
 using GLib;
 using Glimpse.Common.DesktopEntries;
@@ -15,76 +16,71 @@ using MentorLake.Redux;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveMarbles.ObservableEvents;
 using DateTime = System.DateTime;
-using Monitor = Gdk.Monitor;
+using Unit = System.Reactive.Unit;
 using Window = Gtk.Window;
 using WindowType = Gtk.WindowType;
 
 namespace Glimpse.Taskbar.Components.Panel;
 
-public class Panel : Window
+public class Panel
 {
-	private readonly Monitor _monitor;
-	private readonly IObservable<DateTime> _oneSecondTimer;
-	private readonly SidePaneWindow _sidePaneWindow;
-	private readonly ContextMenu<ContextMenuItemViewModel> _menu;
+	public StartMenuIcon.StartMenuIcon StartMenuIcon { get; }
+	public Window Window { get; }
 	private const string ClockFormat = "h:mm tt\nM/d/yyyy";
+
+	private readonly TaskbarView _taskbarView;
+	private readonly IObservable<DateTime> _oneSecondTimer;
+	private readonly Subject<Unit> _clockClicked = new();
+	private readonly Box _panelRoot;
 
 	public Panel(
 		SystemTrayBox systemTrayBox,
 		TaskbarView taskbarView,
 		StartMenuIcon.StartMenuIcon startMenuIcon,
 		ReduxStore store,
-		Monitor monitor,
-		[FromKeyedServices(Timers.OneSecond)] IObservable<DateTime> oneSecondTimer,
-		SidePaneWindow sidePaneWindow) : base(WindowType.Toplevel)
+		SidePaneWindow sidePaneWindow,
+		[FromKeyedServices(Timers.OneSecond)] IObservable<DateTime> oneSecondTimer)
 	{
-		_monitor = monitor;
+		StartMenuIcon = startMenuIcon;
+		_taskbarView = taskbarView;
+		_taskbarView.Valign = Align.Center;
 		_oneSecondTimer = oneSecondTimer;
-		_sidePaneWindow = sidePaneWindow;
-		Decorated = false;
-		Resizable = false;
-		TypeHint = WindowTypeHint.Dock;
-		AppPaintable = true;
-		Visual = Screen.RgbaVisual;
 
-		this.Events().DeleteEvent.Subscribe(e => e.RetVal = true);
-		this.ObserveButtonRelease().Subscribe(_ => Window.Focus(0));
+		_panelRoot = new Box(Orientation.Horizontal, 0);
+		_panelRoot.AddClass("panel");
 
 		var centerBox = new Box(Orientation.Horizontal, 0);
-		centerBox.PackStart(startMenuIcon, false, false, 0);
+		centerBox.PackStart(startMenuIcon.Widget, false, false, 0);
 		centerBox.PackStart(taskbarView, false, false, 0);
 		centerBox.Halign = Align.Start;
-
-		var clock = CreateClock();
+		_panelRoot.Add(centerBox);
 
 		var rightBox = new Box(Orientation.Horizontal, 0);
 		rightBox.PackStart(systemTrayBox, false, false, 4);
-		rightBox.PackStart(clock, false, false, 5);
+		rightBox.PackStart(CreateClock(), false, false, 5);
 		rightBox.Halign = Align.End;
 		rightBox.Valign = Align.Center;
+		rightBox.Hexpand = true;
+		_panelRoot.Add(rightBox);
 
-		var grid = new Grid();
-		grid.Attach(centerBox, 1, 0, 8, 1);
-		grid.Attach(rightBox, 8, 0, 2, 1);
-		grid.Vexpand = true;
-		grid.Hexpand = true;
-		grid.RowHomogeneous = true;
-		grid.ColumnHomogeneous = true;
-		grid.StyleContext.AddClass("panel");
-		Add(grid);
-		ShowAll();
+		var panelRootEventBox = new EventBox();
+		panelRootEventBox.Add(_panelRoot);
+		panelRootEventBox.ShowAll();
+
+		_panelRoot.ObserveEvent(e => e.Events().SizeAllocated)
+			.Subscribe(_ => centerBox.MarginStart = ComputeCenterBoxMarginLeft());
 
 		store.Select(TaskbarViewModelSelectors.CurrentSlots)
 			.DistinctUntilChanged()
-			.TakeUntilDestroyed(this)
+			.TakeUntilDestroyed(_panelRoot)
 			.ObserveOn(new SynchronizationContextScheduler(new GLibSynchronizationContext(), false))
 			.Select(g => g.Refs.Count)
 			.DistinctUntilChanged()
-			.Subscribe(numGroups => { centerBox.MarginStart = ComputeCenterBoxMarginLeft(numGroups); });
+			.Subscribe(_ => centerBox.MarginStart = ComputeCenterBoxMarginLeft());
 
 		var taskManagerObs = store
 			.Select(TaskbarSelectors.TaskManagerCommand)
-			.TakeUntilDestroyed(this)
+			.TakeUntilDestroyed(_panelRoot)
 			.ObserveOn(new SynchronizationContextScheduler(new GLibSynchronizationContext(), false));
 
 		var contextMenuViewModel = Observable
@@ -95,20 +91,34 @@ public class Panel : Window
 					Icon = new ImageViewModel() { IconNameOrPath = "utilities-system-monitor" }
 				}));
 
-		_menu = ContextMenuFactory.Create(this, contextMenuViewModel);
-		_menu.ItemActivated.WithLatestFrom(taskManagerObs).Subscribe(t => DesktopFileRunner.Run(t.Second));
+		var menu = ContextMenuFactory.Create(panelRootEventBox, contextMenuViewModel);
+		menu.ItemActivated.WithLatestFrom(taskManagerObs).Subscribe(t => DesktopFileRunner.Run(t.Second));
+		panelRootEventBox.Events().Destroyed.Take(1).Subscribe(_ => menu.Destroy());
+
+		Window = new Window(WindowType.Toplevel);
+		Window.Decorated = false;
+		Window.Resizable = false;
+		Window.TypeHint = WindowTypeHint.Dock;
+		Window.AppPaintable = true;
+		Window.Visual = Window.Screen.RgbaVisual;
+
+		Window.ObserveButtonRelease().Subscribe(_ => Window.Window.Focus(0));
+		Window.Events().DeleteEvent.TakeUntilDestroyed(Window).Subscribe(e => e.RetVal = true);
+
+		_clockClicked.TakeUntilDestroyed(Window).Subscribe(_ =>
+		{
+			Window.Display.GetPointer(out var x, out var y);
+			var eventMonitor = Window.Display.GetMonitorAtPoint(x, y);
+			sidePaneWindow.ToggleVisibility(eventMonitor.Geometry.Right, eventMonitor.Geometry.Bottom - Window.AllocatedHeight);
+		});
+
+		Window.Add(panelRootEventBox);
+		Window.ShowAll();
 	}
 
-	protected override void OnDestroyed()
+	private int ComputeCenterBoxMarginLeft()
 	{
-		_menu.Destroy();
-		base.OnDestroyed();
-	}
-
-	private int ComputeCenterBoxMarginLeft(int numGroups)
-	{
-		var taskbarWidth = (numGroups + 1) * 46;
-		return WidthRequest / 2 - taskbarWidth / 2;
+		return _panelRoot.Allocation.Width / 2 - _taskbarView.Allocation.Width / 2;
 	}
 
 	private Widget CreateClock()
@@ -131,7 +141,7 @@ public class Panel : Window
 		clockButtonEventBox.Add(clockButton);
 
 		_oneSecondTimer
-			.TakeUntilDestroyed(this)
+			.TakeUntilDestroyed(_panelRoot)
 			.ObserveOn(new GLibSynchronizationContext())
 			.Select(dt => dt.ToString(ClockFormat))
 			.DistinctUntilChanged()
@@ -139,34 +149,16 @@ public class Panel : Window
 
 		clockButtonEventBox.ObserveButtonRelease().Where(e => e.Event.Button == 1).Subscribe(e =>
 		{
-			Display.GetPointer(out var x, out var y);
-			var eventMonitor = Display.GetMonitorAtPoint(x, y);
-			_sidePaneWindow.ToggleVisibility(eventMonitor.Geometry.Right, eventMonitor.Geometry.Bottom - AllocatedHeight);
+			_clockClicked.OnNext(Unit.Default);
 			e.RetVal = true;
 		});
 
 		return clockButtonEventBox;
 	}
 
-	public void DockToBottom()
+	public bool IsOnMonitor(Rectangle monitor)
 	{
-		var monitorDimensions = _monitor.Geometry;
-		SetSizeRequest(monitorDimensions.Width, AllocatedHeight);
-		Move(_monitor.Workarea.Left, _monitor.Geometry.Bottom - AllocatedHeight + 1);
-		ReserveSpace();
-	}
-
-	private void ReserveSpace()
-	{
-		var reservedSpace = new long[] { 0, 0, 0, AllocatedHeight }.SelectMany(BitConverter.GetBytes).ToArray();
-		Property.Change(Window, Atom.Intern("_NET_WM_STRUT", false), Atom.Intern("CARDINAL", false), 32, PropMode.Replace, reservedSpace, 4);
-
-		var reservedSpaceLong = new long[] { 0, 0, 0, AllocatedHeight, 0, 0, 0, 0, 0, 0, _monitor.Workarea.Left, _monitor.Workarea.Left + _monitor.Geometry.Width - 1 }.SelectMany(BitConverter.GetBytes).ToArray();
-		Property.Change(Window, Atom.Intern("_NET_WM_STRUT_PARTIAL", false), Atom.Intern("CARDINAL", false), 32, PropMode.Replace, reservedSpaceLong, 12);
-	}
-
-	public bool IsOnMonitor(Monitor monitor)
-	{
-		return monitor.Handle == _monitor.Handle;
+		Window.GetPosition(out var x, out var y);
+		return monitor.Contains(x, y);
 	}
 }

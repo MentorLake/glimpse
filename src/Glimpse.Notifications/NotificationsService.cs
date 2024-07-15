@@ -1,13 +1,16 @@
 using System.Reactive.Linq;
 using System.Text.Json;
+using GLib;
 using Glimpse.Common.DBus;
 using Glimpse.Common.System.Reactive;
+using Glimpse.Notifications.Components.NotificationBubbles;
 using MentorLake.Redux;
 using Microsoft.Extensions.Logging;
+using Task = System.Threading.Tasks.Task;
 
 namespace Glimpse.Notifications;
 
-public enum NotificationCloseReason : int
+public enum NotificationCloseReason
 {
 	Expired = 1,
 	Dismissed = 2,
@@ -22,6 +25,8 @@ public class NotificationsService(
 	OrgFreedesktopDBus orgFreedesktopDBus,
 	ReduxStore store)
 {
+	public IObservable<NotificationBubbleWindow> Notifications { get; set; }
+
 	public async Task InitializeAsync(string notificationsFilePath)
 	{
 		dBusConnections.Session.AddMethodHandler(freedesktopNotifications);
@@ -80,6 +85,41 @@ public class NotificationsService(
 					logger.LogError(e.ToString());
 				}
 			});
+
+		Notifications = store
+			.Select(NotificationBubbleSelectors.ViewModel)
+			.ObserveOn(new GLibSynchronizationContext())
+			.Select(vm => vm.Notifications)
+			.UnbundleMany(n => n.Id)
+			.Select(notificationObservable =>
+			{
+				try
+				{
+					var newWindow = new NotificationBubbleWindow(notificationObservable.Select(x => x.Item1));
+
+					newWindow.CloseNotification
+						.TakeUntil(notificationObservable.TakeLast(1))
+						.Subscribe(_ => DismissNotification(notificationObservable.Key.Id));
+
+					newWindow.ActionInvoked
+						.TakeUntil(notificationObservable.TakeLast(1))
+						.Subscribe(action => ActionInvoked(notificationObservable.Key.Id, action));
+
+					notificationObservable
+						.TakeLast(1)
+						.ObserveOn(new GLibSynchronizationContext())
+						.Subscribe(_ => newWindow.Dispose());
+
+					return newWindow;
+				}
+				catch (Exception e)
+				{
+					logger.LogError(e.ToString());
+					throw;
+				}
+			})
+			.Publish()
+			.AutoConnect();
 	}
 
 	public void RemoveHistoryItem(Guid id)
@@ -87,12 +127,12 @@ public class NotificationsService(
 		store.Dispatch(new RemoveHistoryItemAction(id));
 	}
 
-	public void ActionInvoked(uint notificationId, string action)
+	private void ActionInvoked(uint notificationId, string action)
 	{
 		freedesktopNotifications.EmitActionInvoked(notificationId, action);
 	}
 
-	public void DismissNotification(uint notificationId)
+	private void DismissNotification(uint notificationId)
 	{
 		freedesktopNotifications.EmitNotificationClosed(notificationId, (int) NotificationCloseReason.Dismissed);
 		store.Dispatch(new CloseNotificationAction(notificationId));

@@ -15,6 +15,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Glimpse.Common\Glimpse.Common.csproj" />
+		<ProjectReference Include="..\Glimpse.Host\Glimpse.Host.csproj" />
 		<ProjectReference Include="..\Glimpse.StartMenu\Glimpse.StartMenu.csproj" />
 		<ProjectReference Include="..\Glimpse.SystemTray\Glimpse.SystemTray.csproj" />
 		<ProjectReference Include="..\Glimpse.Taskbar\Glimpse.Taskbar.csproj" />

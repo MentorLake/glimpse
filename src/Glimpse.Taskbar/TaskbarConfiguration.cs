@@ -18,7 +18,7 @@ internal record TaskbarConfiguration
 	public const string ConfigKey = "Taskbar";
 	public static readonly TaskbarConfiguration Empty = new();
 
-	public string TaskManagerCommand { get; set; } = "";
+	public string TaskManagerCommand { get; set; } = "xfce4-taskmanager";
 	public string StartMenuLaunchIconName { get; set; } = "";
 	public ImmutableList<string> PinnedLaunchers { get; set; } = ImmutableList<string>.Empty;
 	public ImmutableList<ContextMenuItem> ContextMenu { get; set; } = ImmutableList<ContextMenuItem>.Empty;

@@ -1,18 +1,19 @@
-using System.Collections.Immutable;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Reflection;
-using System.Text;
-using Gdk;
-using GLib;
+using Glimpse.Common.Accounts;
 using Glimpse.Common.Configuration;
+using Glimpse.Common.DBus;
 using Glimpse.Common.DesktopEntries;
-using Glimpse.Common.Gtk;
+using Glimpse.Common.StatusNotifierWatcher;
+using Glimpse.Common.System.Reactive;
+using Glimpse.Common.Xfce.SessionManagement;
 using Glimpse.Common.Xorg;
+using Glimpse.Host;
+using Glimpse.Notifications;
+using Glimpse.SidePane;
 using Glimpse.StartMenu;
-using Glimpse.StartMenu.Components;
+using Glimpse.SystemTray;
 using Glimpse.Taskbar;
-using Gtk;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
@@ -21,9 +22,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ReactiveMarbles.ObservableEvents;
 using Application = Gtk.Application;
 using Task = System.Threading.Tasks.Task;
-using Window = Gtk.Window;
 
 namespace Glimpse.Tests;
 
@@ -36,34 +37,29 @@ public class Program
 			.AddJsonStream(Assembly.GetExecutingAssembly().GetManifestResourceStream("appsettings.json")!)
 			.Build();
 
-		var startMenuContentViewModel = new StartMenuViewModel()
-		{
-			Chips = ImmutableDictionary<StartMenuChips, StartMenuAppFilteringChip>.Empty
-				.Add(StartMenuChips.Pinned, new StartMenuAppFilteringChip() { IsSelected = true, IsVisible = true })
-				.Add(StartMenuChips.AllApps, new StartMenuAppFilteringChip() { IsSelected = false, IsVisible = true })
-				.Add(StartMenuChips.SearchResults, new StartMenuAppFilteringChip() { IsSelected = false, IsVisible = true }),
-			AllApps = Enumerable.Range(1, 45).Select(i => CreateStartMenuAppViewModel(i.ToString())).ToImmutableList(),
-		};
-
 		var appName = configuration.GetValue<string>("Glimpse:ApplicationName");
 		using var bootstrapLoggerFactory = LoggerFactory.Create(b => b.AddConsole().AddJournal(o => o.SyslogIdentifier = appName));
 		var bootstrapLogger = bootstrapLoggerFactory.CreateLogger(appName);
 
-		var builder = Host.CreateApplicationBuilder([]);
+		var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder([]);
 		builder.Configuration.AddConfiguration(configuration);
 		builder.Services.AddSingleton<ReduxStore>();
-		builder.AddTaskbar();
-		builder.AddStartMenu<StartMenuDemands>();
-		builder.AddGlimpseConfiguration();
+		builder.AddReactiveTimers();
+		builder.AddDBus();
 		builder.AddXorg();
 		builder.AddDesktopFiles();
+		builder.AddGlimpseHost("org.glimpsetests");
+		builder.AddStatusNotifier();
+		builder.AddXSessionManagement();
+		builder.AddAccounts();
+		builder.AddGlimpseConfiguration();
+		builder.AddTaskbar();
+		builder.AddSystemTray();
+		builder.AddStartMenu<StartMenuDemands>();
+		builder.AddNotifications();
+		builder.AddSidePane();
 
 		var host = builder.Build();
-		await host.UseXorg();
-		await host.UseDesktopFiles();
-		await host.UseGlimpseConfiguration();
-		await host.UseTaskbar(host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>().Value.ConfigurationFilePath);
-		await host.UseStartMenu();
 
 		var store = host.Services.GetRequiredService<ReduxStore>();
 		store.RegisterReducers(host.Services.GetServices<IReducerFactory>().ToArray());
@@ -77,56 +73,26 @@ public class Program
 			})
 			.ToArray());
 
-		var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
+		var appSettings = host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>();
 
-		lifetime.ApplicationStarted.Register(() =>
-		{
-			var application = new Application("org.glimpsetests", ApplicationFlags.None);
-			Application.Init();
-			application.Register(Cancellable.Current);
-			LoadCss();
+		await host.UseXSessionManagement(Environment.CurrentDirectory, appSettings.Value.Xfce);
+		await host.UseDBus();
+		await host.UseDesktopFiles();
+		await host.UseXorg();
+		await host.UseGlimpseConfiguration();
+		await host.UseAccounts();
+		await host.UseStatusNotifier();
+		await host.UseTaskbar(host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>().Value.ConfigurationFilePath);
+		await host.UseSystemTray();
+		await host.UseStartMenu();
+		await host.UseNotifications();
+		await host.UseSidePane();
+		await host.UseGlimpseHost();
 
-			var window = new Window("Test");
-			//window.Add(host.Services.GetRequiredService<TaskbarView>());
-			window.Add(new StartMenuContent(new BehaviorSubject<StartMenuViewModel>(startMenuContentViewModel), new StartMenuActionBar(Observable.Return(new ActionBarViewModel()))));
-			application.AddWindow(window);
-			window.ShowAll();
-			Task.Run(Application.Run);
-		});
+		var orchestrator = host.Services.GetRequiredService<DisplayOrchestrator>();
+		var application = host.Services.GetRequiredService<Application>();
+		application.Events().Startup.Subscribe(_ => orchestrator.AddPanelToSecondaryMonitor());
 
 		await host.RunAsync();
-	}
-
-	private static void LoadCss()
-	{
-		var allCss = new StringBuilder();
-
-		foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-		{
-			foreach (var cssFile in assembly.GetManifestResourceNames().Where(n => n.EndsWith(".css")))
-			{
-				using var cssFileStream = new StreamReader(assembly.GetManifestResourceStream(cssFile));
-				allCss.AppendLine(cssFileStream.ReadToEnd());
-			}
-		}
-
-		var display = Display.Default;
-		var screen = display.DefaultScreen;
-		var screenCss = new CssProvider();
-		screenCss.LoadFromData(allCss.ToString());
-		StyleContext.AddProviderForScreen(screen, screenCss, uint.MaxValue);
-	}
-
-	private static StartMenuAppViewModel CreateStartMenuAppViewModel(string id)
-	{
-		var iconIndex = Random.Shared.Next() % 2;
-		return new StartMenuAppViewModel()
-		{
-			Index = 2,
-			IsVisible = true,
-			Icon = new() { IconNameOrPath = iconIndex == 0 ? "code" : "spotify" },
-			IsPinnedToStartMenu = true,
-			DesktopFile = new() { Name = id, Id = id },
-		};
 	}
 }

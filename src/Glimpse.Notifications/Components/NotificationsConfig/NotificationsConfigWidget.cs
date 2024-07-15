@@ -4,6 +4,7 @@ using Glimpse.Common.Gtk;
 using Glimpse.Common.System.Reactive;
 using Gtk;
 using MentorLake.Redux;
+using ReactiveMarbles.ObservableEvents;
 
 namespace Glimpse.Notifications.Components.NotificationsConfig;
 
@@ -31,22 +32,24 @@ public class NotificationsConfigWidget : Box
 				var icon = new Image().BindViewModel(appObs.Select(a => a.AppIcon), 16);
 				var label = new Label(appObs.Key.AppName) { Hexpand = true, Xalign = 0 };
 
-				var showInPopupsSwitch = new Box(Orientation.Horizontal, 0)
-					.AddClass("notifications-config__switch-container")
-					.AddMany(new Switch() { Halign = Align.Start, Valign = Align.Center }
-						.BindViewModel(appObs.Select(x => x.ShowPopupBubbles))
-						.Signal("notify::active", (sw, _) => store.Dispatch(new UpdateShowInPopupsAction(appObs.Key.AppName, sw.State))));
+				var showInPopupsSwitch = new Switch() { Halign = Align.Start, Valign = Align.Center }.BindViewModel(appObs.Select(x => x.ShowPopupBubbles));
+				showInPopupsSwitch.Events().Activate.Subscribe(e => store.Dispatch(new UpdateShowInPopupsAction(appObs.Key.AppName, showInPopupsSwitch.State)));
 
-				var showInHistorySwitch = new Box(Orientation.Horizontal, 0)
+				var showInPopupsSwitchBox = new Box(Orientation.Horizontal, 0)
 					.AddClass("notifications-config__switch-container")
-					.AddMany(new Switch() { Halign = Align.Start, Valign = Align.Center }
-						.BindViewModel(appObs.Select(x => x.ShowInHistory))
-						.Signal("notify::active", (sw, _) => store.Dispatch(new UpdateShowInHistoryAction(appObs.Key.AppName, sw.State))));
+					.AddMany(showInPopupsSwitch);
+
+				var showInHistorySwitch = new Switch() { Halign = Align.Start, Valign = Align.Center }.BindViewModel(appObs.Select(x => x.ShowInHistory));
+				showInHistorySwitch.Events().Activate.Subscribe(e => store.Dispatch(new UpdateShowInHistoryAction(appObs.Key.AppName, showInHistorySwitch.State)));
+
+				var showInHistorySwitchBox = new Box(Orientation.Horizontal, 0)
+					.AddClass("notifications-config__switch-container")
+					.AddMany(showInHistorySwitch);
 
 				grid.Attach(icon, 0, rowCount, 1, 1);
 				grid.Attach(label, 1, rowCount, 1, 1);
-				grid.Attach(showInPopupsSwitch, 2, rowCount, 1, 1);
-				grid.Attach(showInHistorySwitch, 3, rowCount, 1, 1);
+				grid.Attach(showInPopupsSwitchBox, 2, rowCount, 1, 1);
+				grid.Attach(showInHistorySwitchBox, 3, rowCount, 1, 1);
 				grid.ShowAll();
 				rowCount++;
 

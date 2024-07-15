@@ -54,6 +54,7 @@
 		<ProjectReference Include="..\Glimpse.Taskbar\Glimpse.Taskbar.csproj" />
 		<ProjectReference Include="..\Glimpse.Notifications\Glimpse.Notifications.csproj" />
 		<ProjectReference Include="..\Glimpse.SidePane\Glimpse.SidePane.csproj" />
+		<ProjectReference Include="..\Glimpse.Host\Glimpse.Host.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
