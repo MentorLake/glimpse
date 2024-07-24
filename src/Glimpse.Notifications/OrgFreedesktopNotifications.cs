@@ -61,7 +61,7 @@ public class OrgFreedesktopNotifications(DBusConnections dBusConnections) : IMet
 			case "org.freedesktop.Notifications":
 				switch (context.Request.MemberAsString, context.Request.SignatureAsString)
 				{
-					case ("Introspect", "" or null):
+					case ("GetCapabilities", "" or null):
 						{
 							string[] ret;
 							if (_synchronizationContext is not null)
