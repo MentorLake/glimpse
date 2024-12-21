@@ -52,7 +52,10 @@ public class GlimpseGtkApplication(ILogger<GlimpseGtkApplication> logger, IServi
 		var commandLineArgs = Environment.GetCommandLineArgs();
 		Application.Init("glimpse", ref commandLineArgs);
 		application.Register(Cancellable.Current);
+#if !DEBUG
 		sessionClient.Register(Installation.DefaultInstallPath);
+#endif
+
 
 		LoadCss();
 		WatchNotifications();
