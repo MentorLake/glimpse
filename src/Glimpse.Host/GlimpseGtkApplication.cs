@@ -21,11 +21,15 @@ public class GlimpseGtkApplication(ILogger<GlimpseGtkApplication> logger, Applic
 			args.ExitApplication = false;
 		};
 
-		var commandLineArgs = Environment.GetCommandLineArgs();
-		Application.Init(appSettings.Value.AppName, ref commandLineArgs);
-		LoadCss();
-		application.Register(Cancellable.Current);
-		Task.Run(Application.Run);
+		Task.Run(() =>
+		{
+			var commandLineArgs = Environment.GetCommandLineArgs();
+			Application.Init(appSettings.Value.AppName, ref commandLineArgs);
+			LoadCss();
+			application.Register(Cancellable.Current);
+			Application.Run();
+		}, cancellationToken);
+
 		return Task.CompletedTask;
 	}
 
