@@ -7,7 +7,7 @@ public static class VariantReader
 {
 	public static DBusVariantItem ReadDBusVariant(this ref Reader reader)
 	{
-		ReadOnlySpan<byte> signature = reader.ReadSignature();
+		ReadOnlySpan<byte> signature = reader.ReadSignatureAsSpan();
 		SignatureReader signatureReader = new(signature);
 		if (!signatureReader.TryRead(out var dBusType, out var innerSignature))
 		{
