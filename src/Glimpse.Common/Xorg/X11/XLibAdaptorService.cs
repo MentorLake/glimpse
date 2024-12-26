@@ -104,7 +104,7 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 
 		windowEvents.Connect();
 
-		Task.Run(() => WatchEvents(applicationLifetime.ApplicationStopping));
+		Task.Run(() => WatchEventsAsync(applicationLifetime.ApplicationStopping));
 
 		return Task.CompletedTask;
 	}
@@ -134,16 +134,21 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 		return results.Distinct().ToArray();
 	}
 
-	private void WatchEvents(CancellationToken cancellationToken)
+	private async Task WatchEventsAsync(CancellationToken cancellationToken)
 	{
-		while (!cancellationToken.IsCancellationRequested)
+		var eventPointer = Marshal.AllocHGlobal(24 * sizeof(long));
+		var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(25));
+
+		while (!cancellationToken.IsCancellationRequested && await timer.WaitForNextTickAsync(cancellationToken))
 		{
-			var eventPointer = Marshal.AllocHGlobal(24 * sizeof(long));
-			XLib.XNextEvent(_rootWindowRef.Display, eventPointer);
-			var someEvent = Marshal.PtrToStructure<XAnyEvent>(eventPointer);
-			_events.OnNext((someEvent, eventPointer));
-			XLib.XFree(eventPointer);
+			while (XLib.XCheckMaskEvent(_rootWindowRef.Display, (long) EventMask.PropertyChangeMask, eventPointer))
+			{
+				var someEvent = Marshal.PtrToStructure<XAnyEvent>(eventPointer);
+				_events.OnNext((someEvent, eventPointer));
+			}
 		}
+
+		XLib.XFree(eventPointer);
 	}
 
 	public void Dispose()

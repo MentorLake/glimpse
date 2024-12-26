@@ -19,6 +19,9 @@ public class XLib
 	public static extern int XNextEvent(ulong display, IntPtr e);
 
 	[DllImport(LibraryName)]
+	public static extern bool XCheckMaskEvent(ulong display, long event_mask, IntPtr event_return);
+
+	[DllImport(LibraryName)]
 	public static extern ulong XDefaultRootWindow(ulong display);
 
 	[DllImport(LibraryName)]
