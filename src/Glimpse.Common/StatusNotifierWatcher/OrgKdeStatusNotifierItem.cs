@@ -505,7 +505,7 @@ public class OrgKdeStatusNotifierItem
 					changed?.Add("Status");
 					break;
 				case "WindowId":
-					var windowIdSig = Encoding.ASCII.GetString(reader.ReadSignature().Span.ToArray());
+					var windowIdSig = Encoding.ASCII.GetString(reader.ReadSignatureAsSpan().ToArray());
 					if (windowIdSig != "u" && windowIdSig != "i") throw new Exception("Invalid window Id signature");
 					props.WindowId = reader.ReadInt32();
 					changed?.Add("WindowId");
@@ -516,7 +516,7 @@ public class OrgKdeStatusNotifierItem
 					changed?.Add("IconThemePath");
 					break;
 				case "Menu":
-					var menuSig = Encoding.ASCII.GetString(reader.ReadSignature().Span.ToArray());
+					var menuSig = Encoding.ASCII.GetString(reader.ReadSignatureAsSpan().ToArray());
 					props.Menu = menuSig == "o" ? reader.ReadObjectPath() : reader.ReadString();
 					changed?.Add("Menu");
 					break;
@@ -566,7 +566,7 @@ public class OrgKdeStatusNotifierItem
 					changed?.Add("ToolTip");
 					break;
 				default:
-					var sigType = Encoding.ASCII.GetString(reader.ReadSignature().Span.ToArray());
+					var sigType = Encoding.ASCII.GetString(reader.ReadSignatureAsSpan().ToArray());
 					if (sigType == "s") reader.ReadString();
 					else if (sigType == "u") reader.ReadUInt32();
 					else throw new Exception($"Unhandled property: {propName} ({sigType})");
