@@ -1,8 +1,6 @@
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Gdk;
-using GLib;
 using Glimpse.Common.DesktopEntries;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.Gtk.ContextMenu;
@@ -34,7 +32,7 @@ public class StartMenuIcon
 
 		var viewModelObservable = store.Select(StartMenuIconViewModelSelectors.s_viewModel)
 			.TakeUntilDestroyed(Widget)
-			.ObserveOn(new SynchronizationContextScheduler(new GLibSynchronizationContext(), false))
+			.ObserveOn(GLibExt.Scheduler)
 			.Replay(1)
 			.AutoConnect();
 

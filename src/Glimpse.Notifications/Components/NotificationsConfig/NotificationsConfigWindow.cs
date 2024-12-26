@@ -1,4 +1,5 @@
 using Gdk;
+using Glimpse.Common.Gtk;
 using ReactiveMarbles.ObservableEvents;
 using Window = Gtk.Window;
 using WindowType = Gtk.WindowType;
@@ -15,7 +16,7 @@ public class NotificationsConfigWindow : Window
 		Visible = false;
 		Resizable = false;
 
-		this.Events().DeleteEvent.Subscribe(e =>
+		this.ObserveEvent(w => w.Events().DeleteEvent).Subscribe(e =>
 		{
 			e.RetVal = true;
 			Hide();

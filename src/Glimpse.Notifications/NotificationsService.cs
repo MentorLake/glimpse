@@ -1,7 +1,7 @@
 using System.Reactive.Linq;
 using System.Text.Json;
-using GLib;
 using Glimpse.Common.DBus;
+using Glimpse.Common.Gtk;
 using Glimpse.Common.System.Reactive;
 using Glimpse.Notifications.Components.NotificationBubbles;
 using MentorLake.Redux;
@@ -88,7 +88,7 @@ public class NotificationsService(
 
 		Notifications = store
 			.Select(NotificationBubbleSelectors.ViewModel)
-			.ObserveOn(new GLibSynchronizationContext())
+			.ObserveOn(GLibExt.Scheduler)
 			.Select(vm => vm.Notifications)
 			.UnbundleMany(n => n.Id)
 			.Select(notificationObservable =>
@@ -107,7 +107,7 @@ public class NotificationsService(
 
 					notificationObservable
 						.TakeLast(1)
-						.ObserveOn(new GLibSynchronizationContext())
+						.ObserveOn(GLibExt.Scheduler)
 						.Subscribe(_ => newWindow.Dispose());
 
 					return newWindow;

@@ -13,7 +13,7 @@ public class NotificationsConfigWidget : Box
 	public NotificationsConfigWidget(ReduxStore store) : base(Orientation.Vertical, 8)
 	{
 		var viewModelObs = store.Select(NotificationsConfigSelectors.ViewModel)
-			.ObserveOn(new GLibSynchronizationContext())
+			.ObserveOn(GLibExt.Scheduler)
 			.TakeUntilDestroyed(this)
 			.Replay(1);
 

@@ -76,7 +76,7 @@ public class ContextMenu<T> : Menu where T : IContextMenuItemViewModel<T>
 		var menuItem = new MenuItem();
 		menuItem.Add(box);
 		menuItem.Name = item.Id;
-		menuItem.Events().Activated.TakeUntilDestroyed(menuItem).Subscribe(_ => _itemActivatedSubject.OnNext(item));
+		menuItem.ObserveEvent(x => x.Events().Activated).Subscribe(_ => _itemActivatedSubject.OnNext(item));
 
 		if (item.Children != null && item.Children.Any())
 		{

@@ -26,7 +26,7 @@ public class CalendarWindow : Bin
 
 		oneSecondTimer
 			.DistinctUntilChanged(x => x.Date)
-			.ObserveOn(new GLibSynchronizationContext())
+			.ObserveOn(GLibExt.Scheduler)
 			.Subscribe(dt => todayLabel.Text = dt.ToString("dddd, MMMM dd"));
 
 		var monthLabel = new Label();

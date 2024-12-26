@@ -47,7 +47,7 @@ public class StartMenuWindow : Window
 
 		var viewModelObservable = store.Select(startMenuSelectors.ViewModel)
 			.TakeUntilDestroyed(this)
-			.ObserveOn(new SynchronizationContextScheduler(new GLibSynchronizationContext(), false))
+			.ObserveOn(GLibExt.Scheduler)
 			.Replay(1);
 
 		var actionBar = new StartMenuActionBar(viewModelObservable.Select(v => v.ActionBarViewModel).DistinctUntilChanged());
@@ -74,13 +74,13 @@ public class StartMenuWindow : Window
 
 		store.Actions
 			.OfType<WindowFocusedChangedAction>()
-			.ObserveOn(new GLibSynchronizationContext())
+			.ObserveOn(GLibExt.Scheduler)
 			.TakeUntilDestroyed(this)
 			.Where(action => IsVisible && action.WindowRef.Id != LibGdk3Interop.gdk_x11_window_get_xid(Window.Handle))
 			.Subscribe(_ => ToggleVisibility());
 
 		store.Actions.OfType<StartMenuOpenedAction>()
-			.ObserveOn(new GLibSynchronizationContext())
+			.ObserveOn(GLibExt.Scheduler)
 			.TakeUntilDestroyed(this)
 			.Subscribe(_ => ToggleVisibility());
 
@@ -105,7 +105,7 @@ public class StartMenuWindow : Window
 		if (IsVisible)
 		{
 			_revealer.RevealChild = false;
-			Observable.Timer(TimeSpan.FromMilliseconds(250)).ObserveOn(new GLibSynchronizationContext()).Subscribe(_ => Hide());
+			Observable.Timer(TimeSpan.FromMilliseconds(250)).ObserveOn(GLibExt.Scheduler).Subscribe(_ => Hide());
 		}
 		else
 		{

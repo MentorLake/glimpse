@@ -33,7 +33,7 @@ public class SystemTrayBox : Box
 		store
 			.Select(SystemTrayViewModelSelector.ViewModel)
 			.TakeUntilDestroyed(this)
-			.ObserveOn(new GLibSynchronizationContext())
+			.ObserveOn(GLibExt.Scheduler)
 			.Select(x => x.Items)
 			.DistinctUntilChanged()
 			.UnbundleMany(i => i.Id)
