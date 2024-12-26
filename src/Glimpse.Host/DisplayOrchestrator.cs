@@ -25,7 +25,7 @@ public class DisplayOrchestrator(NotificationsService notificationsService, Appl
 
 	public void Init()
 	{
-		application.Events().Startup.Subscribe(_ =>
+		application.Events().Startup.ObserveOn(GLibExt.SynchronizationContext).Take(1).Subscribe(_ =>
 		{
 			_startMenuWindow = serviceProvider.GetRequiredService<StartMenuWindow>();
 			application.AddWindow(_startMenuWindow);
@@ -59,17 +59,12 @@ public class DisplayOrchestrator(NotificationsService notificationsService, Appl
 		}
 	}
 
-	public void AddPanelToSecondaryMonitor()
-	{
-		CreatePanel(Display.Default.GetMonitors().First(m => !m.IsPrimary));
-	}
-
-	private Panel CreatePanel(Monitor monitor)
+	public Panel CreatePanel(Monitor monitor, int bottomOffset = 1)
 	{
 		var panelWindow = serviceProvider.GetRequiredService<Panel>();
 		_panels.Add(panelWindow);
 		panelWindow.Window.Events().Destroyed.Take(1).Subscribe(_ => _panels.Remove(panelWindow));
-		DockToBottom(panelWindow.Window, new Rectangle(monitor.Geometry.Location, new Size(monitor.Geometry.Width, monitor.Geometry.Bottom)), monitor.Workarea);
+		DockToBottom(panelWindow.Window, new Rectangle(monitor.Geometry.Location, new Size(monitor.Geometry.Width, monitor.Geometry.Bottom)), monitor.Workarea, bottomOffset);
 		application.AddWindow(panelWindow.Window);
 
 		var startMenuIcon = panelWindow.StartMenuIcon;
@@ -99,10 +94,10 @@ public class DisplayOrchestrator(NotificationsService notificationsService, Appl
 		return panelWindow;
 	}
 
-	private void DockToBottom(Gtk.Window window, Rectangle monitorDimensions, Rectangle workArea)
+	private void DockToBottom(Gtk.Window window, Rectangle monitorDimensions, Rectangle workArea, int bottomOffset)
 	{
 		window.SetSizeRequest(monitorDimensions.Width, window.AllocatedHeight);
-		window.Move(workArea.Left, monitorDimensions.Bottom - window.AllocatedHeight + 1);
+		window.Move(workArea.Left, monitorDimensions.Bottom - window.AllocatedHeight - bottomOffset);
 		ReserveSpace(window, monitorDimensions, workArea);
 	}
 
@@ -119,7 +114,6 @@ public class DisplayOrchestrator(NotificationsService notificationsService, Appl
 	{
 		application.Events().Startup.Subscribe(_ =>
 		{
-			var store = serviceProvider.GetRequiredService<ReduxStore>();
 			var display = Display.Default;
 			var screen = display.DefaultScreen;
 
@@ -131,7 +125,7 @@ public class DisplayOrchestrator(NotificationsService notificationsService, Appl
 
 			store
 				.Select(GlimpseGtkSelectors.Monitors)
-				.ObserveOn(new GLibSynchronizationContext())
+				.ObserveOn(GLibExt.Scheduler)
 				.UnbundleMany(m => m.GetHashCode())
 				.Subscribe(obs =>
 				{
@@ -139,7 +133,7 @@ public class DisplayOrchestrator(NotificationsService notificationsService, Appl
 
 					obs.SkipLast(1).Subscribe(_ =>
 					{
-						DockToBottom(newPanel.Window, obs.Key.Geometry, obs.Key.Workarea);
+						DockToBottom(newPanel.Window, obs.Key.Geometry, obs.Key.Workarea, 1);
 					});
 
 					obs.TakeLast(1).Subscribe(_ =>

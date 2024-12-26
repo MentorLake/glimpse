@@ -1,9 +1,11 @@
 using System.Reactive.Linq;
 using System.Reflection;
+using Gdk;
 using Glimpse.Common.Accounts;
 using Glimpse.Common.Configuration;
 using Glimpse.Common.DBus;
 using Glimpse.Common.DesktopEntries;
+using Glimpse.Common.Gtk;
 using Glimpse.Common.StatusNotifierWatcher;
 using Glimpse.Common.System.Reactive;
 using Glimpse.Common.Xfce.SessionManagement;
@@ -91,7 +93,7 @@ public class Program
 
 		var orchestrator = host.Services.GetRequiredService<DisplayOrchestrator>();
 		var application = host.Services.GetRequiredService<Application>();
-		application.Events().Startup.Subscribe(_ => orchestrator.AddPanelToSecondaryMonitor());
+		application.Events().Startup.ObserveOn(GLibExt.Scheduler).Subscribe(_ => orchestrator.CreatePanel(Display.Default.GetMonitors().First(m => !m.IsPrimary), 100));
 
 		await host.RunAsync();
 	}
