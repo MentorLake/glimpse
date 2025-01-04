@@ -1,4 +1,5 @@
 using Gtk;
+using ReactiveMarbles.ObservableEvents;
 
 namespace Glimpse.Common.Gtk.Accordion;
 
@@ -30,7 +31,7 @@ public class Accordion : Bin
 				.AddButtonStates()
 				.AddClass("button")
 				.AddMany(sectionHeader)
-				.Prop(w => w.ObserveButtonRelease().Subscribe(_ =>
+				.Prop(w => w.ObserveEvent<Widget, ButtonReleaseEventArgs>(w1 => w1.Events().ButtonReleaseEvent).Subscribe(_ =>
 				{
 					foreach (var s in _sections.Where(s => s.Name != sectionName)) s.ItemContainer.Visible = false;
 					sectionItemsContainer.Visible = !sectionItemsContainer.Visible;

@@ -3,6 +3,7 @@ using System.Reactive.Subjects;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.Gtk.ContextMenu;
 using Gtk;
+using ReactiveMarbles.ObservableEvents;
 
 namespace Glimpse.SystemTray.Components;
 
@@ -34,13 +35,13 @@ public class SystemTrayIcon : Button
 			_menuItemActivatedSubject.OnNext(i.DBusId);
 		});
 
-		this.ObserveButtonRelease()
+		this.ObserveEvent(w => w.Events().ButtonReleaseEvent)
 			.WithLatestFrom(viewModelObservable)
 			.Where(t => t.Second.CanActivate && t.First.Event.Button == 1)
 			.Select(t => t.First)
 			.Subscribe(e => _applicationActivated.OnNext(((int)e.Event.XRoot, (int)e.Event.YRoot)));
 
-		this.ObserveButtonRelease()
+		this.ObserveEvent(w => w.Events().ButtonReleaseEvent)
 			.WithLatestFrom(viewModelObservable)
 			.Where(t => !t.Second.CanActivate && t.First.Event.Button == 1)
 			.Subscribe(_ => contextMenu.Popup());

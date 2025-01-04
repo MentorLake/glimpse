@@ -50,10 +50,10 @@ public static class GtkExtensions
 		var x = item.X;
 		var y = item.Y;
 
-		if (item.Right >= container.Width) x = container.Width - item.Width;
+		if (item.X + item.Width >= container.Width) x = container.Width - item.Width;
 		if (item.Left <= 0) x = 0;
 		if (item.Top <= 0) y = 0;
-		if (item.Bottom >= container.Bottom) y = container.Bottom - item.Height + 1;
+		if (item.Y + item.Height >= container.Height) y = container.Height - item.Height;
 
 		return new Point(x, y);
 	}
@@ -141,6 +141,8 @@ public static class GtkExtensions
 			image.SetFromIconName(string.IsNullOrEmpty(vm.IconNameOrPath) ? (useMissingImage ? MissingIconName : "") : vm.IconNameOrPath, IconSize.LargeToolbar);
 			image.PixelSize = width;
 		}
+
+		image.SetSizeRequest(width, height);
 	}
 
 	public static T Prop<T>(this T widget, Action<T> action) where T : Widget
@@ -187,11 +189,6 @@ public static class GtkExtensions
 			if (image.Pixbuf == null) image.PixelSize = size;
 			else image.Pixbuf = ((GtkGlimpseImage)image.Data["Big"])?.Pixbuf;
 		});
-	}
-
-	public static IObservable<ButtonReleaseEventArgs> ObserveButtonRelease(this Widget widget)
-	{
-		return widget.ObserveEvent(w => w.Events().ButtonReleaseEvent).TakeUntilDestroyed(widget);
 	}
 
 	public static TWidget AddButtonStates<TWidget>(this TWidget widget) where TWidget : Widget
@@ -277,5 +274,31 @@ public static class GtkExtensions
 		cr.Arc(x + lowerLeftRadius, y + height - lowerLeftRadius, lowerLeftRadius, 90 * degrees, 180 * degrees);
 		cr.Arc(x + upperLeftRadius, y + upperLeftRadius, upperLeftRadius, 180 * degrees, 270 * degrees);
 		cr.ClosePath();
+	}
+
+	public static void SetModel<T>(this FlowBoxChild child, T model)
+	{
+		child.Child.Data["Model"] = model;
+	}
+
+	public static TWidget SetModel<TWidget, T>(this TWidget child, T model) where TWidget : Widget
+	{
+		child.Data["Model"] = model;
+		return child;
+	}
+
+	public static T GetModel<T>(this FlowBoxChild child)
+	{
+		return (T)child.Child.Data["Model"];
+	}
+
+	public static void SetIndex(this FlowBoxChild child, int index)
+	{
+		child.Data["Index"] = index;
+	}
+
+	public static int GetIndex(this FlowBoxChild child)
+	{
+		return (int) child.Data["Index"];
 	}
 }

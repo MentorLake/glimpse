@@ -69,27 +69,19 @@ public class DisplayOrchestrator(NotificationsService notificationsService, Appl
 
 		var startMenuIcon = panelWindow.StartMenuIcon;
 
-		_startMenuWindow.ObserveEvent(w => w.Events().Shown)
-			.Merge(_startMenuWindow.ObserveEvent(w => w.Events().Hidden))
-			.Merge(_startMenuWindow.WindowMoved.Select(x => (object) x))
+		_startMenuWindow
+			.ObserveEvent(w => w.Events().Hidden)
+			.Subscribe(_ => startMenuIcon.StartMenuClosed());
+
+		_startMenuWindow
+			.ObserveEvent(w => w.Events().Shown)
+			.Merge(_startMenuWindow.WindowMoved.Select(x => (object)x))
 			.TakeUntilDestroyed(startMenuIcon.Widget)
-			.Subscribe(_ =>
-			{
-				if (!_startMenuWindow.IsVisible || startMenuIcon.Widget.Display.GetMonitorAtWindow(startMenuIcon.Widget.Window) != startMenuIcon.Widget.Display.GetMonitorAtWindow(_startMenuWindow.Window))
-				{
-					startMenuIcon.StartMenuOpened();
-				}
-				else
-				{
-					startMenuIcon.StartMenuClosed();
-				}
-			});
+			.Subscribe(_ => startMenuIcon.StartMenuOpened());
 
-
-		startMenuIcon.StartMenuButtonClicked.TakeUntilDestroyed(startMenuIcon.Widget).Subscribe(location =>
-		{
-			_startMenuWindow.ToggleVisibility();
-		});
+		startMenuIcon.StartMenuButtonClicked
+			.TakeUntilDestroyed(startMenuIcon.Widget)
+			.Subscribe(_ => _startMenuWindow.ToggleVisibility());
 
 		return panelWindow;
 	}

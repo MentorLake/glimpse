@@ -1,11 +1,10 @@
 using System.Collections.Immutable;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using GLib;
 using Glimpse.Common.DesktopEntries;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.Gtk.ForEach;
+using Glimpse.Common.System.Reactive;
 using Gtk;
 using ReactiveMarbles.ObservableEvents;
 using Key = Gdk.Key;
@@ -20,7 +19,7 @@ public class StartMenuContent : Bin
 	private readonly Subject<string> _toggleTaskbarPinningSubject = new();
 	private readonly Subject<string> _toggleStartMenuPinningSubject = new();
 	private readonly Entry _searchEntry;
-	private readonly ForEachFlowBox<StartMenuAppViewModel, StartMenuAppIcon, string> _apps;
+	private readonly ForEachFlowBoxCustom<StartMenuAppIcon> _apps;
 	private readonly List<(int, int)> _keyCodeRanges = new()
 	{
 		(48, 57),
@@ -32,7 +31,7 @@ public class StartMenuContent : Bin
 	public IObservable<DesktopFile> AppLaunch => _appLaunch;
 	public IObservable<DesktopFileAction> DesktopFileAction => _runActionSubject;
 	public IObservable<StartMenuChips> ChipActivated { get; private set; }
-	public IObservable<ImmutableList<string>> AppOrderingChanged => _apps.OrderingChanged.Select(next => next.Select(a => a.DesktopFile.Id).ToImmutableList());
+	public IObservable<ImmutableList<string>> AppOrderingChanged => _apps.OrderingChanged.Select(next => next.Select(a => a.GetModel<StartMenuAppViewModel>().DesktopFile.Id).ToImmutableList());
 	public IObservable<string> ToggleTaskbarPinning => _toggleTaskbarPinningSubject;
 	public IObservable<string> ToggleStartMenuPinning => _toggleStartMenuPinningSubject;
 
@@ -53,7 +52,7 @@ public class StartMenuContent : Bin
 			.Merge(_searchEntry.ObserveEvent(w => w.Events().TextInserted).Select(_ => _searchEntry.Text))
 			.Merge(_searchEntry.ObserveEvent(w => w.Events().TextDeleted).Select(_ => _searchEntry.Text))
 			.TakeUntilDestroyed(this)
-			.Throttle(TimeSpan.FromMilliseconds(50), new SynchronizationContextScheduler(new GLibSynchronizationContext()))
+			.Throttle(TimeSpan.FromMilliseconds(50), GLibExt.Scheduler)
 			.DistinctUntilChanged();
 
 		var chipsObs = viewModelObservable.Select(vm => vm.Chips).DistinctUntilChanged();
@@ -61,9 +60,9 @@ public class StartMenuContent : Bin
 		var allAppsChip = Chip.Create("All Apps", chipsObs.Select(c => c[StartMenuChips.AllApps]));
 		var searchResultsChip = Chip.Create("Search results", chipsObs.Select(c => c[StartMenuChips.SearchResults]));
 
-		ChipActivated = pinnedChip.ObserveButtonRelease().Select(_ => StartMenuChips.Pinned)
-			.Merge(allAppsChip.ObserveButtonRelease().Select(_ => StartMenuChips.AllApps))
-			.Merge(searchResultsChip.ObserveButtonRelease().Select(_ => StartMenuChips.SearchResults));
+		ChipActivated = pinnedChip.ObserveEvent(w => w.Events().ButtonReleaseEvent).Select(_ => StartMenuChips.Pinned)
+			.Merge(allAppsChip.ObserveEvent(w => w.Events().ButtonReleaseEvent).Select(_ => StartMenuChips.AllApps))
+			.Merge(searchResultsChip.ObserveEvent(w => w.Events().ButtonReleaseEvent).Select(_ => StartMenuChips.SearchResults));
 
 		var chipBox = new Box(Orientation.Horizontal, 4);
 		chipBox.Halign = Align.Start;
@@ -72,47 +71,46 @@ public class StartMenuContent : Bin
 		chipBox.Add(searchResultsChip);
 		chipBox.AddClass("start-menu__chips");
 
-		_apps = ForEachExtensions.Create(viewModelObservable.Select(vm => vm.AllApps).DistinctUntilChanged(), i => i.DesktopFile.FilePath, appObs =>
-		{
-			var appIcon = new StartMenuAppIcon(appObs);
-			appIcon.ContextMenuItemActivated
-				.TakeUntilDestroyed(appIcon)
-				.Subscribe(i =>
-				{
-					if (i.Id == StartMenuAppContextMenuItem.ToggleTaskbarAppId)
-					{
-						_toggleTaskbarPinningSubject.OnNext(i.DesktopFilePath);
-					}
-					else if (i.Id == StartMenuAppContextMenuItem.ToggleStartMenuAppId)
-					{
-						_toggleStartMenuPinningSubject.OnNext(i.DesktopFilePath);
-					}
-					else
-					{
-						_runActionSubject.OnNext(i.DesktopAction);
-					}
-				});
-
-			return appIcon;
-		});
-
-		_apps.Widget.RowSpacing = 0;
-		_apps.Widget.ColumnSpacing = 0;
-		_apps.Widget.MaxChildrenPerLine = 6;
-		_apps.Widget.MinChildrenPerLine = 6;
-		_apps.Widget.SelectionMode = SelectionMode.Single;
-		_apps.Widget.Orientation = Orientation.Horizontal;
-		_apps.Widget.Homogeneous = true;
+		_apps = new ForEachFlowBoxCustom<StartMenuAppIcon>();
+		_apps.ItemSpacing = 0;
+		_apps.ItemsPerLine = 6;
 		_apps.Widget.Valign = Align.Start;
 		_apps.Widget.Halign = Align.Start;
-		_apps.Widget.ActivateOnSingleClick = true;
-		_apps.Widget.FilterFunc = c => _apps.GetViewModel(c)?.IsVisible ?? true;
 		_apps.Widget.AddClass("start-menu__apps");
-		_apps.DisableDragAndDrop = viewModelObservable.Select(vm => vm.DisableDragAndDrop).DistinctUntilChanged();
-		this.ObserveEvent(w => w.Events().FocusChildSet).Subscribe(_ => _apps.Widget.UnselectAll());
+		_apps.FilterFunc = c => c.GetModel<StartMenuAppViewModel>().IsVisible;
 
-		_apps.Widget.ObserveEvent(w => w.Events().ChildActivated)
-			.Select(e => _apps.GetViewModel(e.Child))
+		viewModelObservable
+			.TakeUntilDestroyed(this)
+			.Select(vm => vm.DisableDragAndDrop)
+			.DistinctUntilChanged()
+			.Subscribe(x => _apps.IsDragEnabled = !x);
+
+		viewModelObservable.Select(vm => vm.AllApps).DistinctUntilChanged().UnbundleMany(i => i.DesktopFile.FilePath).RemoveIndex().Subscribe(itemObservable =>
+		{
+			var appIcon = new StartMenuAppIcon(itemObservable).SetModel(itemObservable.Key);
+			itemObservable.Subscribe(vm => appIcon.SetModel(vm));
+			itemObservable.Select(vm => vm.IsVisible).DistinctUntilChanged().ObserveOn(GLibExt.Scheduler).Subscribe(_ => _apps.InvalidateFilter());
+			itemObservable.Select(vm => vm.Index).DistinctUntilChanged().ObserveOn(GLibExt.Scheduler).Subscribe(i => _apps.AddOrUpdate(appIcon, i));
+			itemObservable.TakeLast(1).ObserveOn(GLibExt.Scheduler).Subscribe(_ => appIcon.Destroy());
+
+			appIcon.ContextMenuItemActivated
+				.TakeUntilDestroyed(appIcon)
+				.Where(i => i.Id == StartMenuAppContextMenuItem.ToggleTaskbarAppId)
+				.Subscribe(i => _toggleTaskbarPinningSubject.OnNext(i.DesktopFilePath));
+
+			appIcon.ContextMenuItemActivated
+				.TakeUntilDestroyed(appIcon)
+				.Where(i => i.Id == StartMenuAppContextMenuItem.ToggleStartMenuAppId)
+				.Subscribe(i => _toggleStartMenuPinningSubject.OnNext(i.DesktopFilePath));
+
+			appIcon.ContextMenuItemActivated
+				.TakeUntilDestroyed(appIcon)
+				.Where(i => i.Id != StartMenuAppContextMenuItem.ToggleTaskbarAppId && i.Id != StartMenuAppContextMenuItem.ToggleStartMenuAppId)
+				.Subscribe(i => _runActionSubject.OnNext(i.DesktopAction));
+		});
+
+		_apps.ItemActivated.TakeUntilDestroyed(_apps.Widget)
+			.Select(w => w.GetModel<StartMenuAppViewModel>())
 			.Subscribe(vm => _appLaunch.OnNext(vm.DesktopFile));
 
 		_searchEntry.ObserveEvent(w => w.Events().KeyReleaseEvent)
@@ -123,7 +121,7 @@ public class StartMenuContent : Bin
 
 		var pinnedAppsScrolledWindow = new ScrolledWindow();
 		pinnedAppsScrolledWindow.Vexpand = true;
-		pinnedAppsScrolledWindow.Add(_apps.Root);
+		pinnedAppsScrolledWindow.Add(_apps.Widget);
 		pinnedAppsScrolledWindow.AddClass("start-menu__apps-scroll-window");
 
 		var layout = new Grid();

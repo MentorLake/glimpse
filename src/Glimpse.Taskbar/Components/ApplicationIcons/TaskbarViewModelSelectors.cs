@@ -37,7 +37,7 @@ internal static class TaskbarViewModelSelectors
 
 				if (matchingSlot == null)
 				{
-					result = result.Add(new SlotRef() { ClassHintName = window.ClassHintName, DiscoveredDesktopFileId = desktopFile?.Id ?? "" });
+					result = result.Add(new SlotRef() { ClassHintName = window.ClassHintName, DiscoveredDesktopFileId = desktopFile?.Id ?? "", Id = window.ClassHintName });
 				}
 				else if (string.IsNullOrEmpty(matchingSlot.ClassHintName))
 				{
@@ -124,7 +124,6 @@ internal static class TaskbarViewModelSelectors
 				var desktopFile = desktopFiles.First(f => f.Slot == slot).DesktopFile;
 				var isPinned = !string.IsNullOrEmpty(slot.PinnedDesktopFileId);
 				var closeable = canClose.First(w => w.Slot == slot).CanClose;
-
 				var contextMenuItems = new List<SlotContextMenuItemViewModel>();
 
 				if (desktopFile.Actions.Any())
@@ -140,21 +139,27 @@ internal static class TaskbarViewModelSelectors
 					contextMenuItems.Add(new SlotContextMenuItemViewModel() { DisplayText = "separator" });
 				}
 
-				contextMenuItems.Add(new SlotContextMenuItemViewModel()
+				if (!string.IsNullOrEmpty(desktopFile.FilePath))
 				{
-					Id = "Launch",
-					DisplayText = desktopFile.Name,
-					Icon = new ImageViewModel() { IconNameOrPath = desktopFile.IconName },
-					DesktopFilePath = desktopFile.FilePath
-				});
+					contextMenuItems.Add(new SlotContextMenuItemViewModel()
+					{
+						Id = "Launch",
+						DisplayText = desktopFile.Name,
+						Icon = new ImageViewModel() { IconNameOrPath = desktopFile.IconName },
+						DesktopFilePath = desktopFile.FilePath
+					});
+				}
 
-				contextMenuItems.Add(new SlotContextMenuItemViewModel()
+				if (!string.IsNullOrEmpty(slot.DiscoveredDesktopFileId) || !string.IsNullOrEmpty(slot.PinnedDesktopFileId))
 				{
-					Id = "Pin",
-					DisplayText = isPinned ? "Unpin from taskbar" : "Pin to taskbar",
-					Icon = new ImageViewModel() { IconNameOrPath = isPinned ? "list-remove-symbolic" : "list-add-symbolic" },
-					DesktopFilePath = desktopFile.FilePath
-				});
+					contextMenuItems.Add(new SlotContextMenuItemViewModel()
+					{
+						Id = "Pin",
+						DisplayText = isPinned ? "Unpin from taskbar" : "Pin to taskbar",
+						Icon = new ImageViewModel() { IconNameOrPath = isPinned ? "list-remove-symbolic" : "list-add-symbolic" },
+						DesktopFilePath = desktopFile.FilePath
+					});
+				}
 
 				if (closeable)
 				{

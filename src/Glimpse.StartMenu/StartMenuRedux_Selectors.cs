@@ -66,7 +66,7 @@ internal class StartMenuSelectors
 					appViewModel.IsPinnedToTaskbar = taskbarIndex > -1;
 					appViewModel.IsPinnedToStartMenu = pinnedIndex > -1;
 					appViewModel.IsVisible = isVisible;
-					appViewModel.Index = (isShowingSearchResults || isShowingAllApps) && isVisible ? index++ : pinnedIndex;
+					appViewModel.Index = !isVisible ? -1 : isShowingSearchResults || isShowingAllApps ? index++ : pinnedIndex;
 					appViewModel.ActionIcons = f.Actions.ToDictionary(a => a.ActionName, a => new ImageViewModel() { IconNameOrPath = f.IconName });
 					appViewModel.ContextMenuItems = f.Actions
 						.Select(a => new StartMenuAppContextMenuItem()
@@ -112,7 +112,7 @@ internal class StartMenuSelectors
 				{
 					AllApps = allApps,
 					SearchText = searchText,
-					DisableDragAndDrop = searchText.Length > 0,
+					DisableDragAndDrop = searchText.Length > 0 || !chips[StartMenuChips.Pinned].IsSelected,
 					ActionBarViewModel = actionBarViewModel,
 					Chips = chips,
 				};

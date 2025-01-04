@@ -13,27 +13,29 @@ using WindowType = Gtk.WindowType;
 
 namespace Glimpse.Taskbar.Components.WindowPicker;
 
-internal class TaskbarWindowPicker : Window
+internal class TaskbarWindowPicker
 {
 	private readonly Subject<IWindowRef> _previewWindowClicked = new();
 	private readonly Subject<IWindowRef> _closeWindow = new();
+	public Window Widget { get; }
 
-	public TaskbarWindowPicker(IObservable<SlotViewModel> viewModelObservable) : base(WindowType.Popup)
+	public TaskbarWindowPicker(IObservable<SlotViewModel> viewModelObservable)
 	{
-		SkipPagerHint = true;
-		SkipTaskbarHint = true;
-		Decorated = false;
-		Resizable = false;
-		CanFocus = true;
-		TypeHint = WindowTypeHint.Dialog;
-		Visual = Screen.RgbaVisual;
-		KeepAbove = true;
+		Widget = new Window(WindowType.Popup);
+		Widget.SkipPagerHint = true;
+		Widget.SkipTaskbarHint = true;
+		Widget.Decorated = false;
+		Widget.Resizable = false;
+		Widget.CanFocus = true;
+		Widget.TypeHint = WindowTypeHint.Dialog;
+		Widget.Visual = Widget.Screen.RgbaVisual;
+		Widget.KeepAbove = true;
 
-		this.Events().DeleteEvent.Subscribe(e => e.RetVal = true);
+		Widget.Events().DeleteEvent.Subscribe(e => e.RetVal = true);
 
 		var layout = new Box(Orientation.Horizontal, 0);
-		Add(layout);
-		this.ObserveEvent(w => w.Events().FocusOutEvent).Subscribe(_ => ClosePopup());
+		Widget.Add(layout);
+		Widget.ObserveEvent(w => w.Events().FocusOutEvent).Subscribe(_ => ClosePopup());
 
 		viewModelObservable.Select(vm => vm.Tasks).UnbundleMany(t => t.WindowRef.Id).RemoveIndex().Subscribe(taskObservable =>
 		{
@@ -42,7 +44,7 @@ internal class TaskbarWindowPicker : Window
 			taskObservable.TakeLast(1).Subscribe(_ => preview.Destroy());
 		});
 
-		this.Events().Destroyed.Take(1).Subscribe(_ =>
+		Widget.Events().Destroyed.Take(1).Subscribe(_ =>
 		{
 			_previewWindowClicked.OnCompleted();
 			_closeWindow.OnCompleted();
@@ -54,12 +56,12 @@ internal class TaskbarWindowPicker : Window
 
 	public void ClosePopup()
 	{
-		Visible = false;
+		Widget.Visible = false;
 	}
 
 	public void Popup()
 	{
-		ShowAll();
+		Widget.ShowAll();
 	}
 
 	private Widget CreateAppPreview(IObservable<WindowViewModel> taskObservable)
@@ -98,9 +100,9 @@ internal class TaskbarWindowPicker : Window
 
 		taskObservable.Select(t => t.Title).DistinctUntilChanged().Subscribe(t => appName.Text = t);
 		appIcon.BindViewModel(taskObservable.Select(t => t.Icon).DistinctUntilChanged(), 18);
-		closeIconBox.ObserveButtonRelease().WithLatestFrom(taskObservable).Subscribe(t => _closeWindow.OnNext(t.Second.WindowRef));
+		closeIconBox.ObserveEvent(w => w.Events().ButtonReleaseEvent).WithLatestFrom(taskObservable).Subscribe(t => _closeWindow.OnNext(t.Second.WindowRef));
 		screenshotImage.BindViewModel(taskObservable.Select(s => s.Screenshot).DistinctUntilChanged(), 200, 100);
-		appPreview.ObserveButtonRelease().WithLatestFrom(taskObservable).Subscribe(t => _previewWindowClicked.OnNext(t.Second.WindowRef));
+		appPreview.ObserveEvent(w => w.Events().ButtonReleaseEvent).WithLatestFrom(taskObservable).Subscribe(t => _previewWindowClicked.OnNext(t.Second.WindowRef));
 
 		return appPreview;
 	}

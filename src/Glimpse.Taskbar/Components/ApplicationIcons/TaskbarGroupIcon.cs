@@ -43,6 +43,7 @@ internal class TaskbarGroupIcon : EventBox, IForEachDraggable
 
 		viewModel.Subscribe(vm => _currentViewModel = vm);
 		viewModel.Select(vm => vm.DemandsAttention).DistinctUntilChanged().Subscribe(_ => QueueDraw());
+		viewModel.Select(vm => vm.Tasks.Count).DistinctUntilChanged().Subscribe(_ => QueueDraw());
 
 		this.AppIcon(image, iconObservable, 26);
 		this.ObserveEvent(w => w.Events().ButtonReleaseEvent).Subscribe(e => e.RetVal = true);

@@ -1,11 +1,10 @@
 using System.Collections.Immutable;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using GLib;
 using Glimpse.Common.DesktopEntries;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.Gtk.ContextMenu;
 using Glimpse.Common.Gtk.ForEach;
+using Glimpse.Common.System.Reactive;
 using Glimpse.Common.Xorg;
 using Glimpse.Common.Xorg.State;
 using Glimpse.Taskbar.Components.WindowPicker;
@@ -15,32 +14,57 @@ using ReactiveMarbles.ObservableEvents;
 
 namespace Glimpse.Taskbar.Components.ApplicationIcons;
 
-public class TaskbarView : Box
+public class TaskbarView
 {
+	public Widget Widget { get; set; }
+
 	public TaskbarView(ReduxStore store, IDisplayServer displayServer)
 	{
+		Widget = new Box(Orientation.Horizontal, 0);
+
 		var viewModelSelector = store
 			.Select(TaskbarViewModelSelectors.ViewModel)
-			.TakeUntilDestroyed(this)
-			.ObserveOn(new GLibSynchronizationContext())
+			.TakeUntilDestroyed(Widget)
+			.ObserveOn(GLibExt.Scheduler)
 			.Replay(1)
 			.AutoConnect();
 
-		var forEachGroup = ForEachExtensions.Create(viewModelSelector.Select(g => g.Groups).DistinctUntilChanged(), i => i.SlotRef, viewModelObservable =>
+		var forEachGroup = new ForEachFlowBoxCustom<TaskbarGroupIcon>() { IsDragEnabled = true };
+		Widget = forEachGroup.Widget;
+
+		viewModelSelector
+			.Select(g => g.Groups)
+			.DistinctUntilChanged()
+			.ObserveOn(GLibExt.Scheduler)
+			.UnbundleMany(i => i.SlotRef.Id)
+			.Subscribe(viewModelObservableWithIndex =>
 		{
+			var viewModelObservable = viewModelObservableWithIndex.Select(i => i.Item1);
 			var replayLatestViewModelObservable = viewModelObservable.Replay(1);
 			var windowPicker = new TaskbarWindowPicker(viewModelObservable);
 			var groupIcon = new TaskbarGroupIcon(viewModelObservable, windowPicker);
 			var contextMenu = ContextMenuFactory.Create(groupIcon, viewModelObservable.Select(vm => vm.ContextMenuItems));
 
-			viewModelObservable.TakeLast(1).Subscribe(_ =>
+			viewModelObservable.Subscribe(vm =>
 			{
-				contextMenu.Destroy();
-				windowPicker.Dispose();
+				groupIcon.SetModel(vm);
 			});
 
-			windowPicker.ObserveEvent(w => w.Events().VisibilityNotifyEvent)
-				.Subscribe(_ => windowPicker.CenterAbove(groupIcon));
+			viewModelObservable.TakeLast(1).Subscribe(_ =>
+			{
+				forEachGroup.RemoveItem(groupIcon);
+				contextMenu.Destroy();
+				windowPicker.Widget.Dispose();
+				groupIcon.Destroy();
+			});
+
+			viewModelObservableWithIndex
+				.Select(x => x.Item2)
+				.DistinctUntilChanged()
+				.Subscribe(i => forEachGroup.AddOrUpdate(groupIcon, i));
+
+			windowPicker.Widget.ObserveEvent(w => w.Events().VisibilityNotifyEvent)
+				.Subscribe(_ => windowPicker.Widget.CenterAbove(groupIcon));
 
 			windowPicker.PreviewWindowClicked
 				.Subscribe(windowId =>
@@ -59,15 +83,15 @@ public class TaskbarView : Box
 
 			var cancelOpen = groupIcon.ObserveEvent(w => w.Events().LeaveNotifyEvent)
 				.Merge(groupIcon.ObserveEvent(w => w.Events().Unmapped))
-				.Merge(this.ObserveEvent(w => w.Events().Destroyed))
+				.Merge(Widget.ObserveEvent(w => w.Events().Destroyed))
 				.Take(1);
 
 			groupIcon.ObserveEvent(w => w.Events().EnterNotifyEvent)
 				.WithLatestFrom(replayLatestViewModelObservable)
 				.Where(t => t.Second.Tasks.Count > 0)
-				.Select(t => Observable.Timer(TimeSpan.FromMilliseconds(400), new SynchronizationContextScheduler(new GLibSynchronizationContext())).TakeUntil(cancelOpen).Select(_ => t.Second))
+				.Select(t => Observable.Timer(TimeSpan.FromMilliseconds(400), GLibExt.Scheduler).TakeUntil(cancelOpen).Select(_ => t.Second))
 				.Switch()
-				.Where(_ => !windowPicker.Visible)
+				.Where(_ => !windowPicker.Widget.Visible)
 				.Subscribe(t =>
 				{
 					store.Dispatch(new TakeScreenshotAction() { Windows = t.Tasks.Select(x => x.WindowRef).ToList() });
@@ -75,14 +99,14 @@ public class TaskbarView : Box
 				});
 
 			var cancelClose = groupIcon.ObserveEvent(w => w.Events().EnterNotifyEvent)
-				.Merge(windowPicker.ObserveEvent(w => w.Events().EnterNotifyEvent));
+				.Merge(windowPicker.Widget.ObserveEvent(w => w.Events().EnterNotifyEvent));
 
-			groupIcon.ObserveEvent(w => w.Events().LeaveNotifyEvent).Merge(windowPicker.ObserveEvent(w => w.Events().LeaveNotifyEvent))
-				.Select(_ => Observable.Timer(TimeSpan.FromMilliseconds(400), new SynchronizationContextScheduler(new GLibSynchronizationContext())).TakeUntil(cancelClose))
+			groupIcon.ObserveEvent(w => w.Events().LeaveNotifyEvent).Merge(windowPicker.Widget.ObserveEvent(w => w.Events().LeaveNotifyEvent))
+				.Select(_ => Observable.Timer(TimeSpan.FromMilliseconds(400), GLibExt.Scheduler).TakeUntil(cancelClose))
 				.Switch()
 				.TakeUntilDestroyed(groupIcon)
-				.TakeUntilDestroyed(windowPicker)
-				.Where(_ => !windowPicker.IsPointerInside())
+				.TakeUntilDestroyed(windowPicker.Widget)
+				.Where(_ => !windowPicker.Widget.IsPointerInside())
 				.Subscribe(_ => windowPicker.ClosePopup());
 
 			groupIcon.ObserveEvent(w => w.Events().ButtonPressEvent)
@@ -106,7 +130,7 @@ public class TaskbarView : Box
 
 			primaryMouseButton.Events().Released
 				.WithLatestFrom(viewModelObservable)
-				.Where(t => t.Second.Tasks.Count > 1 && !windowPicker.Visible)
+				.Where(t => t.Second.Tasks.Count > 1 && !windowPicker.Widget.Visible)
 				.Subscribe(t =>
 				{
 					store.Dispatch(new TakeScreenshotAction() { Windows = t.Second.Tasks.Select(x => x.WindowRef).ToList() });
@@ -130,29 +154,25 @@ public class TaskbarView : Box
 
 			 contextMenu.ItemActivated
 				.Where(i => i.Id == "Launch")
-			 	.WithLatestFrom(viewModelObservable)
-			 	.Subscribe(t => DesktopFileRunner.Run(t.Second.DesktopFile));
+				.WithLatestFrom(viewModelObservable)
+				.Subscribe(t => DesktopFileRunner.Run(t.Second.DesktopFile));
 
 			replayLatestViewModelObservable.Connect();
-			return groupIcon;
 		});
 
-		forEachGroup.Widget.ColumnSpacing = 0;
-		forEachGroup.Widget.MaxChildrenPerLine = 100;
-		forEachGroup.Widget.MinChildrenPerLine = 100;
-		forEachGroup.Widget.RowSpacing = 0;
-		forEachGroup.Widget.Orientation = Orientation.Horizontal;
-		forEachGroup.Widget.Homogeneous = false;
 		forEachGroup.Widget.Valign = Align.Center;
 		forEachGroup.Widget.Halign = Align.Start;
-		forEachGroup.Widget.SelectionMode = SelectionMode.None;
 		forEachGroup.Widget.Expand = false;
+		forEachGroup.ItemsPerLine = 20;
+		forEachGroup.ItemSpacing = 4;
 		forEachGroup.Widget.AddClass("taskbar__container");
-		forEachGroup.OrderingChanged
-			.TakeUntilDestroyed(this)
-			.Subscribe(ordering => store.Dispatch(new UpdateTaskbarSlotOrderingBulkAction(ordering.Select(s => s.SlotRef).ToImmutableList())));
-		forEachGroup.DragBeginObservable.TakeUntilDestroyed(this).Subscribe(icon => icon.CloseWindowPicker());
 
-		Add(forEachGroup.Root);
+		forEachGroup.OrderingChanged
+			.TakeUntilDestroyed(Widget)
+			.Subscribe(ordering => store.Dispatch(new UpdateTaskbarSlotOrderingBulkAction(ordering.Select(s => s.GetModel<SlotViewModel>().SlotRef).ToImmutableList())));
+
+		forEachGroup.DragBeginObservable
+			.TakeUntilDestroyed(Widget)
+			.Subscribe(icon => icon.CloseWindowPicker());
 	}
 }

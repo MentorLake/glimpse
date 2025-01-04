@@ -50,7 +50,7 @@ public class NotificationHistoryWindow : Bin
 							.Prop(w => w.Xalign = 0)
 							.Prop(w => w.Hexpand = true))
 						.AddMany(new Button()
-							.Prop(b => b.ObserveButtonRelease().Subscribe(e =>
+							.Prop(b => b.ObserveEvent<Widget, ButtonReleaseEventArgs>(w => w.Events().ButtonReleaseEvent).Subscribe(e =>
 							{
 								e.RetVal = true;
 								_notificationsService.RemoveHistoryForApplication(obs.Key.AppName);
@@ -87,14 +87,14 @@ public class NotificationHistoryWindow : Bin
 					.Prop(w => w.Xalign = 0))
 				.AddMany(new Button()
 					.AddButtonStates()
-					.Prop(w => w.ObserveButtonRelease().Subscribe(_ => notificationsConfigWindow.ShowAndCenterOnScreen()))
+					.Prop(w => w.ObserveEvent<Widget, ButtonReleaseEventArgs>(w1 => w1.Events().ButtonReleaseEvent).Subscribe(_ => notificationsConfigWindow.ShowAndCenterOnScreen()))
 					.Prop(b => b.Image = new Image()
 						.Prop(i => i.IconName = "emblem-system-symbolic")
 						.Prop(i => i.PixelSize = 16))
 					.AddClass("notifications-history__clear-all-button"))
 				.AddMany(new Button("Clear all")
 					.AddButtonStates()
-					.Prop(w => w.ObserveButtonRelease().Subscribe(_ => _notificationsService.ClearHistory()))
+					.Prop(w => w.ObserveEvent<Widget, ButtonReleaseEventArgs>(w1 => w1.Events().ButtonReleaseEvent).Subscribe(_ => _notificationsService.ClearHistory()))
 					.AddClass("notifications-history__clear-all-button")))
 			.AddMany(new ScrolledWindow()
 				.Prop(w => w.HscrollbarPolicy = PolicyType.Never)
@@ -142,14 +142,14 @@ public class NotificationHistoryWindow : Bin
 			.AddClass("button")
 			.Prop(w => w.ObserveEvent(x => x.Events().EnterNotifyEvent).Subscribe(_ => closeButton.Visible = true))
 			.Prop(w => w.ObserveEvent(x => x.Events().LeaveNotifyEvent).Subscribe(e => closeButton.Visible = w.IsPointerInside()))
-			.Prop(w => w.ObserveButtonRelease().Subscribe(_ => _notificationsService.RemoveHistoryItem(obs.Key.Id)))
+			.Prop(w => w.ObserveEvent<Widget, ButtonReleaseEventArgs>(w1 => w1.Events().ButtonReleaseEvent).Subscribe(_ => _notificationsService.RemoveHistoryItem(obs.Key.Id)))
 			.AddMany(new Box(Orientation.Vertical, 0)
 				.AddClass("notifications-history-item__container")
 				.AddMany(new Box(Orientation.Horizontal, 4)
 					.AddMany(displayedTime)
 					.AddMany(new Button()
 						.AddButtonStates()
-						.Prop(w => w.ObserveButtonRelease().Subscribe(_ => _notificationsService.RemoveHistoryItem(obs.Key.Id)))
+						.Prop(w => w.ObserveEvent<Widget, ButtonReleaseEventArgs>(w1 => w1.Events().ButtonReleaseEvent).Subscribe(_ => _notificationsService.RemoveHistoryItem(obs.Key.Id)))
 						.Prop(w => w.Image = closeButton)
 						.Prop(w => w.Halign = Align.End)))
 				.AddMany(new Box(Orientation.Horizontal, 0)

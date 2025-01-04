@@ -19,13 +19,14 @@ public class StartMenuIcon
 
 	public void StartMenuClosed()
 	{
-		Widget.StyleContext.AddClass("start-menu__launch-icon--open");
+		Widget.StyleContext.RemoveClass("start-menu__launch-icon--open");
 	}
 
 	public void StartMenuOpened()
 	{
-		Widget.StyleContext.RemoveClass("start-menu__launch-icon--open");
+		Widget.StyleContext.AddClass("start-menu__launch-icon--open");
 	}
+
 	public StartMenuIcon(ReduxStore store)
 	{
 		Widget = new EventBox();
@@ -38,7 +39,6 @@ public class StartMenuIcon
 
 		var iconObservable = viewModelObservable.Select(v => v.StartMenuLaunchIconName).DistinctUntilChanged().Select(n => new ImageViewModel() { IconNameOrPath = n });
 		var image = new Image();
-		image.SetSizeRequest(42, 42);
 
 		Widget.Expand = false;
 		Widget.Valign = Align.Center;
@@ -46,7 +46,10 @@ public class StartMenuIcon
 		Widget.CanFocus = false;
 		Widget.AddClass("start-menu__launch-icon");
 		Widget.Add(image);
-		Widget.AppIcon(image, iconObservable, 32);
+
+		// Base the size on the height of the panel.  Listen to SizeAllocated event to update it.
+		var iconWidth = (int) Widget.StyleContext.GetProperty("min-width", StateFlags.Normal).Val;
+		Widget.AppIcon(image, iconObservable, iconWidth);
 		Widget.ObserveEvent(w => w.Events().ButtonReleaseEvent).Where(e => e.Event.Button == 1).Subscribe(e =>
 		{
 			_startMenuButtonClicked.OnNext(Widget.Allocation);

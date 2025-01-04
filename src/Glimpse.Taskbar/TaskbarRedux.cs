@@ -2,7 +2,6 @@ using System.Collections.Immutable;
 using System.Reactive.Linq;
 using Glimpse.Common.Configuration;
 using Glimpse.Common.System.Collections;
-using Glimpse.Common.System.Collections.Immutable;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
@@ -22,6 +21,7 @@ internal record SlotReferences
 
 internal record SlotRef
 {
+	public string Id { get; init; } = Guid.NewGuid().ToString();
 	public string PinnedDesktopFileId { get; init; } = "";
 	public string ClassHintName { get; init; } = "";
 	public string DiscoveredDesktopFileId { get; init; } = "";
@@ -55,31 +55,6 @@ internal record ToggleTaskbarPinningAction(string DesktopFileId);
 
 internal static class TaskbarReducers
 {
-	internal static IList<TR> FullOuterJoin<TA, TB, TK, TR>(
-		this IEnumerable<TA> a,
-		IEnumerable<TB> b,
-		Func<TA, TK> selectKeyA,
-		Func<TB, TK> selectKeyB,
-		Func<TA, TB, TK, TR> projection,
-		TA defaultA = default(TA),
-		TB defaultB = default(TB),
-		IEqualityComparer<TK> cmp = null)
-	{
-		cmp = cmp?? EqualityComparer<TK>.Default;
-		var alookup = a.ToLookup(selectKeyA, cmp);
-		var blookup = b.ToLookup(selectKeyB, cmp);
-
-		var keys = new HashSet<TK>(alookup.Select(p => p.Key), cmp);
-		keys.UnionWith(blookup.Select(p => p.Key));
-
-		var join = from key in keys
-			from xa in alookup[key].DefaultIfEmpty(defaultA)
-			from xb in blookup[key].DefaultIfEmpty(defaultB)
-			select projection(xa, xb, key);
-
-		return join.ToList();
-	}
-
 	public static readonly FeatureReducerCollection AllReducers =
 	[
 		FeatureReducer.Build(new TaskbarState())
@@ -90,43 +65,47 @@ internal static class TaskbarReducers
 					return taskbarState with { Configuration = a.Config };
 				}
 
-				var join = taskbarState.StoredSlots.Refs.FullOuterJoin(
-					a.Config.PinnedLaunchers,
-					s => s.PinnedDesktopFileId,
-					s => s, (slotRef, pinnedLauncher, _) => (slotRef, pinnedLauncher));
+				var lastMatchedPinnedLauncherIndex = -1;
+				var results = taskbarState.StoredSlots.Refs;
 
-				var results = new List<SlotRef>();
-
-				// This isn't handling all cases.
-				foreach (var x in join)
+				foreach (var configPinnedDesktopFile in a.Config.PinnedLaunchers)
 				{
-					if (x.slotRef == null)
+					var matchIndex = results.FindIndex(s => s.PinnedDesktopFileId == configPinnedDesktopFile);
+					if (matchIndex == -1) matchIndex = results.FindIndex(s => s.DiscoveredDesktopFileId == configPinnedDesktopFile);
+
+					if (matchIndex != -1)
 					{
-						results.Add(new SlotRef() { PinnedDesktopFileId = x.pinnedLauncher });
+						lastMatchedPinnedLauncherIndex = matchIndex;
 					}
-					else if (string.IsNullOrEmpty(x.pinnedLauncher))
+					else if (lastMatchedPinnedLauncherIndex == -1)
 					{
-						results.Add(x.slotRef);
+						results = results.Insert(0, new SlotRef() { PinnedDesktopFileId = configPinnedDesktopFile });
+						lastMatchedPinnedLauncherIndex = 0;
 					}
-					else if (!string.IsNullOrEmpty(x.slotRef.PinnedDesktopFileId) && !string.IsNullOrEmpty(x.pinnedLauncher))
+					else
 					{
-						results.Add(x.slotRef);
-					}
-					else if (string.IsNullOrEmpty(x.slotRef.PinnedDesktopFileId) && string.IsNullOrEmpty(x.pinnedLauncher))
-					{
-						results.Add(x.slotRef with { PinnedDesktopFileId = x.pinnedLauncher });
+						results = results.Insert(matchIndex + 1, new SlotRef() { PinnedDesktopFileId = configPinnedDesktopFile });
+						lastMatchedPinnedLauncherIndex = matchIndex;
 					}
 				}
 
-				return taskbarState with { Configuration = a.Config, StoredSlots = new SlotReferences() { Refs = results.ToImmutableList() }};
+				return taskbarState with { Configuration = a.Config, StoredSlots = new SlotReferences() { Refs = results }};
 			})
 			.On<ToggleTaskbarPinningAction>((s, a) =>
 			{
-				var slotToToggle = s.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == a.DesktopFileId)
-					?? s.StoredSlots.Refs.FirstOrDefault(r => r.DiscoveredDesktopFileId == a.DesktopFileId)
-					?? new SlotRef() { PinnedDesktopFileId = a.DesktopFileId };
+				if (s.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == a.DesktopFileId) is { } pinnedSlot)
+				{
+					return string.IsNullOrEmpty(pinnedSlot.DiscoveredDesktopFileId)
+						? s with { StoredSlots = s.StoredSlots with { Refs = s.StoredSlots.Refs.Remove(pinnedSlot) } }
+						: s with { StoredSlots = s.StoredSlots with { Refs = s.StoredSlots.Refs.Replace(pinnedSlot, pinnedSlot with { PinnedDesktopFileId = "" }) } };
+				}
 
-				return s with { StoredSlots = s.StoredSlots with { Refs = s.StoredSlots.Refs.Toggle(slotToToggle) } };
+				if (s.StoredSlots.Refs.FirstOrDefault(r => r.DiscoveredDesktopFileId == a.DesktopFileId) is { } unpinnedSlot)
+				{
+					return s with { StoredSlots = s.StoredSlots with { Refs = s.StoredSlots.Refs.Replace(unpinnedSlot, unpinnedSlot with { PinnedDesktopFileId = a.DesktopFileId }) } };
+				}
+
+				return s with { StoredSlots = s.StoredSlots with { Refs = s.StoredSlots.Refs.Add(new SlotRef() { PinnedDesktopFileId = a.DesktopFileId }) } };
 			})
 			.On<UpdateTaskbarSlotOrderingBulkAction>((s, a) =>
 			{

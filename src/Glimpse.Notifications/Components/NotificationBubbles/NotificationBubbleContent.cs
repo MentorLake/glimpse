@@ -5,6 +5,7 @@ using Gtk;
 using Pango;
 using Unit = System.Reactive.Unit;
 using WrapMode = Pango.WrapMode;
+using ReactiveMarbles.ObservableEvents;
 
 namespace Glimpse.Notifications.Components.NotificationBubbles;
 
@@ -49,7 +50,7 @@ public class NotificationBubbleContent : Bin
 		closeButton.AddButtonStates();
 		closeButton.Image = new Image() { IconName = "window-close-symbolic", PixelSize = 16 };
 		closeButton.Halign = Align.End;
-		closeButton.ObserveButtonRelease().Subscribe(_ => _closeNotificationSubject.OnNext(Unit.Default));
+		closeButton.ObserveEvent(w => w.Events().ButtonReleaseEvent).Subscribe(_ => _closeNotificationSubject.OnNext(Unit.Default));
 
 		var appIcon = new Image();
 		appIcon.BindViewModel(notificationStateObs.Select(s => s.AppIcon).DistinctUntilChanged(), 16);
@@ -92,7 +93,7 @@ public class NotificationBubbleContent : Bin
 				actionButton.AddButtonStates();
 				actionButton.AddClass("notifications_action-button");
 				actionButton.ShowAll();
-				actionButton.ObserveButtonRelease().Subscribe(_ => _actionInvokedSubject.OnNext(action));
+				actionButton.ObserveEvent<Widget, ButtonReleaseEventArgs>(w => w.Events().ButtonReleaseEvent).Subscribe(_ => _actionInvokedSubject.OnNext(action));
 				actionsRow.Add(actionButton);
 			}
 		});

@@ -1,9 +1,7 @@
 using System.Collections.Immutable;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Gdk;
-using GLib;
 using Glimpse.Common.DesktopEntries;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.Gtk.ContextMenu;
@@ -28,10 +26,10 @@ public class Panel
 	public Window Window { get; }
 	private const string ClockFormat = "h:mm tt\nM/d/yyyy";
 
-	private readonly TaskbarView _taskbarView;
 	private readonly IObservable<DateTime> _oneSecondTimer;
 	private readonly Subject<Unit> _clockClicked = new();
 	private readonly Box _panelRoot;
+	private readonly Box _centerBox;
 
 	public Panel(
 		SystemTrayBox systemTrayBox,
@@ -42,46 +40,47 @@ public class Panel
 		[FromKeyedServices(Timers.OneSecond)] IObservable<DateTime> oneSecondTimer)
 	{
 		StartMenuIcon = startMenuIcon;
-		_taskbarView = taskbarView;
-		_taskbarView.Valign = Align.Center;
 		_oneSecondTimer = oneSecondTimer;
 
 		_panelRoot = new Box(Orientation.Horizontal, 0);
 		_panelRoot.AddClass("panel");
 
-		var centerBox = new Box(Orientation.Horizontal, 0);
-		centerBox.PackStart(startMenuIcon.Widget, false, false, 0);
-		centerBox.PackStart(taskbarView, false, false, 0);
-		centerBox.Halign = Align.Start;
-		_panelRoot.Add(centerBox);
+		_centerBox = new Box(Orientation.Horizontal, 0);
+		_centerBox.Add(startMenuIcon.Widget);
+		_centerBox.Add(taskbarView.Widget);
+		_centerBox.Valign = Align.Center;
+		_centerBox.Halign = Align.Start;
+		_centerBox.Expand = true;
+		_centerBox.Spacing = 4;
+		_panelRoot.Add(_centerBox);
 
 		var rightBox = new Box(Orientation.Horizontal, 0);
 		rightBox.PackStart(systemTrayBox, false, false, 4);
 		rightBox.PackStart(CreateClock(), false, false, 5);
 		rightBox.Halign = Align.End;
 		rightBox.Valign = Align.Center;
-		rightBox.Hexpand = true;
 		_panelRoot.Add(rightBox);
 
 		var panelRootEventBox = new EventBox();
 		panelRootEventBox.Add(_panelRoot);
 		panelRootEventBox.ShowAll();
 
-		_panelRoot.ObserveEvent(e => e.Events().SizeAllocated)
-			.Subscribe(_ => centerBox.MarginStart = ComputeCenterBoxMarginLeft());
+		taskbarView.Widget.ObserveEvent(e => e.Events().SizeAllocated)
+			.ObserveOn(GLibExt.Scheduler)
+			.Subscribe(_ => _centerBox.MarginStart = ComputeCenterBoxMarginLeft());
 
 		store.Select(TaskbarViewModelSelectors.CurrentSlots)
 			.DistinctUntilChanged()
 			.TakeUntilDestroyed(_panelRoot)
-			.ObserveOn(new SynchronizationContextScheduler(new GLibSynchronizationContext(), false))
+			.ObserveOn(GLibExt.Scheduler)
 			.Select(g => g.Refs.Count)
 			.DistinctUntilChanged()
-			.Subscribe(_ => centerBox.MarginStart = ComputeCenterBoxMarginLeft());
+			.Subscribe(_ => _centerBox.MarginStart = ComputeCenterBoxMarginLeft());
 
 		var taskManagerObs = store
 			.Select(TaskbarSelectors.TaskManagerCommand)
 			.TakeUntilDestroyed(_panelRoot)
-			.ObserveOn(new SynchronizationContextScheduler(new GLibSynchronizationContext(), false));
+			.ObserveOn(GLibExt.Scheduler);
 
 		var contextMenuViewModel = Observable
 			.Return(ImmutableList<ContextMenuItemViewModel>.Empty
@@ -93,7 +92,7 @@ public class Panel
 
 		var menu = ContextMenuFactory.Create(panelRootEventBox, contextMenuViewModel);
 		menu.ItemActivated.WithLatestFrom(taskManagerObs).Subscribe(t => DesktopFileRunner.Run(t.Second));
-		panelRootEventBox.Events().Destroyed.Take(1).Subscribe(_ => menu.Destroy());
+		panelRootEventBox.Events().Destroyed.ObserveOn(GLibExt.Scheduler).Take(1).Subscribe(_ => menu.Destroy());
 
 		Window = new Window(WindowType.Toplevel);
 		Window.Decorated = false;
@@ -102,7 +101,7 @@ public class Panel
 		Window.AppPaintable = true;
 		Window.Visual = Window.Screen.RgbaVisual;
 
-		Window.ObserveButtonRelease().Subscribe(_ => Window.Window.Focus(0));
+		Window.ObserveEvent<Widget, ButtonReleaseEventArgs>(w => w.Events().ButtonReleaseEvent).Subscribe(_ => Window.Window.Focus(0));
 		Window.Events().DeleteEvent.TakeUntilDestroyed(Window).Subscribe(e => e.RetVal = true);
 
 		_clockClicked.TakeUntilDestroyed(Window).Subscribe(_ =>
@@ -118,7 +117,7 @@ public class Panel
 
 	private int ComputeCenterBoxMarginLeft()
 	{
-		return _panelRoot.Allocation.Width / 2 - _taskbarView.Allocation.Width / 2;
+		return _panelRoot.Allocation.Width / 2 - _centerBox.Allocation.Width / 2;
 	}
 
 	private Widget CreateClock()
@@ -142,12 +141,12 @@ public class Panel
 
 		_oneSecondTimer
 			.TakeUntilDestroyed(_panelRoot)
-			.ObserveOn(new GLibSynchronizationContext())
+			.ObserveOn(GLibExt.Scheduler)
 			.Select(dt => dt.ToString(ClockFormat))
 			.DistinctUntilChanged()
 			.Subscribe(t => clockLabel.Text = t);
 
-		clockButtonEventBox.ObserveButtonRelease().Where(e => e.Event.Button == 1).Subscribe(e =>
+		clockButtonEventBox.ObserveEvent<Widget, ButtonReleaseEventArgs>(w => w.Events().ButtonReleaseEvent).Where(e => e.Event.Button == 1).Subscribe(e =>
 		{
 			_clockClicked.OnNext(Unit.Default);
 			e.RetVal = true;

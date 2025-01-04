@@ -2,6 +2,7 @@ using System.Reactive.Linq;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.Images;
 using Gtk;
+using ReactiveMarbles.ObservableEvents;
 
 namespace Glimpse.StartMenu.Components;
 
@@ -44,8 +45,8 @@ public class StartMenuActionBar : Box
 		this.AddClass("start-menu__action-bar");
 		this.AddMany(userButton, new Label(Environment.MachineName) { Expand = true }, settingsButton, powerButton);
 
-		CommandInvoked = userButton.ObserveButtonRelease().WithLatestFrom(viewModel).Select(t => t.Second.UserSettingsCommand)
-			.Merge(powerButton.ObserveButtonRelease().WithLatestFrom(viewModel).Select(t => t.Second.PowerButtonCommand))
-			.Merge(settingsButton.ObserveButtonRelease().WithLatestFrom(viewModel).Select(t => t.Second.SettingsButtonCommand));
+		CommandInvoked = userButton.ObserveEvent(w => w.Events().ButtonReleaseEvent).WithLatestFrom(viewModel).Select(t => t.Second.UserSettingsCommand)
+			.Merge(powerButton.ObserveEvent(w => w.Events().ButtonReleaseEvent).WithLatestFrom(viewModel).Select(t => t.Second.PowerButtonCommand))
+			.Merge(settingsButton.ObserveEvent(w => w.Events().ButtonReleaseEvent).WithLatestFrom(viewModel).Select(t => t.Second.SettingsButtonCommand));
 	}
 }
