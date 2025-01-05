@@ -16,7 +16,7 @@ namespace Glimpse.Taskbar.Components.ApplicationIcons;
 
 public class TaskbarView
 {
-	public Widget Widget { get; set; }
+	public Widget Widget { get; }
 
 	public TaskbarView(ReduxStore store, IDisplayServer displayServer)
 	{
@@ -29,7 +29,7 @@ public class TaskbarView
 			.Replay(1)
 			.AutoConnect();
 
-		var forEachGroup = new ForEachFlowBoxCustom<TaskbarGroupIcon>() { IsDragEnabled = true };
+		var forEachGroup = new GlimpseFlowBox<TaskbarGroupIcon>() { IsDragEnabled = true };
 		Widget = forEachGroup.Widget;
 
 		viewModelSelector
@@ -40,22 +40,17 @@ public class TaskbarView
 			.Subscribe(viewModelObservableWithIndex =>
 		{
 			var viewModelObservable = viewModelObservableWithIndex.Select(i => i.Item1);
-			var replayLatestViewModelObservable = viewModelObservable.Replay(1);
+			var replayLatestViewModelObservable = viewModelObservable.Replay(1).AutoConnect();
 			var windowPicker = new TaskbarWindowPicker(viewModelObservable);
 			var groupIcon = new TaskbarGroupIcon(viewModelObservable, windowPicker);
-			var contextMenu = ContextMenuFactory.Create(groupIcon, viewModelObservable.Select(vm => vm.ContextMenuItems));
-
-			viewModelObservable.Subscribe(vm =>
-			{
-				groupIcon.SetModel(vm);
-			});
+			var contextMenu = ContextMenuFactory.Create(groupIcon.Widget, viewModelObservable.Select(vm => vm.ContextMenuItems));
 
 			viewModelObservable.TakeLast(1).Subscribe(_ =>
 			{
 				forEachGroup.RemoveItem(groupIcon);
 				contextMenu.Destroy();
 				windowPicker.Widget.Dispose();
-				groupIcon.Destroy();
+				groupIcon.Widget.Destroy();
 			});
 
 			viewModelObservableWithIndex
@@ -64,7 +59,7 @@ public class TaskbarView
 				.Subscribe(i => forEachGroup.AddOrUpdate(groupIcon, i));
 
 			windowPicker.Widget.ObserveEvent(w => w.Events().VisibilityNotifyEvent)
-				.Subscribe(_ => windowPicker.Widget.CenterAbove(groupIcon));
+				.Subscribe(_ => windowPicker.Widget.CenterAbove(groupIcon.Widget));
 
 			windowPicker.PreviewWindowClicked
 				.Subscribe(windowId =>
@@ -81,12 +76,12 @@ public class TaskbarView
 			windowPicker.CloseWindow
 				.Subscribe(displayServer.CloseWindow);
 
-			var cancelOpen = groupIcon.ObserveEvent(w => w.Events().LeaveNotifyEvent)
-				.Merge(groupIcon.ObserveEvent(w => w.Events().Unmapped))
+			var cancelOpen = groupIcon.Widget.ObserveEvent(w => w.Events().LeaveNotifyEvent)
+				.Merge(groupIcon.Widget.ObserveEvent(w => w.Events().Unmapped))
 				.Merge(Widget.ObserveEvent(w => w.Events().Destroyed))
 				.Take(1);
 
-			groupIcon.ObserveEvent(w => w.Events().EnterNotifyEvent)
+			groupIcon.Widget.ObserveEvent(w => w.Events().EnterNotifyEvent)
 				.WithLatestFrom(replayLatestViewModelObservable)
 				.Where(t => t.Second.Tasks.Count > 0)
 				.Select(t => Observable.Timer(TimeSpan.FromMilliseconds(400), GLibExt.Scheduler).TakeUntil(cancelOpen).Select(_ => t.Second))
@@ -98,24 +93,24 @@ public class TaskbarView
 					windowPicker.Popup();
 				});
 
-			var cancelClose = groupIcon.ObserveEvent(w => w.Events().EnterNotifyEvent)
+			var cancelClose = groupIcon.Widget.ObserveEvent(w => w.Events().EnterNotifyEvent)
 				.Merge(windowPicker.Widget.ObserveEvent(w => w.Events().EnterNotifyEvent));
 
-			groupIcon.ObserveEvent(w => w.Events().LeaveNotifyEvent).Merge(windowPicker.Widget.ObserveEvent(w => w.Events().LeaveNotifyEvent))
+			groupIcon.Widget.ObserveEvent(w => w.Events().LeaveNotifyEvent).Merge(windowPicker.Widget.ObserveEvent(w => w.Events().LeaveNotifyEvent))
 				.Select(_ => Observable.Timer(TimeSpan.FromMilliseconds(400), GLibExt.Scheduler).TakeUntil(cancelClose))
 				.Switch()
-				.TakeUntilDestroyed(groupIcon)
+				.TakeUntilDestroyed(groupIcon.Widget)
 				.TakeUntilDestroyed(windowPicker.Widget)
 				.Where(_ => !windowPicker.Widget.IsPointerInside())
 				.Subscribe(_ => windowPicker.ClosePopup());
 
-			groupIcon.ObserveEvent(w => w.Events().ButtonPressEvent)
+			groupIcon.Widget.ObserveEvent(w => w.Events().ButtonPressEvent)
 				.Subscribe(_ => windowPicker.ClosePopup());
 
-			var primaryMouseButton = new GestureMultiPress(groupIcon);
+			var primaryMouseButton = new GestureMultiPress(groupIcon.Widget);
 			primaryMouseButton.Button = 1;
 
-			var dragGesture = new GestureDrag(groupIcon);
+			var dragGesture = new GestureDrag(groupIcon.Widget);
 			dragGesture.Events().DragUpdate.Subscribe(_ => primaryMouseButton.Reset());
 
 			primaryMouseButton.Events().Released
@@ -156,8 +151,6 @@ public class TaskbarView
 				.Where(i => i.Id == "Launch")
 				.WithLatestFrom(viewModelObservable)
 				.Subscribe(t => DesktopFileRunner.Run(t.Second.DesktopFile));
-
-			replayLatestViewModelObservable.Connect();
 		});
 
 		forEachGroup.Widget.Valign = Align.Center;
@@ -169,7 +162,7 @@ public class TaskbarView
 
 		forEachGroup.OrderingChanged
 			.TakeUntilDestroyed(Widget)
-			.Subscribe(ordering => store.Dispatch(new UpdateTaskbarSlotOrderingBulkAction(ordering.Select(s => s.GetModel<SlotViewModel>().SlotRef).ToImmutableList())));
+			.Subscribe(ordering => store.Dispatch(new UpdateTaskbarSlotOrderingBulkAction(ordering.Select(s => s.ViewModel.SlotRef).ToImmutableList())));
 
 		forEachGroup.DragBeginObservable
 			.TakeUntilDestroyed(Widget)

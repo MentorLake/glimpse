@@ -8,14 +8,24 @@ using WrapMode = Pango.WrapMode;
 
 namespace Glimpse.StartMenu.Components;
 
-internal class StartMenuAppIcon : EventBox, IForEachDraggable
+internal class StartMenuAppIcon : IGlimpseFlowBoxItem
 {
-	public StartMenuAppIcon(IObservable<StartMenuAppViewModel> viewModelObservable)
-	{
-		CanFocus = false;
-		IconWhileDragging = viewModelObservable.Select(vm => vm.Icon).DistinctUntilChanged().Replay(1).AutoConnect();
+	private readonly EventBox _root;
 
-		this.AddClass("start-menu__app-icon-container");
+	public Widget Widget => _root;
+	public IObservable<StartMenuAppContextMenuItem> ContextMenuItemActivated { get; }
+	public IObservable<ImageViewModel> IconWhileDragging { get; }
+	public string Id { get; }
+	public StartMenuAppViewModel ViewModel { get; private set; }
+
+	public StartMenuAppIcon(string id, IObservable<StartMenuAppViewModel> viewModelObservable)
+	{
+		Id = id;
+		_root = new EventBox();
+		_root.CanFocus = false;
+		_root.AddClass("start-menu__app-icon-container");
+
+		IconWhileDragging = viewModelObservable.Select(vm => vm.Icon).DistinctUntilChanged().Replay(1).AutoConnect();
 
 		var name = new Label();
 		name.Ellipsize = EllipsizeMode.End;
@@ -33,17 +43,18 @@ internal class StartMenuAppIcon : EventBox, IForEachDraggable
 		appIconContainer.Valign = Align.Center;
 		appIconContainer.Halign = Align.Center;
 
-		Add(appIconContainer);
+		_root.Add(appIconContainer);
 
 		viewModelObservable
-			.TakeUntilDestroyed(this)
-			.Subscribe(f => name.Text = f.DesktopFile.Name);
+			.TakeUntilDestroyed(_root)
+			.Subscribe(f =>
+			{
+				ViewModel = f;
+				name.Text = f.DesktopFile.Name;
+			});
 
-		this.AppIcon(image, IconWhileDragging, 36);
-		var contextMenu = ContextMenuFactory.Create(this, viewModelObservable.Select(s => s.ContextMenuItems));
+		_root.AppIcon(image, IconWhileDragging, 36);
+		var contextMenu = ContextMenuFactory.Create(_root, viewModelObservable.Select(s => s.ContextMenuItems));
 		ContextMenuItemActivated = contextMenu.ItemActivated;
 	}
-
-	public IObservable<StartMenuAppContextMenuItem> ContextMenuItemActivated { get; }
-	public IObservable<ImageViewModel> IconWhileDragging { get; }
 }

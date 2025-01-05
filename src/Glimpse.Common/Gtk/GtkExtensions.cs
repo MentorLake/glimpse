@@ -276,22 +276,6 @@ public static class GtkExtensions
 		cr.ClosePath();
 	}
 
-	public static void SetModel<T>(this FlowBoxChild child, T model)
-	{
-		child.Child.Data["Model"] = model;
-	}
-
-	public static TWidget SetModel<TWidget, T>(this TWidget child, T model) where TWidget : Widget
-	{
-		child.Data["Model"] = model;
-		return child;
-	}
-
-	public static T GetModel<T>(this FlowBoxChild child)
-	{
-		return (T)child.Child.Data["Model"];
-	}
-
 	public static void SetIndex(this FlowBoxChild child, int index)
 	{
 		child.Data["Index"] = index;

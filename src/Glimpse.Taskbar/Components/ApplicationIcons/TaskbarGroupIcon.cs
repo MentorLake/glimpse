@@ -10,43 +10,49 @@ using Color = Cairo.Color;
 
 namespace Glimpse.Taskbar.Components.ApplicationIcons;
 
-internal class TaskbarGroupIcon : EventBox, IForEachDraggable
+internal class TaskbarGroupIcon : IGlimpseFlowBoxItem
 {
+	private readonly EventBox _root;
 	private readonly TaskbarWindowPicker _taskbarWindowPicker;
 	private SlotViewModel _currentViewModel;
 
 	public IObservable<ImageViewModel> IconWhileDragging { get; }
+	public Widget Widget => _root;
+	public SlotViewModel ViewModel => _currentViewModel;
 
 	public TaskbarGroupIcon(IObservable<SlotViewModel> viewModel, TaskbarWindowPicker taskbarWindowPicker)
 	{
 		_taskbarWindowPicker = taskbarWindowPicker;
-		Visible = false;
-		Expand = false;
-		Valign = Align.Fill;
-		Halign = Align.Fill;
-		AppPaintable = true;
-		Visual = Screen.RgbaVisual;
-		this.AddClass("taskbar__group-icon");
+
+		_root = new EventBox();
+		_root.Visible = false;
+		_root.Expand = false;
+		_root.Valign = Align.Fill;
+		_root.Halign = Align.Fill;
+		_root.AppPaintable = true;
+		_root.Visual = _root.Screen.RgbaVisual;
+		_root.AddClass("taskbar__group-icon");
 
 		var iconObservable = viewModel
 			.Select(vm => vm.Icon)
 			.DistinctUntilChanged()
-			.CombineLatest(this.ObserveEvent(w => w.Events().SizeAllocated).DistinctUntilChanged(a => a.Allocation.Width))
+			.CombineLatest(_root.ObserveEvent(w => w.Events().SizeAllocated).DistinctUntilChanged(a => a.Allocation.Width))
 			.Select(t => t.First)
 			.TakeUntil(viewModel.TakeLast(1))
 			.Replay(1)
 			.AutoConnect();
 
 		var image = new Image();
-		Add(image);
-		ShowAll();
+		_root.Add(image);
+		_root.ShowAll();
 
 		viewModel.Subscribe(vm => _currentViewModel = vm);
-		viewModel.Select(vm => vm.DemandsAttention).DistinctUntilChanged().Subscribe(_ => QueueDraw());
-		viewModel.Select(vm => vm.Tasks.Count).DistinctUntilChanged().Subscribe(_ => QueueDraw());
+		viewModel.Select(vm => vm.DemandsAttention).DistinctUntilChanged().Subscribe(_ => _root.QueueDraw());
+		viewModel.Select(vm => vm.Tasks.Count).DistinctUntilChanged().Subscribe(_ => _root.QueueDraw());
 
-		this.AppIcon(image, iconObservable, 26);
-		this.ObserveEvent(w => w.Events().ButtonReleaseEvent).Subscribe(e => e.RetVal = true);
+		_root.AppIcon(image, iconObservable, 26);
+		_root.ObserveEvent(w => w.Events().ButtonReleaseEvent).Subscribe(e => e.RetVal = true);
+		_root.ObserveEvent(w => w.Events().Drawn).Subscribe(e => e.RetVal = OnDrawn(e.Cr));
 		IconWhileDragging = iconObservable.Select(i => i with { Image = (IGlimpseImage) image.Data["Big"] });
 	}
 
@@ -55,17 +61,17 @@ internal class TaskbarGroupIcon : EventBox, IForEachDraggable
 		_taskbarWindowPicker.ClosePopup();
 	}
 
-	protected override bool OnDrawn(Context cr)
+	private bool OnDrawn(Context cr)
 	{
-		if (_currentViewModel == null) return base.OnDrawn(cr);
+		if (_currentViewModel == null) return true;
 
 		cr.Save();
 
-		var w = Window.Width;
-		var h = Window.Height;
+		var w = _root.Window.Width;
+		var h = _root.Window.Height;
 
 		var demandsAttention = _currentViewModel.DemandsAttention;
-		var backgroundAlpha = StateFlags.HasFlag(StateFlags.Prelight) ? 0.3
+		var backgroundAlpha = _root.StateFlags.HasFlag(StateFlags.Prelight) ? 0.3
 			: _currentViewModel.Tasks.Count > 0 ? 0.1
 			: 0;
 
@@ -113,6 +119,6 @@ internal class TaskbarGroupIcon : EventBox, IForEachDraggable
 		}
 
 		cr.Restore();
-		return base.OnDrawn(cr);
+		return true;
 	}
 }

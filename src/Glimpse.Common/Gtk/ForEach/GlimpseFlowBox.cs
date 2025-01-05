@@ -6,28 +6,28 @@ using ReactiveMarbles.ObservableEvents;
 
 namespace Glimpse.Common.Gtk.ForEach;
 
-public class ForEachFlowBoxCustom<TWidget> where TWidget : Widget, IForEachDraggable
+public class GlimpseFlowBox<TItem> where TItem : IGlimpseFlowBoxItem
 {
-	private readonly Subject<List<FlowBoxChild>> _orderingChangedSubject = new();
-	private readonly Subject<TWidget> _dragBeginSubject = new();
+	private readonly Subject<List<TItem>> _orderingChangedSubject = new();
+	private readonly Subject<TItem> _dragBeginSubject = new();
 	private readonly Fixed _fixedContainer;
 	private readonly Image _dragIconImage;
 	private ImageViewModel _dragImageViewModel;
 	private bool _dragInitialized;
-	private readonly Subject<FlowBoxChild> _itemActivatedSubject = new();
+	private readonly Subject<TItem> _itemActivatedSubject = new();
 
 	public bool IsDragEnabled { get; set; }
 	public int ItemsPerLine { get; set; } = 7;
 	public int ItemSpacing { get; set; } = 0;
-	public Func<FlowBoxChild, bool> FilterFunc = _ => true;
+	public Func<TItem, bool> FilterFunc = _ => true;
 
-	public IObservable<List<FlowBoxChild>> OrderingChanged => _orderingChangedSubject;
-	public IObservable<TWidget> DragBeginObservable => _dragBeginSubject;
-	public IObservable<FlowBoxChild> ItemActivated => _itemActivatedSubject;
+	public IObservable<List<TItem>> OrderingChanged => _orderingChangedSubject;
+	public IObservable<TItem> DragBeginObservable => _dragBeginSubject;
+	public IObservable<TItem> ItemActivated => _itemActivatedSubject;
 	public Fixed Widget => _fixedContainer;
-	private IEnumerable<FlowBoxChild> AllChildItems => _fixedContainer.Children.Where(c => c != _dragIconImage).Cast<FlowBoxChild>();
+	private IEnumerable<FlowBoxChild> AllChildWidgets => _fixedContainer.Children.Where(c => c != _dragIconImage).Cast<FlowBoxChild>();
 
-	public ForEachFlowBoxCustom()
+	public GlimpseFlowBox()
 	{
 		_dragIconImage = new Image().AddClass("taskbar__item");
 		_fixedContainer = new Fixed();
@@ -35,13 +35,13 @@ public class ForEachFlowBoxCustom<TWidget> where TWidget : Widget, IForEachDragg
 		_fixedContainer.ObserveEvent(x => x.Events().Mapped).Subscribe(_ => InvalidateFilter());
 	}
 
-	public void AddOrUpdate(TWidget widget, int newIndex)
+	public void AddOrUpdate(TItem item, int newIndex)
 	{
-		var target = AllChildItems.FirstOrDefault(c => c.Child == widget);
+		var target = AllChildWidgets.FirstOrDefault(c => c.Child == item.Widget);
 
 		if (target == null)
 		{
-			AddItem(widget, newIndex);
+			AddItem(item, newIndex);
 		}
 		else
 		{
@@ -51,17 +51,18 @@ public class ForEachFlowBoxCustom<TWidget> where TWidget : Widget, IForEachDragg
 		RefreshLayout();
 	}
 
-	public void RemoveItem(TWidget childWidget)
+	public void RemoveItem(TItem item)
 	{
-		var flowBoxChild = AllChildItems.First(c => c.Child == childWidget);
+		var flowBoxChild = AllChildWidgets.First(c => c.Child == item.Widget);
 		_fixedContainer.Remove(flowBoxChild);
 		flowBoxChild.Destroy();
 	}
 
-	private void AddItem(TWidget childWidget, int index)
+	private void AddItem(TItem item, int index)
 	{
-		var flowBoxChild = new FlowBoxChild().AddMany(childWidget).AddClass("taskbar__item");
+		var flowBoxChild = new FlowBoxChild().AddMany(item.Widget).AddClass("taskbar__item");
 		flowBoxChild.SetIndex(index);
+		flowBoxChild.Data["Item"] = item;
 		flowBoxChild.ShowAll();
 
 		flowBoxChild.ObserveEvent(x => x.Events().SizeAllocated)
@@ -72,24 +73,24 @@ public class ForEachFlowBoxCustom<TWidget> where TWidget : Widget, IForEachDragg
 
 		_fixedContainer.Add(flowBoxChild);
 
-		var dragGesture = new GestureDrag(childWidget);
-		var pressGesture = new GestureMultiPress(childWidget) { Button = 1 };
+		var dragGesture = new GestureDrag(item.Widget);
+		var pressGesture = new GestureMultiPress(item.Widget) { Button = 1 };
 
 		pressGesture.Events().Released
-			.Subscribe(r => _itemActivatedSubject.OnNext(flowBoxChild));
+			.Subscribe(r => _itemActivatedSubject.OnNext(item));
 
 		dragGesture.Events().DragUpdate
 			.Where(_ => IsDragEnabled)
 			.Subscribe(e =>
 			{
-				OnDragMotion(dragGesture, flowBoxChild, (int)e.OffsetX, (int)e.OffsetY);
+				OnDragMotion(dragGesture, flowBoxChild, item, (int)e.OffsetX, (int)e.OffsetY);
 				dragGesture.SetState(EventSequenceState.Claimed);
 				pressGesture.SetState(EventSequenceState.Denied);
 			});
 
 		dragGesture.Events().DragBegin
 			.Where(_ => IsDragEnabled)
-			.WithLatestFrom(childWidget.IconWhileDragging)
+			.WithLatestFrom(item.IconWhileDragging)
 			.Subscribe(t =>
 			{
 				_dragImageViewModel = t.Second;
@@ -112,10 +113,11 @@ public class ForEachFlowBoxCustom<TWidget> where TWidget : Widget, IForEachDragg
 				.Where(c => c != _dragIconImage)
 				.Cast<FlowBoxChild>()
 				.OrderBy(c => c.GetIndex())
+				.Select(c => (TItem) c.Data["Item"])
 				.ToList());
 	}
 
-	private void OnDragMotion(GestureDrag dragGesture, FlowBoxChild flowBoxChild, int iconX, int iconY)
+	private void OnDragMotion(GestureDrag dragGesture, FlowBoxChild flowBoxChild, TItem draggable, int iconX, int iconY)
 	{
 		var lastPosition = _dragIconImage.Allocation;
 		var lastX = lastPosition.X + _dragIconImage.MarginStart;
@@ -128,7 +130,7 @@ public class ForEachFlowBoxCustom<TWidget> where TWidget : Widget, IForEachDragg
 			var size = flowBoxChild.Allocation.Height;
 			_dragIconImage.ApplyViewModel(_dragImageViewModel, size, size);
 			_dragIconImage.ShowAll();
-			_dragBeginSubject.OnNext(flowBoxChild.Child as TWidget);
+			_dragBeginSubject.OnNext(draggable);
 			_dragInitialized = true;
 			flowBoxChild.Child.Opacity = 0;
 			dragGesture.GetStartPoint(out var startX, out var startY);
@@ -138,7 +140,7 @@ public class ForEachFlowBoxCustom<TWidget> where TWidget : Widget, IForEachDragg
 
 		flowBoxChild.TranslateCoordinates(_fixedContainer, iconX, iconY, out var x, out var y);
 		var imageRect = new Rectangle(_fixedContainer.Allocation.Constrain(new Rectangle(new Point(x, y), lastPosition.Size)), lastPosition.Size);
-		var children = AllChildItems.Where(c => c.IsMapped).OrderBy(c => c.GetIndex()).ToList();
+		var children = AllChildWidgets.Where(c => c.IsMapped).OrderBy(c => c.GetIndex()).ToList();
 		var movedLeft = imageRect.X < lastPosition.X;
 		var movedRight = imageRect.X > lastPosition.X;
 		var movedUp = imageRect.Y < lastPosition.Y;
@@ -175,9 +177,9 @@ public class ForEachFlowBoxCustom<TWidget> where TWidget : Widget, IForEachDragg
 
 	public void InvalidateFilter()
 	{
-		foreach (var c in AllChildItems)
+		foreach (var c in AllChildWidgets)
 		{
-			var shouldShow = FilterFunc(c);
+			var shouldShow = FilterFunc((TItem) c.Data["Item"]);
 			if (!c.IsMapped && shouldShow) c.ShowAll();
 			else if (c.IsMapped && !shouldShow) c.Hide();
 		}
@@ -187,7 +189,7 @@ public class ForEachFlowBoxCustom<TWidget> where TWidget : Widget, IForEachDragg
 
 	private void RefreshLayout()
 	{
-		var sortedChildren = AllChildItems.Where(c => c.IsMapped).OrderBy(i => i.GetIndex()).ToList();
+		var sortedChildren = AllChildWidgets.Where(c => c.IsMapped).OrderBy(i => i.GetIndex()).ToList();
 		if (!sortedChildren.Any()) return;
 		var currentY = 0;
 		var allChunks = sortedChildren.Chunk(ItemsPerLine).ToList();
