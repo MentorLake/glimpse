@@ -1,5 +1,4 @@
 using System.Reactive.Linq;
-using GLib;
 using Glimpse.Common.DesktopEntries;
 using Glimpse.Common.Gtk;
 using Glimpse.Common.StatusNotifierWatcher;
@@ -10,11 +9,16 @@ using ReactiveMarbles.ObservableEvents;
 
 namespace Glimpse.SystemTray.Components;
 
-public class SystemTrayBox : Box
+public class SystemTrayBox
 {
-	public SystemTrayBox(ReduxStore store, StatusNotifierWatcherService statusNotifierWatcherService) : base(Orientation.Horizontal, 0)
+	public Widget Widget => _root;
+
+	private readonly Box _root;
+
+	public SystemTrayBox(ReduxStore store, StatusNotifierWatcherService statusNotifierWatcherService)
 	{
-		StyleContext.AddClass("system-tray__taskbar-container");
+		_root = new Box(Orientation.Horizontal, 0);
+		_root.StyleContext.AddClass("system-tray__taskbar-container");
 
 		var volumeIcon = new Image();
 		volumeIcon.SetFromIconName("audio-volume-medium", IconSize.Dialog);
@@ -28,11 +32,11 @@ public class SystemTrayBox : Box
 			.WithLatestFrom(store.Select(SystemTraySelectors.VolumeCommand))
 			.Subscribe(t => DesktopFileRunner.Run(t.Second));
 
-		PackEnd(volumeButton, false, false, 0);
+		_root.PackEnd(volumeButton, false, false, 0);
 
 		store
 			.Select(SystemTrayViewModelSelector.ViewModel)
-			.TakeUntilDestroyed(this)
+			.TakeUntilDestroyed(_root)
 			.ObserveOn(GLibExt.Scheduler)
 			.Select(x => x.Items)
 			.DistinctUntilChanged()
@@ -41,20 +45,20 @@ public class SystemTrayBox : Box
 			.Subscribe(itemObservable =>
 			{
 				var systemTrayIcon = new SystemTrayIcon(itemObservable);
-				PackStart(systemTrayIcon, false, false, 0);
-				ShowAll();
+				_root.PackStart(systemTrayIcon.Widget, false, false, 0);
+				_root.ShowAll();
 
-				systemTrayIcon.MenuItemActivated.TakeUntilDestroyed(this).WithLatestFrom(itemObservable).Subscribe(t =>
+				systemTrayIcon.MenuItemActivated.TakeUntilDestroyed(_root).WithLatestFrom(itemObservable).Subscribe(t =>
 				{
 					statusNotifierWatcherService.ActivateMenuItemAsync(t.Second.DbusMenuDescription, t.First);
 				});
 
-				systemTrayIcon.ApplicationActivated.TakeUntilDestroyed(this).WithLatestFrom(itemObservable).Subscribe(t =>
+				systemTrayIcon.ApplicationActivated.TakeUntilDestroyed(_root).WithLatestFrom(itemObservable).Subscribe(t =>
 				{
 					statusNotifierWatcherService.ActivateSystemTrayItemAsync(t.Second.StatusNotifierItemDescription, t.First.Item1, t.First.Item2);
 				});
 
-				itemObservable.TakeLast(1).Subscribe(_ => systemTrayIcon.Destroy());
+				itemObservable.TakeLast(1).Subscribe(_ => systemTrayIcon.Widget.Destroy());
 			});
 	}
 }

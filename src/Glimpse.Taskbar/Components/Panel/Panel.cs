@@ -55,7 +55,7 @@ public class Panel
 		_panelRoot.Add(_centerBox);
 
 		var rightBox = new Box(Orientation.Horizontal, 0);
-		rightBox.PackStart(systemTrayBox, false, false, 4);
+		rightBox.PackStart(systemTrayBox.Widget, false, false, 4);
 		rightBox.PackStart(CreateClock(), false, false, 5);
 		rightBox.Halign = Align.End;
 		rightBox.Valign = Align.Center;
