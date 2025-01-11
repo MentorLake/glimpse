@@ -160,12 +160,20 @@ public static class GtkExtensions
 				image.Data["Small"] = vm.Image.Scale(size - 6);
 				image.Data["Big"] = vm.Image.Scale(size);
 			}
-			else if (vm.IconNameOrPath.StartsWith("/"))
+			else if (vm.IconNameOrPath.Or("").StartsWith("/"))
 			{
 				var glimpseImage = GlimpseImageFactory.From(new Pixbuf(vm.IconNameOrPath, size, size));
 				image.Pixbuf = glimpseImage.Pixbuf;
 				image.Data["Small"] = glimpseImage.Scale(size - 6);
 				image.Data["Big"] = glimpseImage;
+			}
+			else
+			{
+				var missingImage = IconTheme.Default.LoadIconForScale("image-missing", size, 1, IconLookupFlags.UseBuiltin);
+				var glimpseImage = GlimpseImageFactory.From(missingImage);
+				image.Pixbuf = glimpseImage.Pixbuf;
+				image.Data["Small"] = glimpseImage.Scale(size - 6);
+				image.Data["Big"] = glimpseImage.Scale(size);
 			}
 		});
 

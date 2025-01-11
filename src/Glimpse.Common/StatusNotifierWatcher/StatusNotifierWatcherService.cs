@@ -51,6 +51,12 @@ public class StatusNotifierWatcherService(
 	private async Task<StatusNotifierWatcherItem> CreateTrayItemStateInternal(string serviceId, string serviceName)
 	{
 		var statusNotifierItemDesc = await introspectionService.FindDBusObjectDescription(serviceId, "/", i => i == "org.kde.StatusNotifierItem");
+
+		if (statusNotifierItemDesc == null)
+		{
+			throw new Exception($"Service {serviceId} does not have a StatusNotifierItem DBUS object.");
+		}
+
 		var statusNotifierItemProxy = new OrgKdeStatusNotifierItem(_connection, statusNotifierItemDesc.ServiceName, statusNotifierItemDesc.ObjectPath);
 		var menuObjectPath = await statusNotifierItemProxy.GetMenuPropertyAsync();
 		var dbusMenuDescription = await introspectionService.FindDBusObjectDescription(statusNotifierItemDesc.ServiceName, menuObjectPath, p => p == "com.canonical.dbusmenu");
