@@ -1,21 +1,20 @@
 using System.Reactive.Linq;
 using System.Reflection;
-using Gdk;
-using Glimpse.Common.Accounts;
-using Glimpse.Common.Configuration;
-using Glimpse.Common.DBus;
-using Glimpse.Common.DesktopEntries;
-using Glimpse.Common.Gtk;
-using Glimpse.Common.StatusNotifierWatcher;
-using Glimpse.Common.System.Reactive;
-using Glimpse.Common.Xfce.SessionManagement;
-using Glimpse.Common.Xorg;
-using Glimpse.Host;
-using Glimpse.Notifications;
-using Glimpse.SidePane;
-using Glimpse.StartMenu;
-using Glimpse.SystemTray;
-using Glimpse.Taskbar;
+using Glimpse.UI;
+using Glimpse.Libraries.Accounts;
+using Glimpse.Libraries.Configuration;
+using Glimpse.Libraries.DBus;
+using Glimpse.Libraries.DesktopEntries;
+using Glimpse.Libraries.Gtk;
+using Glimpse.Libraries.StatusNotifierWatcher;
+using Glimpse.Libraries.System.Reactive;
+using Glimpse.Libraries.Xfce.SessionManagement;
+using Glimpse.Libraries.Xorg;
+using Glimpse.Services;
+using Glimpse.UI.Components.Shared;
+using MentorLake.Gdk;
+using MentorLake.Gio;
+using MentorLake.Gtk;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
@@ -24,8 +23,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ReactiveMarbles.ObservableEvents;
-using Application = Gtk.Application;
 using Task = System.Threading.Tasks.Task;
 
 namespace Glimpse.Tests;
@@ -46,23 +43,19 @@ public class Program
 		var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder([]);
 		builder.Configuration.AddConfiguration(configuration);
 		builder.Services.AddSingleton<ReduxStore>();
+		builder.Services.AddLogging(b => b.AddConsole().AddJournal(o => o.SyslogIdentifier = appName));
 		builder.AddReactiveTimers();
 		builder.AddDBus();
 		builder.AddXorg();
 		builder.AddDesktopFiles();
-		builder.AddGlimpseHost("org.glimpsetests");
 		builder.AddStatusNotifier();
 		builder.AddXSessionManagement();
 		builder.AddAccounts();
 		builder.AddGlimpseConfiguration();
-		builder.AddTaskbar();
-		builder.AddSystemTray();
-		builder.AddStartMenu<StartMenuDemands>();
-		builder.AddNotifications();
-		builder.AddSidePane();
+		builder.AddServices();
+		builder.AddUI("org.glimpsetests");
 
 		var host = builder.Build();
-
 		var store = host.Services.GetRequiredService<ReduxStore>();
 		store.RegisterReducers(host.Services.GetServices<IReducerFactory>().ToArray());
 		store.RegisterReducers(host.Services.GetServices<FeatureReducerCollection>().ToArray());
@@ -84,16 +77,19 @@ public class Program
 		await host.UseGlimpseConfiguration();
 		await host.UseAccounts();
 		await host.UseStatusNotifier();
-		await host.UseTaskbar(host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>().Value.ConfigurationFilePath);
-		await host.UseSystemTray();
-		await host.UseStartMenu();
-		await host.UseNotifications();
-		await host.UseSidePane();
-		await host.UseGlimpseHost();
+		await host.UseServices(host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>().Value.ConfigurationFilePath);
+		await host.UseUI();
 
 		var orchestrator = host.Services.GetRequiredService<DisplayOrchestrator>();
-		var application = host.Services.GetRequiredService<Application>();
-		application.Events().Startup.ObserveOn(GLibExt.Scheduler).Subscribe(_ => orchestrator.CreatePanel(Display.Default.GetMonitors().First(m => !m.IsPrimary), 100));
+		var application = host.Services.GetRequiredService<GtkApplicationHandle>();
+
+		application
+			.Signal_Startup()
+			.ObserveOn(GLibExt.Scheduler)
+			.Subscribe(_ =>
+			{
+				orchestrator.CreatePanel(GdkDisplayHandle.GetDefault().GetMonitors().First(m => !m.IsPrimary()), 100);
+			});
 
 		await host.RunAsync();
 	}

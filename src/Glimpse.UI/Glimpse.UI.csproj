@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Glimpse.Libraries\Glimpse.Libraries.csproj" />
+		<ProjectReference Include="..\Glimpse.Services\Glimpse.Services.csproj" />
+	</ItemGroup>
+
+</Project>

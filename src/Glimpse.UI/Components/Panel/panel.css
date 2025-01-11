@@ -1,0 +1,13 @@
+.panel {
+	background-color: rgba(0, 0, 0, 0.8);
+	min-height: 52px;
+}
+
+.clock {
+	padding-left: 8px;
+	padding-right: 8px;
+}
+
+.clock image {
+	margin-left: 8px;
+}

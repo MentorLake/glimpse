@@ -82,3 +82,7 @@ flowboxchild {
 .chip__label-container--selected .chip__label {
 	color: black;
 }
+
+.transparent {
+	background-color: transparent;
+}

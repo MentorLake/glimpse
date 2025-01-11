@@ -48,17 +48,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Glimpse.Common\Glimpse.Common.csproj" />
-		<ProjectReference Include="..\Glimpse.StartMenu\Glimpse.StartMenu.csproj" />
-		<ProjectReference Include="..\Glimpse.SystemTray\Glimpse.SystemTray.csproj" />
-		<ProjectReference Include="..\Glimpse.Taskbar\Glimpse.Taskbar.csproj" />
-		<ProjectReference Include="..\Glimpse.Notifications\Glimpse.Notifications.csproj" />
-		<ProjectReference Include="..\Glimpse.SidePane\Glimpse.SidePane.csproj" />
-		<ProjectReference Include="..\Glimpse.Host\Glimpse.Host.csproj" />
+		<ProjectReference Include="..\Glimpse.Libraries\Glimpse.Libraries.csproj" />
+		<ProjectReference Include="..\Glimpse.UI\Glimpse.UI.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="GtkSharp" Version="3.24.24.95" />
 		<PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
 	</ItemGroup>
 

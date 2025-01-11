@@ -1,20 +1,16 @@
 ﻿using System.CommandLine;
 using System.Reactive.Linq;
 using System.Reflection;
-using Glimpse.Common.Accounts;
-using Glimpse.Common.Configuration;
-using Glimpse.Common.DBus;
-using Glimpse.Common.DesktopEntries;
-using Glimpse.Common.StatusNotifierWatcher;
-using Glimpse.Common.System.Reactive;
-using Glimpse.Common.Xfce.SessionManagement;
-using Glimpse.Common.Xorg;
-using Glimpse.Host;
-using Glimpse.Notifications;
-using Glimpse.SidePane;
-using Glimpse.StartMenu;
-using Glimpse.SystemTray;
-using Glimpse.Taskbar;
+using Glimpse.UI;
+using Glimpse.Libraries.Accounts;
+using Glimpse.Libraries.Configuration;
+using Glimpse.Libraries.DBus;
+using Glimpse.Libraries.DesktopEntries;
+using Glimpse.Libraries.StatusNotifierWatcher;
+using Glimpse.Libraries.System.Reactive;
+using Glimpse.Libraries.Xfce.SessionManagement;
+using Glimpse.Libraries.Xorg;
+using Glimpse.Services;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
@@ -64,20 +60,17 @@ public static class Program
 			var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder([]);
 			builder.Configuration.AddConfiguration(configuration);
 			builder.Services.AddSingleton<ReduxStore>();
+			builder.Services.AddLogging(b => b.AddConsole().AddJournal(o => o.SyslogIdentifier = appName));
 			builder.AddReactiveTimers();
 			builder.AddDBus();
 			builder.AddXorg();
 			builder.AddDesktopFiles();
-			builder.AddGlimpseHost("org.glimpse");
 			builder.AddStatusNotifier();
 			builder.AddXSessionManagement();
 			builder.AddAccounts();
 			builder.AddGlimpseConfiguration();
-			builder.AddTaskbar();
-			builder.AddSystemTray();
-			builder.AddStartMenu<StartMenuDemands>();
-			builder.AddNotifications();
-			builder.AddSidePane();
+			builder.AddServices();
+			builder.AddUI("org.glimpse");
 
 			var host = builder.Build();
 
@@ -102,12 +95,8 @@ public static class Program
 			await host.UseGlimpseConfiguration();
 			await host.UseAccounts();
 			await host.UseStatusNotifier();
-			await host.UseTaskbar(host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>().Value.ConfigurationFilePath);
-			await host.UseSystemTray();
-			await host.UseStartMenu();
-			await host.UseNotifications();
-			await host.UseSidePane();
-			await host.UseGlimpseHost();
+			await host.UseServices(host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>().Value.ConfigurationFilePath);
+			await host.UseUI();
 
 			await store.Dispatch(new InitializeStoreAction());
 
