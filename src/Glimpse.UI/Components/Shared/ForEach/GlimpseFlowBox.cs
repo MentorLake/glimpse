@@ -57,6 +57,7 @@ public class GlimpseFlowBox<TItem> where TItem : IGlimpseFlowBoxItem
 		var flowBoxChild = _flowboxChildWidgetCache.First(c => c.GetChild() == item.Widget);
 		_fixedContainer.Remove(flowBoxChild);
 		_flowboxChildWidgetCache.Remove(flowBoxChild);
+		QueueLayoutRefresh();
 	}
 
 	private void AddItem(TItem item, int index)
