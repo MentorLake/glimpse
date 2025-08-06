@@ -112,8 +112,9 @@ public class TaskbarView
 			var primaryMouseButton = GtkGestureMultiPressHandle.New(groupIcon.Widget);
 			primaryMouseButton.SetButton(1);
 
-			var dragGesture = GtkGestureDragHandle.New(groupIcon.Widget);
-			dragGesture.Signal_DragUpdate().Subscribe(_ => primaryMouseButton.Reset());
+			forEachGroup.DragBeginObservable
+				.TakeUntilDestroyed(groupIcon.Widget)
+				.Subscribe(_ => primaryMouseButton.Reset());
 
 			primaryMouseButton.Signal_Released()
 				.WithLatestFrom(viewModelObservable)

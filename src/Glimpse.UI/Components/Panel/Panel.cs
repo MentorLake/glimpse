@@ -90,7 +90,6 @@ public class Panel
 			.SetTypeHint(GdkWindowTypeHint.GDK_WINDOW_TYPE_HINT_DOCK)
 			.With(w => w.SetVisual(w.GetScreen().GetRgbaVisual()))
 			.AddClass("transparent")
-			.With(w => w.ObserveEvent(x => x.Signal_ButtonReleaseEvent()).SubscribeDebug(_ => w.GetWindow().Focus(0)))
 			.With(w => w.Signal_DeleteEvent().TakeUntilDestroyed(w).SubscribeDebug(e => e.ReturnValue = true))
 			.Add(panelRootEventBox)
 			.ShowAll();

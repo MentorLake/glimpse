@@ -80,6 +80,13 @@ public class GlimpseFlowBox<TItem> where TItem : IGlimpseFlowBoxItem
 			.Where(_ => IsDragEnabled)
 			.Subscribe(e =>
 			{
+				if (!_dragInitialized)
+				{
+					var xThresholdMet = e.OffsetX > 5 || e.OffsetX < -5;
+					var yThresholdMet = e.OffsetY > 5 || e.OffsetY < -5;
+					if (!xThresholdMet && !yThresholdMet) return;
+				}
+
 				OnDragMotion(dragGesture, flowBoxChild, item, (int)e.OffsetX, (int)e.OffsetY);
 				dragGesture.SetState(GtkEventSequenceState.GTK_EVENT_SEQUENCE_CLAIMED);
 				pressGesture.SetState(GtkEventSequenceState.GTK_EVENT_SEQUENCE_DENIED);

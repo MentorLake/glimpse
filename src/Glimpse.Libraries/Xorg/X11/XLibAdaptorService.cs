@@ -184,7 +184,7 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 		if (iconified || !windowHasFocus)
 		{
 			XLib.XMapRaised(windowRef.Display, windowRef.Window);
-			XLib.XSetInputFocus(windowRef.Display, windowRef.Window, 1, 0);
+			XLib.XSetInputFocus(windowRef.Display, windowRef.Window, 0, 0);
 		}
 		else
 		{

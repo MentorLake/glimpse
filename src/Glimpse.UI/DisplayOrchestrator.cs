@@ -80,6 +80,7 @@ public class DisplayOrchestrator(NotificationBubblesService notificationBubblesS
 		var panelWindow = serviceProvider.GetRequiredService<Panel>();
 		_panels.Add(panelWindow);
 		panelWindow.Widget.Signal_Destroy().Take(1).SubscribeDebug(_ => _panels.Remove(panelWindow));
+		panelWindow.Widget.ObserveEvent(w => w.Signal_ButtonReleaseEvent()).Where(_ => _startMenuWindow.Window.IsVisible()).SubscribeDebug(w => _startMenuWindow.ToggleVisibility());
 		var monitorGeometry = monitor.GetGeometryRect();
 		var monitorWorkArea = monitor.GetWorkAreaRect();
 		DockToBottom(panelWindow.Widget, new Rectangle(monitorGeometry.Location, new Size(monitorGeometry.Width, monitorGeometry.Bottom)), monitorWorkArea, bottomOffset);

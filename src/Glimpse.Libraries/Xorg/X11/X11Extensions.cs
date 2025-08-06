@@ -150,8 +150,7 @@ internal static unsafe class X11Extensions
 	{
 		var windowType = windowRef.GetAtomNameArray(XAtoms.NetWmWindowType);
 
-
-		if (windowType.Contains("_NET_WM_WINDOW_TYPE_NORMAL") || windowType.Contains("_NET_WM_WINDOW_TYPE_DIALOG"))
+		if (windowType.Contains("_NET_WM_WINDOW_TYPE_NORMAL") || windowType.Contains("_NET_WM_WINDOW_TYPE_DIALOG") || !windowType.Any())
 		{
 			var state = windowRef.GetAtomArray(XAtoms.NetWmState);
 			return !state.Contains(XAtoms.NetWmStateSkipTaskbar);
