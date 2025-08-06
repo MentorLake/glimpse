@@ -51,7 +51,7 @@ public class NotificationBubbleContent
 			.Prop(w => w.SetXalign(0))
 			.Prop(w => w.SetYalign(0));
 
-		var closeButton = new GtkButtonHandle()
+		var closeButton = GtkButtonHandle.New()
 			.AddButtonStates()
 			.AddMany(GtkImageHandle.New().SetFromIconName("window-close-symbolic", GtkIconSize.GTK_ICON_SIZE_SMALL_TOOLBAR).SetPixelSize(16))
 			.SetHalign(GtkAlign.GTK_ALIGN_END)

@@ -36,11 +36,11 @@ public class NotificationHistoryWindow
 		viewModelObs
 			.UnbundleMany(e => e.AppName)
 			.RemoveIndex()
-			.Subscribe(obs =>
+			.SubscribeDebug(obs =>
 			{
 				var closeButton = GtkImageHandle.New();
 
-				var sectionHeader = new GtkEventBoxHandle()
+				var sectionHeader = GtkEventBoxHandle.New()
 					.AddButtonStates()
 					.AddClass("button")
 					.ObserveEvent(w => w.Signal_EnterNotifyEvent(), _ => closeButton.SetVisible(true))
@@ -61,14 +61,14 @@ public class NotificationHistoryWindow
 							.Prop(i => i.SetPixelSize(16))));
 
 				accordion.AddSection(obs.Key.AppName, sectionHeader);
-				obs.TakeLast(1).Subscribe(_ => accordion.RemoveSection(obs.Key.AppName));
+				obs.TakeLast(1).SubscribeDebug(_ => accordion.RemoveSection(obs.Key.AppName));
 				closeButton.SetVisible(false);
 			});
 
 		viewModelObs
 			.UnbundleMany(e => e.Id)
 			.RemoveIndex()
-			.Subscribe(o =>
+			.SubscribeDebug(o =>
 			{
 				var item = CreateNotificationEntry(o);
 				accordion.AddItemToSection(o.Key.AppName, item);
