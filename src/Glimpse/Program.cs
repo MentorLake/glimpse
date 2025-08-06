@@ -91,7 +91,7 @@ public static class Program
 
 			var appSettings = host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>();
 
-			await host.UseXSessionManagement(Assembly.GetExecutingAssembly().Location, appSettings.Value.Xfce);
+			await host.UseXSessionManagement(Path.Join(AppContext.BaseDirectory, "glimpse"), appSettings.Value.Xfce);
 			await host.UseDBus();
 			await host.UseDesktopFiles();
 			await host.UseXorg();
