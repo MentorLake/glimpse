@@ -17,7 +17,18 @@ public class XfceSMClientHandle : GObjectHandle
 
 	public static XfceSMClientHandle Get(string[] commandLineArgs, int restartStyle, byte priority)
 	{
-		return LibXfce4UIExterns.xfce_sm_client_get_with_argv(commandLineArgs.Length, commandLineArgs, restartStyle, priority);
+		var nullTerminatedArray = new IntPtr[commandLineArgs.Length + 1];
+		for (var i = 0; i < commandLineArgs.Length; i++) nullTerminatedArray[i] = Marshal.StringToCoTaskMemAnsi(commandLineArgs[i]);
+		nullTerminatedArray[commandLineArgs.Length] = IntPtr.Zero;
+
+		var argv = Marshal.AllocCoTaskMem(IntPtr.Size * (commandLineArgs.Length + 1));
+		Marshal.Copy(nullTerminatedArray, 0, argv, nullTerminatedArray.Length);
+
+		var result = LibXfce4UIExterns.xfce_sm_client_get_with_argv(commandLineArgs.Length, argv, restartStyle, priority);
+
+		for (int i = 0; i < commandLineArgs.Length; i++) Marshal.FreeCoTaskMem(nullTerminatedArray[i]);
+		Marshal.FreeCoTaskMem(argv);
+		return result;
 	}
 }
 

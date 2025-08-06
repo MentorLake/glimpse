@@ -95,11 +95,11 @@ public static class GtkExtensions
 
 		var strutAtom = XLib.XInternAtom(windowRef.Display, "_NET_WM_STRUT", false);
 		var reservedSpace = new long[] { 0, 0, 0, windowAllocation.Height }.SelectMany(BitConverter.GetBytes).ToArray();
-		XLib.XChangeProperty(windowRef.Display, windowRef.Window, strutAtom, cardinalTypeAtom, 4, (int) GdkPropMode.GDK_PROP_MODE_REPLACE, reservedSpace, reservedSpace.Length);
+		XLib.XChangeProperty(windowRef.Display, windowRef.Window, strutAtom, cardinalTypeAtom, 32, (int) GdkPropMode.GDK_PROP_MODE_REPLACE, reservedSpace, 4);
 
 		var strutPartialAtom = XLib.XInternAtom(windowRef.Display, "_NET_WM_STRUT_PARTIAL", false);
 		var reservedSpaceLong = new long[] { 0, 0, 0, windowAllocation.Height, 0, 0, 0, 0, 0, 0, workArea.Left, workArea.Left + monitor.Width - 1 }.SelectMany(BitConverter.GetBytes).ToArray();
-		XLib.XChangeProperty(windowRef.Display, windowRef.Window, strutPartialAtom, cardinalTypeAtom, 12, (int) GdkPropMode.GDK_PROP_MODE_REPLACE, reservedSpaceLong, reservedSpaceLong.Length);
+		XLib.XChangeProperty(windowRef.Display, windowRef.Window, strutPartialAtom, cardinalTypeAtom, 32, (int) GdkPropMode.GDK_PROP_MODE_REPLACE, reservedSpaceLong, 12);
 	}
 
 	public static IEnumerable<GdkMonitorHandle> GetMonitors(this GdkDisplayHandle display)

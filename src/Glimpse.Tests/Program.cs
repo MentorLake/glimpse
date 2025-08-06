@@ -14,6 +14,7 @@ using Glimpse.Services;
 using Glimpse.UI.Components.Shared;
 using MentorLake.Gdk;
 using MentorLake.Gio;
+using MentorLake.GLib;
 using MentorLake.Gtk;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
@@ -70,7 +71,9 @@ public class Program
 
 		var appSettings = host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>();
 
-		await host.UseXSessionManagement(Environment.CurrentDirectory, appSettings.Value.Xfce);
+		GLibGlobalFunctions.SetPrgname(appSettings.Value.ApplicationName);
+
+		await host.UseXSessionManagement();
 		await host.UseDBus();
 		await host.UseDesktopFiles();
 		await host.UseXorg();
