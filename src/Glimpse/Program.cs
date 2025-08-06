@@ -1,6 +1,9 @@
-﻿using System.CommandLine;
+﻿using System;
+using System.CommandLine;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Glimpse.UI;
 using Glimpse.Libraries.Accounts;
 using Glimpse.Libraries.Configuration;
@@ -88,7 +91,7 @@ public static class Program
 
 			var appSettings = host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>();
 
-			await host.UseXSessionManagement(Environment.CurrentDirectory, appSettings.Value.Xfce);
+			await host.UseXSessionManagement(Assembly.GetExecutingAssembly().Location, appSettings.Value.Xfce);
 			await host.UseDBus();
 			await host.UseDesktopFiles();
 			await host.UseXorg();

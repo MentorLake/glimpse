@@ -20,5 +20,7 @@ public class OrgXfceSessionClient(IHostApplicationLifetime applicationLifetime, 
 		_client.Signal_Quit().Subscribe(_ => applicationLifetime.StopApplication());
 		_client.Connect();
 		logger.LogInformation($"XfceSessionId: {_client.GetClientId()}");
+		logger.LogInformation($"AssemblyPath: {assemblyPath}");
+		logger.LogInformation($"RestartStyle: {restartStyle.ToString()}");
 	}
 }
