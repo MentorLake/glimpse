@@ -37,7 +37,7 @@ jobs:
 
     - name: Zip release
       run: |
-        zip --junk-paths glimpse.linux-x64.zip src/Glimpse/bin/Release/net8.0/linux-x64/publish/glimpse
+        zip --junk-paths glimpse.linux-x64.${{ github.run_number }}.zip src/Glimpse/bin/Release/net8.0/linux-x64/publish/glimpse
 
     - name: Create release
       uses: actions/create-release@v1
