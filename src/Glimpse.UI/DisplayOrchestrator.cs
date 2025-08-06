@@ -75,7 +75,7 @@ public class DisplayOrchestrator(NotificationBubblesService notificationBubblesS
 		}
 	}
 
-	public Panel CreatePanel(GdkMonitorHandle monitor, int bottomOffset = 1)
+	public Panel CreatePanel(GdkMonitorHandle monitor, int bottomOffset = 0)
 	{
 		var panelWindow = serviceProvider.GetRequiredService<Panel>();
 		_panels.Add(panelWindow);
