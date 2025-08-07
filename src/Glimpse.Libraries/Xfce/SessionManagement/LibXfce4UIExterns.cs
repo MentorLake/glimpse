@@ -32,7 +32,7 @@ internal static class LibXfce4UIExterns
 	public static extern void xfce_sm_client_disconnect(XfceSMClientHandle client);
 
 	[DllImport(LibXfce4UiDll, CallingConvention = CallingConvention.Cdecl)]
-	public static extern XfceSMClientHandle xfce_sm_client_get_with_argv(int numCommandLineArgs, string[] commandLineArgs, int restartStyle, byte priority);
+	public static extern XfceSMClientHandle xfce_sm_client_get_with_argv(int numCommandLineArgs, IntPtr commandLineArgs, int restartStyle, byte priority);
 
 	public enum RestartStyle
 	{

@@ -11,8 +11,16 @@ public class OrgXfceSessionClient(IHostApplicationLifetime applicationLifetime, 
 			? parsedRestartStyle
 			: LibXfce4UIExterns.RestartStyle.IfRunning;
 
-		var client = new XfceSMClient(XfceSMClientHandle.Get(Environment.GetCommandLineArgs(), (int)restartStyle, 25));
-		client.SetRestartCommand([Path.GetFileName(assemblyPath)]);
+		var client = new XfceSMClient(XfceSMClientHandle.Get());
+		client.SetRestartStyle((int) restartStyle);
+		client.SetPriority(25);
+
+		if (Environment.GetCommandLineArgs().Any(a => a.Contains("sm-client-id")))
+		{
+			client = new XfceSMClient(XfceSMClientHandle.Get(Environment.GetCommandLineArgs(), (int)restartStyle, 25));
+		}
+
+		client.SetRestartCommand([assemblyPath]);
 		client.SetCurrentDirectory(Path.GetDirectoryName(assemblyPath));
 		client.Signal_Quit().Subscribe(_ => applicationLifetime.StopApplication());
 		client.Connect();

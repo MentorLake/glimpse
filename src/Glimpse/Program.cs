@@ -14,7 +14,9 @@ using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.Xfce.SessionManagement;
 using Glimpse.Libraries.Xorg;
 using Glimpse.Services;
+using MentorLake.Gio;
 using MentorLake.GLib;
+using MentorLake.Gtk;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
@@ -92,9 +94,9 @@ public static class Program
 
 			var appSettings = host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>();
 
-			GLibGlobalFunctions.SetPrgname("glimpse");
+			GLibGlobalFunctions.SetPrgname(appSettings.Value.ApplicationName);
 
-			await host.UseXSessionManagement(Path.Join(AppContext.BaseDirectory, "glimpse"), appSettings.Value.Xfce);
+			await host.UseXSessionManagement();
 			await host.UseDBus();
 			await host.UseDesktopFiles();
 			await host.UseXorg();
@@ -108,6 +110,15 @@ public static class Program
 
 			var orchestrator = host.Services.GetRequiredService<DisplayOrchestrator>();
 			orchestrator.WatchMonitorChanges();
+
+			var app = host.Services.GetRequiredService<GtkApplicationHandle>();
+			app.Signal_Activate().Take(1).Subscribe(_ =>
+			{
+#if !DEBUG
+				var sessionClient = host.Services.GetRequiredService<OrgXfceSessionClient>();
+				sessionClient.Register(Path.Join(AppContext.BaseDirectory, appSettings.Value.ApplicationName), appSettings.Value.Xfce);
+#endif
+			});
 
 			await host.RunAsync();
 			return 0;

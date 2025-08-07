@@ -11,12 +11,8 @@ public static class XfceStartupExtensions
 		services.AddSingleton<OrgXfceSessionClient>();
 	}
 
-	public static Task UseXSessionManagement(this IHost host, string installationPath, GlimpseXfceOptions options)
+	public static Task UseXSessionManagement(this IHost host)
 	{
-		var sessionClient = host.Services.GetRequiredService<OrgXfceSessionClient>();
-#if !DEBUG
-			sessionClient.Register(installationPath, options);
-#endif
 		return Task.CompletedTask;
 	}
 }
