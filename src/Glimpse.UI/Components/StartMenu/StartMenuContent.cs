@@ -117,7 +117,10 @@ public class StartMenuContent
 		_pinnedApps.ItemActivated.TakeUntilDestroyed(_pinnedApps.Widget)
 			.SubscribeDebug(i => _appLaunch.OnNext(_appIconViewModels[i.Id].ViewModel.DesktopFile));
 
-		_allApps.ItemActivated.TakeUntilDestroyed(_pinnedApps.Widget)
+		_allApps.ItemActivated.TakeUntilDestroyed(_allApps.Widget)
+			.SubscribeDebug(i => _appLaunch.OnNext(_appIconViewModels[i.Id].ViewModel.DesktopFile));
+
+		_searchApps.ItemActivated.TakeUntilDestroyed(_searchApps.Widget)
 			.SubscribeDebug(i => _appLaunch.OnNext(_appIconViewModels[i.Id].ViewModel.DesktopFile));
 
 		_searchEntry.ObserveEvent(w => w.Signal_InsertText())
