@@ -5,21 +5,18 @@ namespace Glimpse.Libraries.Xfce.SessionManagement;
 
 public class OrgXfceSessionClient(IHostApplicationLifetime applicationLifetime, ILogger<OrgXfceSessionClient> logger)
 {
-	private readonly XfceSMClient _client = new(XfceSMClientHandle.Get());
-
 	public void Register(string assemblyPath, GlimpseXfceOptions options)
 	{
 		var restartStyle = Enum.TryParse(options.RestartStyle, true, out LibXfce4UIExterns.RestartStyle parsedRestartStyle)
 			? parsedRestartStyle
 			: LibXfce4UIExterns.RestartStyle.IfRunning;
 
-		_client.SetRestartStyle((int) restartStyle);
-		_client.SetPriority(25);
-		_client.SetRestartCommand([Path.GetFileName(assemblyPath)]);
-		_client.SetCurrentDirectory(Path.GetDirectoryName(assemblyPath));
-		_client.Signal_Quit().Subscribe(_ => applicationLifetime.StopApplication());
-		_client.Connect();
-		logger.LogInformation($"XfceSessionId: {_client.GetClientId()}");
+		var client = new XfceSMClient(XfceSMClientHandle.Get(Environment.GetCommandLineArgs(), (int)restartStyle, 25));
+		client.SetRestartCommand([Path.GetFileName(assemblyPath)]);
+		client.SetCurrentDirectory(Path.GetDirectoryName(assemblyPath));
+		client.Signal_Quit().Subscribe(_ => applicationLifetime.StopApplication());
+		client.Connect();
+		logger.LogInformation($"XfceSessionId: {client.GetClientId()}");
 		logger.LogInformation($"AssemblyPath: {assemblyPath}");
 		logger.LogInformation($"RestartStyle: {restartStyle.ToString()}");
 	}

@@ -14,6 +14,7 @@ using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.Xfce.SessionManagement;
 using Glimpse.Libraries.Xorg;
 using Glimpse.Services;
+using MentorLake.GLib;
 using MentorLake.Redux;
 using MentorLake.Redux.Effects;
 using MentorLake.Redux.Reducers;
@@ -90,6 +91,8 @@ public static class Program
 				.ToArray());
 
 			var appSettings = host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>();
+
+			GLibGlobalFunctions.SetPrgname("glimpse");
 
 			await host.UseXSessionManagement(Path.Join(AppContext.BaseDirectory, "glimpse"), appSettings.Value.Xfce);
 			await host.UseDBus();
