@@ -18,10 +18,12 @@ public static class GdkPixbufFactory
 
 	public static GdkPixbufHandle From(byte[] data)
 	{
-		File.WriteAllBytes("/tmp/glimpse_img.png", data);
-		var result = GdkPixbufHandle.NewFromFile("/tmp/glimpse_img.png");
-		File.Delete("/tmp/glimpse_img.png");
-		return result;
+		var bytes = GBytesHandle.New(data, (UIntPtr)data.Length);
+		var loader = GdkPixbufLoaderHandle.New();
+		loader.WriteBytes(bytes);
+		GdkPixbufLoaderHandleExtensions.Close(loader);
+		bytes.Unref();
+		return loader.GetPixbuf();
 	}
 
 	public static GdkPixbufHandle From(byte[] data, int depth, int width, int height)

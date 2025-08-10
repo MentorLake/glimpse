@@ -22,14 +22,11 @@ public class GdkPixbufHandleJsonConverter : JsonConverter<GdkPixbufHandle>
 
 	public override void Write(Utf8JsonWriter writer, GdkPixbufHandle pixbuf, JsonSerializerOptions options)
 	{
-		pixbuf.Save("/tmp/glimpse_img.png", "png", IntPtr.Zero, IntPtr.Zero);
-		var pngBytes = File.ReadAllBytes("/tmp/glimpse_img.png");
+		pixbuf.SaveToBuffer(out var buffer, out _, "png", IntPtr.Zero, IntPtr.Zero);
 		writer.WriteStartObject();
-		writer.WriteBase64String("Data", pngBytes);
+		writer.WriteBase64String("Data", buffer);
 		writer.WriteNumber("Width", pixbuf.GetWidth());
 		writer.WriteNumber("Height", pixbuf.GetHeight());
 		writer.WriteEndObject();
-
-		File.Delete("/tmp/glimpse_img.png");
 	}
 }
