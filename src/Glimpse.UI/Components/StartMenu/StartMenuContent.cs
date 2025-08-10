@@ -8,13 +8,13 @@ using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.Shared.ForEach;
 using MentorLake.Gdk;
 using MentorLake.Gtk;
+using MentorLake.Gtk3;
 
 namespace Glimpse.UI.Components.StartMenu;
 
 public class StartMenuContent
 {
 	private readonly GtkBoxHandle _root;
-	private readonly GtkEntryHandle _hiddenEntry;
 	private readonly Subject<DesktopFileAction> _runActionSubject = new();
 	private readonly Subject<DesktopFile> _appLaunch = new();
 	private readonly Subject<string> _toggleTaskbarPinningSubject = new();
@@ -33,6 +33,7 @@ public class StartMenuContent
 	};
 	private readonly ChipGroup _chipGroup;
 
+	private GtkScrolledWindowHandle _activePage;
 	public GtkWidgetHandle Widget => _root;
 	public IObservable<string> SearchTextUpdated { get; }
 	public IObservable<DesktopFile> AppLaunch => _appLaunch;
@@ -44,8 +45,6 @@ public class StartMenuContent
 	public StartMenuContent(StartMenuActionBar actionBar)
 	{
 		_root = GtkBoxHandle.New(GtkOrientation.GTK_ORIENTATION_HORIZONTAL, 0);
-		_hiddenEntry = GtkEntryHandle.New()
-			.SetEditable(false);
 
 		_searchEntry = GtkEntryHandle.New()
 			.AddClass("start-menu__search-input")
@@ -99,7 +98,6 @@ public class StartMenuContent
 
 		var layout = GtkGridHandle.New()
 			.SetColumnHomogeneous(true)
-			.Attach(_hiddenEntry, 1, 0, 1, 1)
 			.Attach(_searchEntry, 1, 0, 6, 1)
 			.Attach(_chipGroup.Widget, 1, 1, 6, 1)
 			.Attach(pages["pinned"], 1, 2, 6, 8)
@@ -112,6 +110,7 @@ public class StartMenuContent
 		{
 			foreach (var p in pages) p.Value.Hide();
 			pages[c].Show();
+			_activePage = pages[c];
 		});
 
 		_pinnedApps.ItemActivated.TakeUntilDestroyed(_pinnedApps.Widget)
@@ -143,7 +142,6 @@ public class StartMenuContent
 
 		_root.Add(layout);
 		_root.ShowAll();
-		_hiddenEntry.Hide();
 	}
 
 	private GlimpseFlowBox<AppIcon<StartMenuAppContextMenuItem>> CreatePage()
@@ -239,18 +237,19 @@ public class StartMenuContent
 		_searchEntry.SetText("");
 		_chipGroup.HideChip("search");
 		_chipGroup.Select("pinned");
-		_hiddenEntry.GrabFocus();
 	}
 
 	public bool HandleKeyPress(uint keyValue)
 	{
-		if (!_searchEntry.HasFocus() && _keyCodeRanges.Any(r => keyValue >= r.Item1 && keyValue <= r.Item2))
+		var focusedWidget = _searchEntry.GetToplevel().ToHandle<GtkWindowHandle>().GetFocus();
+
+		if (_keyCodeRanges.Any(r => keyValue >= r.Item1 && keyValue <= r.Item2))
 		{
 			_searchEntry.GrabFocusWithoutSelecting();
 		}
-		else if (_hiddenEntry.HasFocus())
+		else if (focusedWidget == null && (keyValue == GdkConstants.KEY_Down || keyValue == GdkConstants.KEY_Up || keyValue == GdkConstants.KEY_Left || keyValue == GdkConstants.KEY_Right))
 		{
-			_searchEntry.GrabFocusWithoutSelecting();
+			_activePage.ChildFocus(GtkDirectionType.GTK_DIR_DOWN);
 			return true;
 		}
 

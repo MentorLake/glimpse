@@ -3,3 +3,7 @@
 	min-height: 42px;
 	border-radius: 5px;
 }
+
+.taskbar__item:focus {
+	background-color: @theme_selected_bg_color;
+}

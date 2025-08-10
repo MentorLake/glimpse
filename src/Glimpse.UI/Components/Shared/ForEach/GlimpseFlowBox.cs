@@ -2,6 +2,7 @@ using System.Drawing;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Glimpse.Libraries.Gtk;
+using MentorLake.Gdk;
 using MentorLake.Gtk;
 using MentorLake.Gtk3;
 
@@ -18,6 +19,8 @@ public class GlimpseFlowBox<TItem> where TItem : IGlimpseFlowBoxItem
 	private bool _dragInitialized;
 	private readonly Subject<TItem> _itemActivatedSubject = new();
 	private bool _isLayoutRefreshQueued;
+	private int _selectedChildIndex = -1;
+	private List<GtkFlowBoxChildHandle> _visibleChildCache = new();
 
 	public bool IsDragEnabled { get; set; }
 	public int ItemsPerLine { get; set; } = 7;
@@ -31,9 +34,70 @@ public class GlimpseFlowBox<TItem> where TItem : IGlimpseFlowBoxItem
 
 	public GlimpseFlowBox()
 	{
-		_dragIconImage = GtkImageHandle.New().AddClass("taskbar__item");
-		_fixedContainer = GtkFixedHandle.New();
-		_fixedContainer.Add(_dragIconImage);
+		_dragIconImage = GtkImageHandle.New()
+			.AddClass("taskbar__item");
+
+		_fixedContainer = GtkFixedHandle.New()
+			.SetCanFocus(false)
+			.SetFocusChain(null)
+			.Add(_dragIconImage);
+
+		_fixedContainer.ObserveEvent(w => w.Signal_Focus()).Subscribe(e =>
+		{
+			if (_visibleChildCache.Count == 0)
+			{
+				e.ReturnValue = false;
+			}
+			else if (_fixedContainer.GetFocusChild() == null)
+			{
+				SelectChildByIndex(0);
+				e.ReturnValue = true;
+			}
+			else if (e.Direction == GtkDirectionType.GTK_DIR_TAB_BACKWARD || e.Direction == GtkDirectionType.GTK_DIR_TAB_FORWARD)
+			{
+				SelectChildByIndex(-1);
+				e.ReturnValue = false;
+			}
+			else
+			{
+				var numItems = _visibleChildCache.Count;
+				var row = Math.Floor(_selectedChildIndex / (decimal) ItemsPerLine);
+				var rowStartIndex = row * ItemsPerLine;
+				var rowIndex = _selectedChildIndex - rowStartIndex;
+
+				e.ReturnValue = true;
+
+				if (e.Direction == GtkDirectionType.GTK_DIR_RIGHT)
+				{
+					if (rowIndex < ItemsPerLine - 1 && _selectedChildIndex < numItems - 1) SelectChildByIndex(_selectedChildIndex + 1);
+				}
+				else if (e.Direction == GtkDirectionType.GTK_DIR_LEFT)
+				{
+					if (rowIndex > 0) SelectChildByIndex(_selectedChildIndex - 1);
+				}
+				else if (e.Direction == GtkDirectionType.GTK_DIR_DOWN)
+				{
+					var newIndex = _selectedChildIndex + ItemsPerLine;
+					if (newIndex >= numItems) return;
+					SelectChildByIndex(newIndex);
+				}
+				else if (e.Direction == GtkDirectionType.GTK_DIR_UP)
+				{
+					var newIndex = _selectedChildIndex - ItemsPerLine;
+					if (newIndex < 0) return;
+					SelectChildByIndex(newIndex);
+				}
+			}
+		});
+
+		_fixedContainer.ObserveEvent(w => w.Signal_KeyPressEvent())
+			.Select(e => e.Event.Dereference())
+			.Where(e => e.keyval == GdkConstants.KEY_KP_Enter || e.keyval == GdkConstants.KEY_Return)
+			.Subscribe(_ =>
+			{
+				var index = _selectedChildIndex == -1 ? 0 : _selectedChildIndex;
+				_itemActivatedSubject.OnNext(_visibleChildCache[index].GetManagedData<TItem>("Item"));
+			});
 	}
 
 	public void AddOrUpdate(TItem item, int newIndex)
@@ -62,11 +126,15 @@ public class GlimpseFlowBox<TItem> where TItem : IGlimpseFlowBoxItem
 
 	private void AddItem(TItem item, int index)
 	{
-		var flowBoxChild = GtkFlowBoxChildHandle.New().AddMany(item.Widget).AddClass("taskbar__item");
+		var flowBoxChild = GtkFlowBoxChildHandle.New().AddMany(item.Widget);
 		flowBoxChild.SetIndex(index);
 		flowBoxChild.SetManagedData("Item", item);
 		flowBoxChild.ShowAll();
 		flowBoxChild.Signal_Destroy().Take(1).Subscribe(_ => QueueLayoutRefresh());
+		flowBoxChild
+			.AddClass("taskbar__item")
+			.SetCanFocus(true)
+			.SetSensitive(true);
 
 		_flowboxChildWidgetCache.Add(flowBoxChild);
 		_fixedContainer.Put(flowBoxChild, 0, 0);
@@ -130,6 +198,7 @@ public class GlimpseFlowBox<TItem> where TItem : IGlimpseFlowBoxItem
 
 		if (!_dragInitialized)
 		{
+			_fixedContainer.GetToplevel().ToHandle<GtkWindowHandle>().SetFocus(null);
 			_dragIconImage.SetFromPixbuf(draggable.DragIcon);
 			_dragIconImage.ShowAll();
 			_dragBeginSubject.OnNext(draggable);
@@ -183,6 +252,16 @@ public class GlimpseFlowBox<TItem> where TItem : IGlimpseFlowBoxItem
 		QueueLayoutRefresh();
 	}
 
+	public void SelectChildByIndex(int index)
+	{
+		_selectedChildIndex = index;
+
+		if (index >= 0)
+		{
+			_visibleChildCache[index].GrabFocus();
+		}
+	}
+
 	private void QueueLayoutRefresh()
 	{
 		if (_isLayoutRefreshQueued) return;
@@ -213,6 +292,7 @@ public class GlimpseFlowBox<TItem> where TItem : IGlimpseFlowBoxItem
 		}
 
 		var sortedChildren = visibleChildren.OrderBy(static i => GtkExtensions.GetIndex(i)).ToList();
+		_visibleChildCache = sortedChildren;
 		if (!sortedChildren.Any()) return;
 		var currentY = 0;
 		var allChunks = sortedChildren.Chunk(ItemsPerLine).ToList();
