@@ -5,6 +5,7 @@
 		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
 		<RootNamespace>Glimpse.Tests</RootNamespace>
 		<AssemblyName>glimpse_tests</AssemblyName>
+		<PublishAot>true</PublishAot>
 	</PropertyGroup>
 
 	<ItemGroup>

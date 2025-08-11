@@ -45,9 +45,8 @@ public static class GdkPixbufFactory
 		return GdkPixbufHandle.NewFromBytes(bytes, GdkColorspace.GDK_COLORSPACE_RGB, hasAlpha, bitsPerSample, width, height, rowStride);
 	}
 
-	public static GdkPixbufHandle FromResource(string resourceName)
+	public static GdkPixbufHandle FromResource(Assembly sourceAssembly, string resourceName)
 	{
-		var sourceAssembly = Assembly.GetCallingAssembly();
 		using var resource = new StreamReader(sourceAssembly.GetManifestResourceStream(resourceName));
 		var imageData = resource.ReadToEnd();
 		var loader = GdkPixbufLoaderHandle.New();

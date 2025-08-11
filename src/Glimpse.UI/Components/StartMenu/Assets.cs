@@ -1,3 +1,4 @@
+using System.Reflection;
 using Glimpse.Libraries.Images;
 using MentorLake.GdkPixbuf;
 
@@ -16,6 +17,6 @@ internal static class Assets
 
 	private static GdkPixbufHandle LoadSvg(string name)
 	{
-		return GdkPixbufFactory.FromResource(name);
+		return GdkPixbufFactory.FromResource(Assembly.GetExecutingAssembly(), name);
 	}
 }

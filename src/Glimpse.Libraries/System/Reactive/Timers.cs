@@ -1,6 +1,6 @@
 namespace Glimpse.Libraries.System.Reactive;
 
-public enum Timers
+public class Timers
 {
-	OneSecond
+	public const string OneSecond = "OneSecond";
 }
