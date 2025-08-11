@@ -2,7 +2,6 @@ using System.Reactive.Linq;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Services.Notifications;
-using Glimpse.UI.Components.Shared;
 using MentorLake.Gtk;
 using MentorLake.Redux;
 using Microsoft.Extensions.Logging;
@@ -40,7 +39,7 @@ public class NotificationBubblesService(
 					notificationObservable
 						.TakeLast(1)
 						.ObserveOn(GLibExt.Scheduler)
-						.Subscribe(_ => GtkWindowHandleExtensions.Close(newWindow.Window));
+						.Subscribe(_ => newWindow.Window.Destroy());
 
 					return newWindow;
 				}

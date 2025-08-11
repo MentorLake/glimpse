@@ -102,8 +102,6 @@ internal class NotificationsReducers : IReducerFactory
 					Image = a.Notification.Image?.ScaleToFit(34, 34)
 				};
 
-				a.Notification.Image?.Dispose();
-
 				if (result.KnownApplications.All(app => app.Name != a.Notification.AppName))
 				{
 					var app = new NotificationHistoryApplication() { Name = a.Notification.AppName, DesktopEntry = a.Notification.DesktopEntry, Icon = a.Notification.AppIcon };

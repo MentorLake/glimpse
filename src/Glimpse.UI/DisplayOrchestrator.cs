@@ -15,12 +15,14 @@ using MentorLake.Gdk;
 using MentorLake.GdkPixbuf;
 using MentorLake.Gio;
 using MentorLake.Gtk;
+using MentorLake.Gtk3;
 using MentorLake.Redux;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Glimpse.UI;
 
-public class DisplayOrchestrator(NotificationBubblesService notificationBubblesService, GtkApplicationHandle application, IServiceProvider serviceProvider, ReduxStore store)
+public class DisplayOrchestrator(NotificationBubblesService notificationBubblesService, GtkApplicationHandle application, IServiceProvider serviceProvider, ReduxStore store, ILogger<DisplayOrchestrator> logger)
 {
 	private readonly List<Panel> _panels = new();
 	private StartMenuWindow _startMenuWindow;
@@ -150,7 +152,7 @@ public class DisplayOrchestrator(NotificationBubblesService notificationBubblesS
 
 	public void WatchNotifications()
 	{
-		var notificationsPerMonitor = new Dictionary<GdkMonitorHandle, ImmutableList<NotificationBubbleWindow>>(EqualityComparer<GdkMonitorHandle>.Create((x, y) => x == y));
+		var notificationsPerMonitor = new Dictionary<long, ImmutableList<NotificationBubbleWindow>>();
 
 		notificationBubblesService.Notifications.Subscribe(w =>
 		{
@@ -161,20 +163,28 @@ public class DisplayOrchestrator(NotificationBubblesService notificationBubblesS
 
 			var eventMonitorGeometry = eventMonitor.GetGeometryRect();
 			var panel = _panels.FirstOrDefault(p => p.IsOnMonitor(eventMonitorGeometry));
-			panel.Widget.GetWindow().GetGeometry(out _, out _, out _, out var panelHeight);
 
-			notificationsPerMonitor.TryAdd(eventMonitor, ImmutableList<NotificationBubbleWindow>.Empty);
-			notificationsPerMonitor[eventMonitor] = notificationsPerMonitor[eventMonitor].Add(w);
+			if (panel == null)
+			{
+				logger.LogWarning("Couldn't find panel on monitor to display notification.  Defaulting to first panel.");
+				panel = _panels.First();
+				eventMonitor = display.GetMonitors().First(m => panel.IsOnMonitor(m.GetGeometryRect()));
+			}
+
+			panel.Widget.GetWindow().GetGeometry(out _, out _, out _, out var panelHeight);
+			var monitorId = eventMonitor.GetManagedUniqueId();
+			notificationsPerMonitor.TryAdd(monitorId, ImmutableList<NotificationBubbleWindow>.Empty);
+			notificationsPerMonitor[monitorId] = notificationsPerMonitor[monitorId].Add(w);
 
 			w.Window.Signal_SizeAllocate().TakeUntilDestroyed(w.Window).SubscribeDebug(_ =>
 			{
-				StackNotificationsOnMonitor(eventMonitor, panelHeight, notificationsPerMonitor[eventMonitor]);
+				StackNotificationsOnMonitor(eventMonitor, panelHeight, notificationsPerMonitor[monitorId]);
 			});
 
 			w.Window.Signal_Unmap().Take(1).SubscribeDebug(_ =>
 			{
-				notificationsPerMonitor[eventMonitor] = notificationsPerMonitor[eventMonitor].Remove(w);
-				StackNotificationsOnMonitor(eventMonitor, panelHeight, notificationsPerMonitor[eventMonitor]);
+				notificationsPerMonitor[monitorId] = notificationsPerMonitor[monitorId].Remove(w);
+				StackNotificationsOnMonitor(eventMonitor, panelHeight, notificationsPerMonitor[monitorId]);
 			});
 		});
 	}
