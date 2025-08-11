@@ -31,10 +31,6 @@ public class DisplayOrchestrator(NotificationBubblesService notificationBubblesS
 	{
 		application.Signal_Startup().Take(1).SubscribeDebug(_ =>
 		{
-			_startMenuWindow = serviceProvider.GetRequiredService<StartMenuWindow>();
-			application.AddWindow(_startMenuWindow.Window);
-			application.AddWindow(serviceProvider.GetRequiredService<SidePaneWindow>().Window);
-
 			var iconManager = IconManager.GetDefault();
 
 			store.Select(XorgSelectors.Windows).ObserveOn(GLibExt.Scheduler).Select(w => w.ById).UnbundleMany(w => w.Key).RemoveIndex().SubscribeDebug(windowObs =>
@@ -46,19 +42,26 @@ public class DisplayOrchestrator(NotificationBubblesService notificationBubblesS
 				});
 				windowObs.TakeLast(1).Subscribe(props => iconManager.RemoveKeyedIcon(props.Key.ToString()));
 			});
+
+			var openStartMenuAction = GSimpleActionHandle.New("OpenStartMenu", null);
+			openStartMenuAction.Signal_Activate().Select(_ => true).SubscribeDebug(_ => store.Dispatch(new StartMenuOpenedAction()));
+			application.AddAction(openStartMenuAction);
+
+			var loadPanels = GSimpleActionHandle.New("LoadPanels", null);
+			loadPanels.Signal_Activate().Subscribe(_ =>
+			{
+				store.Dispatch(new UpdateMonitorsAction([]));
+				store.Dispatch(new UpdateMonitorsAction(GdkDisplayHandle.GetDefault().GetMonitors()));
+			});
+			application.AddAction(loadPanels);
 		});
 
-		var openStartMenuAction = GSimpleActionHandle.New("OpenStartMenu", null);
-		openStartMenuAction.Signal_Activate().Select(_ => true).SubscribeDebug(_ => store.Dispatch(new StartMenuOpenedAction()));
-		application.AddAction(openStartMenuAction);
-
-		var loadPanels = GSimpleActionHandle.New("LoadPanels", null);
-		loadPanels.Signal_Activate().Subscribe(_ =>
+		application.Signal_Activate().Take(1).SubscribeDebug(_ =>
 		{
-			store.Dispatch(new UpdateMonitorsAction([]));
-			store.Dispatch(new UpdateMonitorsAction(GdkDisplayHandle.GetDefault().GetMonitors()));
+			_startMenuWindow = serviceProvider.GetRequiredService<StartMenuWindow>();
+			application.AddWindow(_startMenuWindow.Window);
+			application.AddWindow(serviceProvider.GetRequiredService<SidePaneWindow>().Window);
 		});
-		application.AddAction(loadPanels);
 	}
 
 	private void StackNotificationsOnMonitor(GdkMonitorHandle monitor, int panelHeight, ImmutableList<NotificationBubbleWindow> notificationWindows)

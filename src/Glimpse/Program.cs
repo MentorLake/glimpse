@@ -112,7 +112,7 @@ public static class Program
 			orchestrator.WatchMonitorChanges();
 
 			var app = host.Services.GetRequiredService<GtkApplicationHandle>();
-			app.Signal_Activate().Take(1).Subscribe(_ =>
+			app.Signal_Startup().Take(1).Subscribe(_ =>
 			{
 #if !DEBUG
 				var sessionClient = host.Services.GetRequiredService<OrgXfceSessionClient>();

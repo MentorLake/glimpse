@@ -87,7 +87,7 @@ public class Program
 		var application = host.Services.GetRequiredService<GtkApplicationHandle>();
 
 		application
-			.Signal_Startup()
+			.Signal_Activate()
 			.ObserveOn(GLibExt.Scheduler)
 			.Subscribe(_ =>
 			{
