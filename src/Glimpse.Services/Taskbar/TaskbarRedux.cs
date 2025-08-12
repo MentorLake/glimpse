@@ -65,27 +65,33 @@ internal static class TaskbarReducers
 					return taskbarState with { Configuration = a.Config };
 				}
 
-				var lastMatchedPinnedLauncherIndex = -1;
-				var results = taskbarState.StoredSlots.Refs;
+				var before = taskbarState.StoredSlots.Refs.Select(i => string.IsNullOrEmpty(i.PinnedDesktopFileId) ? i.DiscoveredDesktopFileId : i.PinnedDesktopFileId).ToList();
+				var after = a.Config.PinnedLaunchers.ToList();
+				var results = ImmutableList<SlotRef>.Empty;
 
-				foreach (var configPinnedDesktopFile in a.Config.PinnedLaunchers)
+				foreach (var p in Pairings(before, after))
 				{
-					var matchIndex = results.FindIndex(s => s.PinnedDesktopFileId == configPinnedDesktopFile);
-					if (matchIndex == -1) matchIndex = results.FindIndex(s => s.DiscoveredDesktopFileId == configPinnedDesktopFile);
-
-					if (matchIndex != -1)
+					if (string.IsNullOrEmpty(p.Item1) && !string.IsNullOrEmpty(p.Item2))
 					{
-						lastMatchedPinnedLauncherIndex = matchIndex;
+						var slotRef = taskbarState.StoredSlots.Refs.Find(r => r.PinnedDesktopFileId == p.Item2);
+						if (slotRef == null) slotRef = new SlotRef() { PinnedDesktopFileId = p.Item2 };
+						results = results.Add(slotRef);
 					}
-					else if (lastMatchedPinnedLauncherIndex == -1)
+					else if (!string.IsNullOrEmpty(p.Item1) && string.IsNullOrEmpty(p.Item2))
 					{
-						results = results.Insert(0, new SlotRef() { PinnedDesktopFileId = configPinnedDesktopFile });
-						lastMatchedPinnedLauncherIndex = 0;
+						var pinnedSlotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == p.Item1);
+						var transientSlotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.DiscoveredDesktopFileId == p.Item1);
+						if (pinnedSlotRef == null && transientSlotRef != null) results = results.Add(transientSlotRef);
 					}
 					else
 					{
-						results = results.Insert(matchIndex + 1, new SlotRef() { PinnedDesktopFileId = configPinnedDesktopFile });
-						lastMatchedPinnedLauncherIndex = matchIndex;
+						var slotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == p.Item2 || r.DiscoveredDesktopFileId == p.Item2);
+						if (slotRef == null) slotRef = new SlotRef() { PinnedDesktopFileId = p.Item2 };
+						results = results.Add(slotRef);
+
+						var pinnedSlotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == p.Item1);
+						var transientSlotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.DiscoveredDesktopFileId == p.Item1);
+						if (pinnedSlotRef == null && transientSlotRef != null) results = results.Add(transientSlotRef);
 					}
 				}
 
@@ -112,6 +118,54 @@ internal static class TaskbarReducers
 				return s with { StoredSlots = new SlotReferences() { Refs = a.Slots } };
 			})
 	];
+
+	private static List<(string, string)> Pairings(List<string> s1, List<string> s2)
+	{
+		int m = s1.Count, n = s2.Count;
+		int[,] dp = new int[m + 1, n + 1];
+		for (int i = 0; i <= m; i++) dp[i, 0] = i;
+		for (int j = 0; j <= n; j++) dp[0, j] = j;
+		for (int i = 1; i <= m; i++)
+		{
+			for (int j = 1; j <= n; j++)
+			{
+				int cost = s1[i - 1] == s2[j - 1] ? 0 : 1;
+				dp[i, j] = Math.Min(Math.Min(dp[i - 1, j - 1] + cost, dp[i - 1, j] + 1), dp[i, j - 1] + 1);
+			}
+		}
+		List<string> aligned1 = new List<string>();
+		List<string> aligned2 = new List<string>();
+		int x = m, y = n;
+		while (x > 0 || y > 0)
+		{
+			if (x > 0 && y > 0 && dp[x, y] == dp[x - 1, y - 1] + (s1[x - 1] == s2[y - 1] ? 0 : 1))
+			{
+				aligned1.Add(s1[x - 1]);
+				aligned2.Add(s2[y - 1]);
+				x--; y--;
+			}
+			else if (x > 0 && dp[x, y] == dp[x - 1, y] + 1)
+			{
+				aligned1.Add(s1[x - 1]);
+				aligned2.Add(null);
+				x--;
+			}
+			else
+			{
+				aligned1.Add(null);
+				aligned2.Add(s2[y - 1]);
+				y--;
+			}
+		}
+		aligned1.Reverse();
+		aligned2.Reverse();
+		List<(string, string)> pairs = new List<(string, string)>();
+		for (int i = 0; i < aligned1.Count; i++)
+		{
+			pairs.Add((aligned1[i], aligned2[i]));
+		}
+		return pairs;
+	}
 }
 
 internal class TaskbarEffects(ReduxStore store, ConfigurationService configurationService) : IEffectsFactory
