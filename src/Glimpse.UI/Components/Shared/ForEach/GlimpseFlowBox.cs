@@ -119,7 +119,7 @@ public class GlimpseFlowBox<TItem> where TItem : IGlimpseFlowBoxItem
 	public void RemoveItem(TItem item)
 	{
 		var flowBoxChild = _flowboxChildWidgetCache.First(c => c.GetChild() == item.Widget);
-		_fixedContainer.Remove(flowBoxChild);
+		flowBoxChild.Destroy();
 		_flowboxChildWidgetCache.Remove(flowBoxChild);
 		QueueLayoutRefresh();
 	}
