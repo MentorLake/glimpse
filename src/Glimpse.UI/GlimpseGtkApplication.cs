@@ -26,6 +26,7 @@ public class GlimpseGtkApplication(GtkApplicationHandle application, IOptions<Gl
 			GtkGlobalFunctions.Init(ref argc, ref argv);
 			SynchronizationContext.SetSynchronizationContext(GLibExt.SynchronizationContext);
 			LoadCss();
+			application.Register(GCancellableHandle.GetCurrent());
 
 			GLibGlobalFunctions.LogSetDefaultHandler(static (domain, level, message, data) =>
 			{
