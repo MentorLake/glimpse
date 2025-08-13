@@ -11,13 +11,20 @@ public class OrgXfceSessionClient(IHostApplicationLifetime applicationLifetime, 
 			? parsedRestartStyle
 			: LibXfce4UIExterns.RestartStyle.IfRunning;
 
-		var client = new XfceSMClient(XfceSMClientHandle.Get());
-		client.SetRestartStyle((int) restartStyle);
-		client.SetPriority(25);
+		XfceSMClient client = null;
 
 		if (Environment.GetCommandLineArgs().Any(a => a.Contains("sm-client-id")))
 		{
-			client = new XfceSMClient(XfceSMClientHandle.Get(Environment.GetCommandLineArgs(), (int)restartStyle, 25));
+			logger.LogInformation($"Restoring session with command line args: {string.Join(", ", Environment.GetCommandLineArgs().Skip(1).ToArray())}");
+			client = new XfceSMClient(XfceSMClientHandle.Get(Environment.GetCommandLineArgs().Skip(1).ToArray(), (int)restartStyle, 25));
+			logger.LogInformation($"Parsed ID: " + client.GetClientId());
+		}
+		else
+		{
+			logger.LogInformation($"Starting new session");
+			client = new XfceSMClient(XfceSMClientHandle.Get());
+			client.SetRestartStyle((int) restartStyle);
+			client.SetPriority(25);
 		}
 
 		client.SetRestartCommand([assemblyPath]);
