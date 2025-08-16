@@ -26,6 +26,7 @@ public class DisplayOrchestrator(NotificationBubblesService notificationBubblesS
 {
 	private readonly List<Panel> _panels = new();
 	private StartMenuWindow _startMenuWindow;
+	private GSimpleActionHandle _loadPanels;
 
 	public void Init()
 	{
@@ -47,13 +48,8 @@ public class DisplayOrchestrator(NotificationBubblesService notificationBubblesS
 			openStartMenuAction.Signal_Activate().Select(_ => true).SubscribeDebug(_ => store.Dispatch(new StartMenuOpenedAction()));
 			application.AddAction(openStartMenuAction);
 
-			var loadPanels = GSimpleActionHandle.New("LoadPanels", null);
-			loadPanels.Signal_Activate().Subscribe(_ =>
-			{
-				store.Dispatch(new UpdateMonitorsAction([]));
-				store.Dispatch(new UpdateMonitorsAction(GdkDisplayHandle.GetDefault().GetMonitors()));
-			});
-			application.AddAction(loadPanels);
+			_loadPanels = GSimpleActionHandle.New("LoadPanels", null);
+			application.AddAction(_loadPanels);
 		});
 
 		application.Signal_Activate().Take(1).SubscribeDebug(_ =>
@@ -124,31 +120,22 @@ public class DisplayOrchestrator(NotificationBubblesService notificationBubblesS
 		{
 			var display = GdkDisplayHandle.GetDefault();
 			var screen = display.GetDefaultScreen();
+			var monitorsChanged = screen.Signal_MonitorsChanged().Select(_ => Unit.Default);
+			var screenSizeChanged = screen.Signal_SizeChanged().Select(_ => Unit.Default);
+			var partialUpdated = monitorsChanged.Merge(screenSizeChanged).Select(_ => display.GetMonitors());
+			var forcedPanelRefresh = _loadPanels.Signal_Activate().SelectMany(_ => new[] { new List<GdkMonitorHandle>(), display.GetMonitors() });
+			var initial = Observable.Return(display.GetMonitors());
 
-			store.Dispatch(new UpdateMonitorsAction(display.GetMonitors()));
-
-			screen.Signal_SizeChanged().Select(_ => Unit.Default)
-				.Merge(screen.Signal_MonitorsChanged().Select(_ => Unit.Default))
-				.SubscribeDebug(_ => store.Dispatch(new UpdateMonitorsAction(display.GetMonitors())));
-
-			store
-				.Select(GlimpseGtkSelectors.Monitors)
+			initial
+				.Merge(partialUpdated)
+				.Merge(forcedPanelRefresh)
 				.ObserveOn(GLibExt.Scheduler)
-				.UnbundleMany(m => m.GetHashCode())
+				.UnbundleMany(m => m.GetManagedUniqueId())
 				.SubscribeDebug(obs =>
 				{
 					var newPanel = CreatePanel(obs.Key);
-
-					obs.SkipLast(1).Subscribe(_ =>
-					{
-						DockToBottom(newPanel.Widget, obs.Key.GetGeometryRect(), obs.Key.GetWorkAreaRect(), 1);
-					});
-
-					obs.TakeLast(1).Subscribe(_ =>
-					{
-						GtkWindowHandleExtensions.Close(newPanel.Widget);
-						newPanel.Widget.Dispose();
-					});
+					DockToBottom(newPanel.Widget, obs.Key.GetGeometryRect(), obs.Key.GetWorkAreaRect(), 1);
+					obs.TakeLast(1).Subscribe(_ => newPanel.Widget.Destroy());
 				});
 		});
 	}

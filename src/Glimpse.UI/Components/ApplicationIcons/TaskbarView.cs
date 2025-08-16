@@ -33,6 +33,7 @@ public class TaskbarView
 		Widget = forEachGroup.Widget;
 
 		viewModelSelector
+			.TakeUntilDestroyed(forEachGroup.Widget)
 			.Select(g => g.Groups)
 			.DistinctUntilChanged()
 			.ObserveOn(GLibExt.Scheduler)
@@ -49,7 +50,7 @@ public class TaskbarView
 			viewModelObservable.Select(vm => vm.DemandsAttention).DistinctUntilChanged().Subscribe(c => groupIcon.UpdateDemandsAttention(c));
 			viewModelObservable.Select(vm => vm.SlotRef).DistinctUntilChanged().Subscribe(s => groupIcon.UpdateSlotRef(s));
 
-			viewModelObservable.TakeLast(1).Subscribe(_ =>
+			viewModelObservable.TakeLast(1).TakeUntilDestroyed(forEachGroup.Widget).Subscribe(_ =>
 			{
 				forEachGroup.RemoveItem(groupIcon);
 				windowPicker.Widget.Destroy();

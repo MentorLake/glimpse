@@ -27,9 +27,9 @@ public class GlimpseFlowBox<TItem> where TItem : IGlimpseFlowBoxItem
 	public int ItemSpacing { get; set; }
 	public Func<TItem, bool> FilterFunc = _ => true;
 
-	public IObservable<List<TItem>> OrderingChanged => _orderingChangedSubject;
-	public IObservable<TItem> DragBeginObservable => _dragBeginSubject;
-	public IObservable<TItem> ItemActivated => _itemActivatedSubject;
+	public IObservable<List<TItem>> OrderingChanged { get; }
+	public IObservable<TItem> DragBeginObservable { get; }
+	public IObservable<TItem> ItemActivated { get; }
 	public GtkFixedHandle Widget => _fixedContainer;
 
 	public GlimpseFlowBox()
@@ -41,6 +41,10 @@ public class GlimpseFlowBox<TItem> where TItem : IGlimpseFlowBoxItem
 			.SetCanFocus(false)
 			.SetFocusChain(null)
 			.Add(_dragIconImage);
+
+		OrderingChanged = _orderingChangedSubject.TakeUntilDestroyed(_fixedContainer);
+		DragBeginObservable = _dragBeginSubject.TakeUntilDestroyed(_fixedContainer);
+		ItemActivated = _itemActivatedSubject.TakeUntilDestroyed(_fixedContainer);
 
 		_fixedContainer.ObserveEvent(w => w.Signal_Focus()).Subscribe(e =>
 		{
@@ -130,7 +134,6 @@ public class GlimpseFlowBox<TItem> where TItem : IGlimpseFlowBoxItem
 		flowBoxChild.SetIndex(index);
 		flowBoxChild.SetManagedData("Item", item);
 		flowBoxChild.ShowAll();
-		flowBoxChild.Signal_Destroy().Take(1).Subscribe(_ => QueueLayoutRefresh());
 		flowBoxChild
 			.AddClass("taskbar__item")
 			.SetCanFocus(true)

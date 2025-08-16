@@ -47,6 +47,5 @@ public static class UIStartupExtensions
 		builder.Services.AddHostedService<GlimpseGtkApplication>();
 		builder.Services.AddSingleton<GlimpseGtkApplication>();
 		builder.Services.AddSingleton<DisplayOrchestrator>();
-		builder.Services.AddSingleton<IReducerFactory, GlimpseGtkReducerFactory>();
 	}
 }
