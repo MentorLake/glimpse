@@ -8,10 +8,11 @@ public class Installation
 {
 	public const string InstallScriptResourceName = "install.sh";
 	public const string UninstallScriptResourceName = "uninstall.sh";
+	public const string UpdateScriptResourceName = "update.sh";
 	public static readonly string DefaultInstallPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/.local/bin/glimpse";
 	private const string InstallScriptTmpPath = "/tmp/glimpse-{scriptName}.sh";
 
-	public static void RunScript(string scriptName)
+	public static void RunScript(string scriptName, string arg1 = "")
 	{
 		try
 		{
@@ -25,7 +26,9 @@ public class Installation
 
 			using var p = new Process();
 			p.EnableRaisingEvents = true;
-			p.StartInfo = new ProcessStartInfo { FileName = "/bin/bash", UseShellExecute = false, Arguments = $"-c \"{tempScriptPath}\"", };
+			var arguments = $"-c \"{tempScriptPath}\"";
+			if (!string.IsNullOrEmpty(arg1)) arguments += $" {arg1}";
+			p.StartInfo = new ProcessStartInfo { FileName = "/bin/bash", UseShellExecute = false, Arguments = arguments, };
 
 			p.Events().OutputDataReceived.TakeUntil(p.Events().Exited.Take(1)).Subscribe(a => Console.Write(a.Data));
 			p.Start();
