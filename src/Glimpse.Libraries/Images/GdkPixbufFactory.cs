@@ -1,8 +1,10 @@
 using System.Reflection;
+using System.Resources;
 using MentorLake.cairo;
 using MentorLake.Gdk;
 using MentorLake.GdkPixbuf;
 using MentorLake.GLib;
+using Tmds.DBus.Protocol;
 
 namespace Glimpse.Libraries.Images;
 
@@ -47,10 +49,12 @@ public static class GdkPixbufFactory
 
 	public static GdkPixbufHandle FromResource(Assembly sourceAssembly, string resourceName)
 	{
-		using var resource = new StreamReader(sourceAssembly.GetManifestResourceStream(resourceName));
-		var imageData = resource.ReadToEnd();
+		using var stream = sourceAssembly.GetManifestResourceStream(resourceName);
+		var imageData = new byte[stream.Length];
+		_ = stream.Read(imageData, 0, imageData.Length);
+
 		var loader = GdkPixbufLoaderHandle.New();
-		loader.Write(imageData.ToCharArray(), (uint) imageData.Length);
+		loader.Write(imageData, (uint) imageData.Length);
 		GdkPixbufLoaderHandleExtensions.Close(loader);
 		return loader.GetPixbuf();
 	}
