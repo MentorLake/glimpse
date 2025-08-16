@@ -19,7 +19,7 @@ jobs:
       Solution_Name: Glimpse.sln
       OutputFileExtension: .zip
       Runtime: linux-x64
-      OutputFilePrefix: glimpse_${{ env.Runtime }}_
+      ApplicationName: glimpse
 
     steps:
     - name: Generate version number
@@ -29,6 +29,12 @@ jobs:
         BUILD_NUMBER=${{ github.run_number }}
         VERSION="${DATE}.${BUILD_NUMBER}"
         echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Generate asset file name
+      id: asset_name
+      run: |
+        NAME=$(${{ env.ApplicationName }}_${{ env.Runtime }})_${{ steps.version.outputs.version }}${{ env.OutputFileExtension }}
+        echo "asset_name=NAME" >> $GITHUB_OUTPUT
 
     - name: Checkout
       uses: actions/checkout@v3
@@ -48,7 +54,7 @@ jobs:
 
     - name: Zip release
       run: |
-        zip --junk-paths ${{ env.OutputFilePrefix }}${{ steps.version.outputs.version }}${{ env.OutputFileExtension }} src/Glimpse/bin/Release/net8.0/${{ env.Runtime }}/publish/glimpse
+        zip --junk-paths ${{ steps.asset_name.outputs.asset_name }} src/Glimpse/bin/Release/net8.0/${{ env.Runtime }}/publish/glimpse
 
     - name: Create release
       uses: actions/create-release@v1
@@ -67,6 +73,6 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ env.OutputFilePrefix }}${{ steps.version.outputs.version }}${{ env.OutputFileExtension }}
-        asset_name: ${{ env.OutputFilePrefix }}${{ steps.version.outputs.version }}${{ env.OutputFileExtension }}
+        asset_path: ${{ steps.asset_name.outputs.asset_name }}
+        asset_name: ${{ steps.asset_name.outputs.asset_name }}
         asset_content_type: application/gzip
