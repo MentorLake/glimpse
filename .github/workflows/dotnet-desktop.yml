@@ -25,7 +25,7 @@ jobs:
     - name: Find number of runs today
       id: num_runs_today
       run: |
-        NUM_RUNS = $(curl -s -H "Authorization: token ${{ github.token }}" "https://api.github.com/repos/${{ github.repository }}/actions/runs?created=$(date +%Y-%m-%d)" | jq '[.workflow_runs[] | select(.name == "${{ github.workflow }}")] | length')
+        NUM_RUNS=$(curl -s -H "Authorization: token ${{ github.token }}" "https://api.github.com/repos/${{ github.repository }}/actions/runs?created=$(date +%Y-%m-%d)" | jq '[.workflow_runs[] | select(.name == "${{ github.workflow }}")] | length')
         echo "num_run_today=$NUM_RUNS" >> $GITHUB_OUTPUT
 
     - name: Generate version number
