@@ -33,7 +33,7 @@ jobs:
     - name: Generate asset file name
       id: asset_name
       run: |
-        NAME=${{ env.ApplicationName }}_${{ env.Runtime }})_${{ steps.version.outputs.version }}${{ env.OutputFileExtension }}
+        NAME=${{ env.ApplicationName }}_${{ env.Runtime }}_${{ steps.version.outputs.version }}${{ env.OutputFileExtension }}
         echo "asset_name=NAME" >> $GITHUB_OUTPUT
 
     - name: Checkout
