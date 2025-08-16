@@ -4,6 +4,10 @@
 		<OutputType>Exe</OutputType>
 		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
 		<RootNamespace>Glimpse</RootNamespace>
+    <Version Condition="'$(Version)' == ''">2025.8.3.1</Version>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+    <InformationalVersion>$(Version)</InformationalVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
@@ -46,6 +50,7 @@
 		<EmbeddedResource Include="Components/**/*.css" LogicalName="%(Filename)%(Extension)" />
 		<EmbeddedResource Include="install.sh" LogicalName="%(Filename)%(Extension)" />
 		<EmbeddedResource Include="uninstall.sh" LogicalName="%(Filename)%(Extension)" />
+		<EmbeddedResource Include="update.sh" LogicalName="%(Filename)%(Extension)" />
 	</ItemGroup>
 
 	<ItemGroup>

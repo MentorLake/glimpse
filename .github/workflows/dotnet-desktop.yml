@@ -17,8 +17,31 @@ jobs:
 
     env:
       Solution_Name: Glimpse.sln
+      OutputFileExtension: .zip
+      Runtime: linux-x64
+      ApplicationName: glimpse
 
     steps:
+    - name: Find number of runs today
+      id: num_runs_today
+      run: |
+        NUM_RUNS=$(curl -s -H "Authorization: token ${{ github.token }}" "https://api.github.com/repos/${{ github.repository }}/actions/runs?created=$(date +%Y-%m-%d)" | jq '[.workflow_runs[] | select(.name == "${{ github.workflow }}")] | length')
+        echo "num_runs_today=$NUM_RUNS" >> $GITHUB_OUTPUT
+
+    - name: Generate version number
+      id: version
+      run: |
+        DATE=$(date +%Y.%m.%d)
+        BUILD_NUMBER=${{ steps.num_runs_today.outputs.num_runs_today }}
+        VERSION="${DATE}.${BUILD_NUMBER}"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Generate asset file name
+      id: asset_name
+      run: |
+        NAME=${{ env.ApplicationName }}_${{ env.Runtime }}_${{ steps.version.outputs.version }}${{ env.OutputFileExtension }}
+        echo "asset_name=$NAME" >> $GITHUB_OUTPUT
+
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -33,11 +56,11 @@ jobs:
       run: dotnet test
 
     - name: Publish
-      run: dotnet publish -r linux-x64 -c Release
+      run: dotnet publish -r ${{ env.Runtime }} -c Release /p:Version=${{ steps.version.outputs.version }}
 
     - name: Zip release
       run: |
-        zip --junk-paths glimpse.linux-x64.${{ github.run_number }}.zip src/Glimpse/bin/Release/net8.0/linux-x64/publish/glimpse
+        zip --junk-paths ${{ steps.asset_name.outputs.asset_name }} src/Glimpse/bin/Release/net8.0/${{ env.Runtime }}/publish/glimpse
 
     - name: Create release
       uses: actions/create-release@v1
@@ -45,17 +68,17 @@ jobs:
       with:
         draft: false
         prerelease: false
-        release_name: Release ${{ github.run_number }}.${{ github.run_attempt }}
-        tag_name: ${{ github.run_number }}.${{ github.run_attempt }}
+        release_name: Release ${{ steps.version.outputs.version }}
+        tag_name: ${{ steps.version.outputs.version }}
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Upload linux-x64 artifact
+    - name: Upload artifact
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: glimpse.linux-x64.${{ github.run_number }}.zip
-        asset_name: glimpse.linux-x64.${{ github.run_number }}.zip
+        asset_path: ${{ steps.asset_name.outputs.asset_name }}
+        asset_name: ${{ steps.asset_name.outputs.asset_name }}
         asset_content_type: application/gzip

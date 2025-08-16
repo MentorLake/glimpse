@@ -1,10 +1,6 @@
-﻿using System;
-using System.CommandLine;
-using System.Linq;
+﻿using System.CommandLine;
 using System.Reactive.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using Glimpse.UI;
 using Glimpse.Libraries.Accounts;
 using Glimpse.Libraries.Configuration;
 using Glimpse.Libraries.DBus;
@@ -14,6 +10,7 @@ using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.Xfce.SessionManagement;
 using Glimpse.Libraries.Xorg;
 using Glimpse.Services;
+using Glimpse.UI;
 using MentorLake.Gio;
 using MentorLake.GLib;
 using MentorLake.Gtk;
@@ -37,12 +34,17 @@ public static class Program
 		installCommand.SetHandler(_ => Installation.RunScript(Installation.InstallScriptResourceName));
 
 		var uninstallCommand = new Command("uninstall", "Uninstall Glimpse");
-		uninstallCommand.AddAlias("u");
 		uninstallCommand.SetHandler(_ => Installation.RunScript(Installation.UninstallScriptResourceName));
+
+		var version = Assembly.GetExecutingAssembly().GetName().Version;
+		var formattedVersion = $"{version.Major}.{version.Minor:D2}.{version.Build:D2}.{version.Revision}";
+		var updateCommand = new Command("update", "Download and install the latest version");
+		updateCommand.SetHandler(_ => Installation.RunScript(Installation.UpdateScriptResourceName, formattedVersion));
 
 		var rootCommand = new RootCommand("Glimpse");
 		rootCommand.AddCommand(installCommand);
 		rootCommand.AddCommand(uninstallCommand);
+		rootCommand.AddCommand(updateCommand);
 		rootCommand.AddOption(new Option<string>("--sm-client-id"));
 		rootCommand.SetHandler(async c => c.ExitCode = await RunGlimpseAsync());
 
@@ -63,7 +65,7 @@ public static class Program
 		try
 		{
 			AppDomain.CurrentDomain.UnhandledException += (_, eventArgs) => bootstrapLogger.LogError(eventArgs.ExceptionObject.ToString());
-			var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder([]);
+			var builder = Host.CreateApplicationBuilder([]);
 			builder.Configuration.AddConfiguration(configuration);
 			builder.Services.AddSingleton<ReduxStore>();
 			builder.Services.AddLogging(b => b.AddConsole().AddJournal(o => o.SyslogIdentifier = appName));
