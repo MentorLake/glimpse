@@ -4,7 +4,9 @@ scriptDirectory=$(dirname $0)
 installationDirectory="$HOME/.local/bin/"
 
 # Creating ${installationDirectory}"
-mkdir $installationDirectory
+if [ ! -d "$installationDirectory" ]; then
+    mkdir -p "$installationDirectory"
+fi
 
 # Copy binary to ${installationDirectory}"
 mv $scriptDirectory/glimpse $installationDirectory
@@ -34,7 +36,7 @@ pkill -9 xfce4-panel
 # Disable xfce4-notifyd.service"
 systemctl --user mask xfce4-notifyd.service
 pkill -9 xfce4-notifyd
-tee ~/.config/autostart/xfce4-notifyd.desktop << EOF
+tee ~/.config/autostart/xfce4-notifyd.desktop > /dev/null << EOF
 [Desktop Entry]
 Hidden=true
 EOF
@@ -42,7 +44,7 @@ EOF
 # Disable ayatana-indicator-application.service"
 systemctl --user mask ayatana-indicator-application
 pkill -9 ayatana-indicat
-tee ~/.config/autostart/ayatana-indicator-application.desktop << EOF
+tee ~/.config/autostart/ayatana-indicator-application.desktop > /dev/null << EOF
 [Desktop Entry]
 Hidden=true
 EOF
