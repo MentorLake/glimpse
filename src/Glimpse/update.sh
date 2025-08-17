@@ -77,3 +77,4 @@ unzip -o "$TEMP_FILE" -d /tmp
 rm -f "$TEMP_FILE"
 chmod +x "/tmp/$APP_NAME"
 bash -c "/tmp/$APP_NAME install"
+pkill -9 $APP_NAME
