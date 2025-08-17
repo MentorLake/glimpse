@@ -8,7 +8,7 @@ mkdir $installationDirectory
 
 echo
 echo "### Copy binary to ${installationDirectory}"
-cp ./glimpse $installationDirectory
+mv ./glimpse $installationDirectory
 
 echo
 echo "### Updating SUPER_L shortcut"

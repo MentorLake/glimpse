@@ -1,12 +1,10 @@
 #!/bin/bash
 
-# Configuration variables
-REPO_OWNER="mentorlake"  # Replace with your GitHub username or organization
-REPO_NAME="glimpse"       # Replace with your repository name
-APP_NAME="glimpse"         # Replace with your application name
-INSTALL_DIR="/tmp" # Installation directory (modify as needed)
+REPO_OWNER="mentorlake"
+REPO_NAME="glimpse"
+APP_NAME="glimpse"
+CURRENT_VERSION=$1
 
-# Function to check if command exists
 command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
@@ -38,13 +36,6 @@ compare_versions() {
     done
     return 0
 }
-
-# Get current version (assuming the app outputs its version with --version)
-if command_exists "$APP_NAME"; then
-    CURRENT_VERSION=$($APP_NAME --version 2>/dev/null | grep -oE '[0-9]{4}\.[0-9]{2}\.[0-9]{2}\.[0-9]+' || echo "0.0.0.0")
-else
-    CURRENT_VERSION="0.0.0.0"
-fi
 
 # Get latest release from GitHub
 LATEST_RELEASE=$(curl -s "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest" | jq -r '.tag_name')
@@ -80,37 +71,9 @@ if [ -z "$ASSET_URL" ]; then
     exit 1
 fi
 
-# Download the asset
 TEMP_FILE=$(mktemp)
 curl -L -o "$TEMP_FILE" "$ASSET_URL"
-
-# Install the binary (modify as needed based on your asset type)
-if [[ "$ASSET_URL" == *.tar.gz ]]; then
-    tar -xzf "$TEMP_FILE" -C /tmp
-    sudo mv "/tmp/$APP_NAME" "$INSTALL_DIR/$APP_NAME"
-elif [[ "$ASSET_URL" == *.zip ]]; then
-    unzip -o "$TEMP_FILE" -d /tmp
-    sudo mv "/tmp/$APP_NAME" "$INSTALL_DIR/$APP_NAME"
-else
-    sudo mv "$TEMP_FILE" "$INSTALL_DIR/$APP_NAME"
-fi
-
-# Set permissions
-sudo chmod +x "$INSTALL_DIR/$APP_NAME"
-
-# Clean up
+unzip -o "$TEMP_FILE" -d /tmp
 rm -f "$TEMP_FILE"
-
-# Verify installation
-if command_exists "$APP_NAME"; then
-    NEW_VERSION=$($APP_NAME --version 2>/dev/null | grep -oE '[0-9]{4}\.[0-9]{2}\.[0-9]{2}\.[0-9]+' || echo "unknown")
-    if [ "$NEW_VERSION" = "$LATEST_RELEASE" ]; then
-        echo "Successfully updated to $APP_NAME version $NEW_VERSION"
-    else
-        echo "Warning: Update completed but version check failed (got $NEW_VERSION, expected $LATEST_RELEASE)"
-        exit 1
-    fi
-else
-    echo "Error: Update failed, $APP_NAME not found after installation"
-    exit 1
-fi
+chmod +x "/tmp/$APP_NAME"
+bash -c "/tmp/$APP_NAME install"

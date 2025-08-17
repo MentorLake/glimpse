@@ -26,8 +26,9 @@ public class Installation
 
 			using var p = new Process();
 			p.EnableRaisingEvents = true;
-			var arguments = $"-c \"{tempScriptPath}\"";
+			var arguments = $"-c \"{tempScriptPath}";
 			if (!string.IsNullOrEmpty(arg1)) arguments += $" {arg1}";
+			arguments += "\"";
 			p.StartInfo = new ProcessStartInfo { FileName = "/bin/bash", UseShellExecute = false, Arguments = arguments, };
 
 			p.Events().OutputDataReceived.TakeUntil(p.Events().Exited.Take(1)).Subscribe(a => Console.Write(a.Data));
