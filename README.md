@@ -1,14 +1,15 @@
 ## Overview
 
-Glimpse is a modern looking and familiar Windows 11-like panel for XFCE.  It was written to provide a high quality alternative to existing panels and to increase developer accessibility by leveraging modern tools and programming paradigms.  Its goal is to be an all-in-one package that minimizes dependencies on other libraries and components.
+Glimpse is a Windows 11-like panel for XFCE.
 
 ## Features
 
 1. Synchronized panels at the bottom of every monitor
-2. A system tray for every panel
-3. Notifications
+2. A system tray for every panel (replaces ayatana-indicator-application)
+3. Notifications (replaces xfce4-notifyd)
 4. Windows 11-like start menu with pinning and searching
 5. Customizable start menu context menu
+6. Slide-out side pane with notification history and a calendar
 
 ## Installation - Per User
 
@@ -25,3 +26,8 @@ Glimpse is a modern looking and familiar Windows 11-like panel for XFCE.  It was
 
 1. Run ```glimpse uninstall```.
 2. The uninstall script will reactivate xfce-panel, ayatana indicators, xfce-notifyd, and the SUPER_L shortcut.
+
+
+## Updating to latest version
+
+1. Run ```glimpse update```
