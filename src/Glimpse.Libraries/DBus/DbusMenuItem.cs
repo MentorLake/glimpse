@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Glimpse.Libraries.DBus.Core;
 
 namespace Glimpse.Libraries.DBus;
@@ -27,12 +28,11 @@ public class DbusMenuItem
 		root.Item2.TryGetValue("icon-data", out var iconData);
 		root.Item2.TryGetValue("type", out var type);
 
-
 		var item = new DbusMenuItem()
 		{
 			Id = root.Item1,
 			Enabled = ((DBusBoolItem) enabled?.Value)?.Value,
-			Label = ((DBusStringItem) label?.Value)?.Value,
+			Label = RemoveMnemonics(((DBusStringItem) label?.Value)?.Value),
 			Visible = ((DBusBoolItem) visible?.Value)?.Value,
 			IconName = ((DBusStringItem) iconName?.Value)?.Value,
 			ToggleState = toggleState?.Value is DBusInt32Item v1 ? v1.Value
@@ -53,6 +53,12 @@ public class DbusMenuItem
 		}
 
 		return item;
+	}
+
+	private static string RemoveMnemonics(string label)
+	{
+		if (string.IsNullOrEmpty(label)) return label;
+		return string.Join('_', label.Split("__").Select(s => s.Replace("_", "")));
 	}
 
 	private static DbusMenuItem[] ProcessChildren(DBusVariantItem[] children)
