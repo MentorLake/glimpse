@@ -48,7 +48,6 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 			.Subscribe(windowObservable =>
 			{
 				var windowRef = windowObservable.Key;
-				var pid = windowRef.GetPid();
 				XLib.XSelectInput(windowRef.Display, windowRef.Window, windowEventMask);
 
 				windowObservable
@@ -91,7 +90,6 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 						Icons = t.Second,
 						Title = t.First,
 						AllowActions = t.Fifth,
-						Pid = pid,
 						DemandsAttention = t.Fourth.Contains(XAtoms.NetWmStateDemandsAttention),
 						DefaultScreenshot = t.Sixth
 					})

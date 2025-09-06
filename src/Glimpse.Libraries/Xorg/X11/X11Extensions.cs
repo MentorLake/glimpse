@@ -81,14 +81,6 @@ internal static unsafe class X11Extensions
 		return null;
 	}
 
-	public static uint GetPid(this XWindowRef windowRef)
-	{
-		var specs = new[] { new XResClientIdSpec() { mask = 2, client = windowRef.Window } };
-		var result = XLib.XResQueryClientIds(windowRef.Display, specs.Length, specs, out _, out var clientIds);
-		if (result != 0) return 0;
-		return XLib.XResGetClientPid(ref clientIds[0]);
-	}
-
 	public static ulong[] GetULongArray(this XWindowRef windowRef, ulong property)
 	{
 		var result = XLib.XGetWindowProperty(windowRef.Display, windowRef.Window, property, 0, 1024, false, 0, out var actualTypeReturn, out var actualFormatReturn, out var actualLength, out _, out var dataPointer);

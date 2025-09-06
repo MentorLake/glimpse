@@ -15,7 +15,6 @@ public record WindowProperties : IKeyed<ulong>
 	public string ClassHintClass { get; set; }
 	public bool DemandsAttention { get; set; }
 	public AllowedWindowActions[] AllowActions { get; set; }
-	public uint Pid { get; set; }
 	public DateTime CreationDate { get; set; }
 	public GdkPixbufHandle DefaultScreenshot { get; set; }
 

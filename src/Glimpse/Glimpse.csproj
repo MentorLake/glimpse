@@ -10,31 +10,13 @@
     <InformationalVersion>$(Version)</InformationalVersion>
 	</PropertyGroup>
 
-	<PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
-<!--		<PublishAot>true</PublishAot>-->
-		<UseAppHost>true</UseAppHost>
-		<DebugType>None</DebugType>
-		<DebugSymbols>False</DebugSymbols>
-		<PublishSingleFile>true</PublishSingleFile>
-		<SelfContained>true</SelfContained>
-		<PublishTrimmed>true</PublishTrimmed>
-		<TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
-		<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-		<InvariantGlobalization>true</InvariantGlobalization>
-		<HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
-		<EventSourceSupport>true</EventSourceSupport>
-		<TrimMode>partial</TrimMode>
-		<DebuggerSupport>false</DebuggerSupport>
-		<PublishAot>false</PublishAot>
-		<TrimmerSingleWarn>false</TrimmerSingleWarn>
-	</PropertyGroup>
-
 	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
 		<AssemblyName>glimpse_dev</AssemblyName>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
 		<AssemblyName>glimpse</AssemblyName>
+		<PublishAot>true</PublishAot>
 	</PropertyGroup>
 
 	<ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
