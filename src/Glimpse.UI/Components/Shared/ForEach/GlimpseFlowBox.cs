@@ -69,27 +69,33 @@ public class GlimpseFlowBox<TItem> where TItem : IGlimpseFlowBoxItem
 				var rowStartIndex = row * ItemsPerLine;
 				var rowIndex = _selectedChildIndex - rowStartIndex;
 
-				e.ReturnValue = true;
-
 				if (e.Direction == GtkDirectionType.GTK_DIR_RIGHT)
 				{
 					if (rowIndex < ItemsPerLine - 1 && _selectedChildIndex < numItems - 1) SelectChildByIndex(_selectedChildIndex + 1);
+					e.ReturnValue = true;
 				}
 				else if (e.Direction == GtkDirectionType.GTK_DIR_LEFT)
 				{
 					if (rowIndex > 0) SelectChildByIndex(_selectedChildIndex - 1);
+					e.ReturnValue = true;
 				}
 				else if (e.Direction == GtkDirectionType.GTK_DIR_DOWN)
 				{
 					var newIndex = _selectedChildIndex + ItemsPerLine;
-					if (newIndex >= numItems) return;
-					SelectChildByIndex(newIndex);
+					if (newIndex < numItems)
+					{
+						SelectChildByIndex(newIndex);
+						e.ReturnValue = true;
+					}
 				}
 				else if (e.Direction == GtkDirectionType.GTK_DIR_UP)
 				{
 					var newIndex = _selectedChildIndex - ItemsPerLine;
-					if (newIndex < 0) return;
-					SelectChildByIndex(newIndex);
+					if (newIndex >= 0)
+					{
+						SelectChildByIndex(newIndex);
+						e.ReturnValue = true;
+					}
 				}
 			}
 		});
