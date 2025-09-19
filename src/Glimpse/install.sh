@@ -52,4 +52,6 @@ EOF
 echo "Installation complete"
 echo "*** If you use a saved X session then you will need to save a new one with Glimpse running"
 
+pkill -9 $APP_NAME
+sleep 1
 setsid ${installationDirectory}/glimpse &
