@@ -104,7 +104,9 @@ internal static class XfceSMClientHandleExtensions
 
 	public static void SetRestartCommand(this XfceSMClientHandle handle, string[] command)
 	{
-		LibXfce4UIExterns.xfce_sm_client_set_restart_command(handle, command);
+		var nullTerminatedArray = new string[command.Length + 1];
+		Array.Copy(command, nullTerminatedArray, command.Length);
+		LibXfce4UIExterns.xfce_sm_client_set_restart_command(handle, nullTerminatedArray);
 	}
 
 	public static void SetCurrentDirectory(this XfceSMClientHandle handle, string directory)
