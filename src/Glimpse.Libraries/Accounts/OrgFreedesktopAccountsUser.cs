@@ -1013,6 +1013,9 @@ public class OrgFreedesktopAccountsUser
 					props.LocalAccount = reader.ReadBool();
 					changed?.Add("LocalAccount");
 					break;
+				default:
+					reader.ReadSignature("as");
+					break;
 			}
 		}
 
