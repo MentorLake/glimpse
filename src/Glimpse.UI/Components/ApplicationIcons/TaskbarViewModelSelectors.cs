@@ -81,7 +81,7 @@ internal static class TaskbarViewModelSelectors
 			{
 				return windows
 					.Select(window => (
-						Slot: slots.Refs.First(s => s.ClassHintName == window.ClassHintName),
+						Slot: slots.Refs.First(s => s.ClassHintName.Equals(window.ClassHintName, StringComparison.InvariantCultureIgnoreCase)),
 						IconInfo: new IconInfo() { Key = window.Id.ToString() }))
 					.ToImmutableList();
 			});
