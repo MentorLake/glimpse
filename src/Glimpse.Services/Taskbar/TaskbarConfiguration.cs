@@ -17,7 +17,7 @@ public record TaskbarConfiguration
 	public const string ConfigKey = "Taskbar";
 	public static readonly TaskbarConfiguration Empty = new();
 
-	public string TaskManagerCommand { get; set; } = "xfce4-taskmanager";
+	public string TaskManagerCommand { get; set; } = "";
 	public string StartMenuLaunchIconName { get; set; } = "";
 	public ImmutableList<string> PinnedLaunchers { get; set; } = ImmutableList<string>.Empty;
 	public ImmutableList<ContextMenuItem> ContextMenu { get; set; } = ImmutableList<ContextMenuItem>.Empty;
@@ -36,7 +36,7 @@ public record TaskbarConfiguration
 	{
 		return new TaskbarConfiguration()
 		{
-			TaskManagerCommand = "",
+			TaskManagerCommand = "xfce4-taskmanager",
 			StartMenuLaunchIconName = "start-here",
 			PinnedLaunchers = ImmutableList<string>.Empty,
 			ContextMenu = ImmutableList.Create<ContextMenuItem>(
