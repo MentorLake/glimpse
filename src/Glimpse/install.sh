@@ -19,6 +19,13 @@ xfconf-query \
 	-t string \
 	-s "gdbus call --session --dest org.glimpse --object-path /org/glimpse --method org.gtk.Actions.Activate \"OpenStartMenu\" [] {}"
 
+xfconf-query \
+	-c xfce4-keyboard-shortcuts \
+	-p "/commands/custom/Super_L" \
+	-n \
+	-t string \
+	-s "gdbus call --session --dest org.glimpse --object-path /org/glimpse --method org.gtk.Actions.Activate \"OpenStartMenu\" [] {}"
+
 # Disabling XFCE panel and adding Glimpse to the failsafe session (the default X session)"
 xfceStartupNumApps=$(xfconf-query -c xfce4-session -p /sessions/Failsafe/Count)
 
@@ -52,6 +59,6 @@ EOF
 echo "Installation complete"
 echo "*** If you use a saved X session then you will need to save a new one with Glimpse running"
 
-pkill -9 $APP_NAME
+pkill -9 glimpse
 sleep 1
 setsid ${installationDirectory}/glimpse &
