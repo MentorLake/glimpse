@@ -21,7 +21,7 @@ internal static class TaskbarViewModelSelectors
 
 	public static readonly ISelector<SlotReferences> CurrentSlots = Create(
 		DesktopFileSelectors.DesktopFiles,
-		s_windowPropertiesList.WithSequenceComparer((x, y) => x.WindowRef.Id == y.WindowRef.Id && x.ClassHintName == y.ClassHintName),
+		s_windowPropertiesList.WithSequenceComparer((x, y) => x.WindowRef.Id == y.WindowRef.Id && x.ClassHintName.Equals(y.ClassHintName, StringComparison.OrdinalIgnoreCase)),
 		TaskbarSelectors.s_storedSlots,
 		(desktopFiles, windows, storedSlots) =>
 		{
@@ -34,7 +34,7 @@ internal static class TaskbarViewModelSelectors
 
 			foreach (var window in windows.OrderBy(w => w.CreationDate))
 			{
-				if (result.Any(s => s.ClassHintName == window.ClassHintName)) continue;
+				if (result.Any(s => s.ClassHintName.Equals(window.ClassHintName, StringComparison.OrdinalIgnoreCase))) continue;
 				var desktopFile = FindAppDesktopFileByName(previouslyFoundDesktopFiles, window.ClassHintName) ?? FindAppDesktopFileByName(desktopFiles.ById.Values, window.ClassHintName);
 				var matchingSlot = result.FirstOrDefault(s => s.PinnedDesktopFileId == desktopFile?.Id) ?? result.FirstOrDefault(s => s.DiscoveredDesktopFileId == desktopFile?.Id);
 
@@ -50,7 +50,7 @@ internal static class TaskbarViewModelSelectors
 
 			foreach (var unpinnedSlot in result.Where(s => string.IsNullOrEmpty(s.PinnedDesktopFileId)).ToList())
 			{
-				if (windows.All(w => w.ClassHintName != unpinnedSlot.ClassHintName))
+				if (windows.All(w => !w.ClassHintName.Equals(unpinnedSlot.ClassHintName, StringComparison.OrdinalIgnoreCase)))
 				{
 					result = result.Remove(unpinnedSlot);
 				}
@@ -81,7 +81,7 @@ internal static class TaskbarViewModelSelectors
 			{
 				return windows
 					.Select(window => (
-						Slot: slots.Refs.First(s => s.ClassHintName.Equals(window.ClassHintName, StringComparison.InvariantCultureIgnoreCase)),
+						Slot: slots.Refs.First(s => s.ClassHintName.Equals(window.ClassHintName, StringComparison.OrdinalIgnoreCase)),
 						IconInfo: new IconInfo() { Key = window.Id.ToString() }))
 					.ToImmutableList();
 			});
@@ -111,10 +111,10 @@ internal static class TaskbarViewModelSelectors
 
 	private static readonly ISelector<ImmutableList<(SlotRef Slot, bool CanClose)>> s_slotToCanClose = Create(
 		CurrentSlots,
-		s_windowPropertiesList.WithSequenceComparer((x, y) => x.WindowRef.Id == y.WindowRef.Id && x.ClassHintName == y.ClassHintName),
+		s_windowPropertiesList.WithSequenceComparer((x, y) => x.WindowRef.Id == y.WindowRef.Id && x.ClassHintName.Equals(y.ClassHintName, StringComparison.OrdinalIgnoreCase)),
 		(slots, windows) =>
 		{
-			return slots.Refs.Select(slot => (Slot: slot, CanClose: windows.Count(w => w.ClassHintName == slot.ClassHintName) > 0)).ToImmutableList();
+			return slots.Refs.Select(slot => (Slot: slot, CanClose: windows.Count(w => w.ClassHintName.Equals(slot.ClassHintName, StringComparison.OrdinalIgnoreCase)) > 0)).ToImmutableList();
 		},
 		(x, y) => CollectionComparer.Sequence(x, y, (i, j) => i.Slot == j.Slot && i.CanClose == j.CanClose));
 
@@ -192,7 +192,7 @@ internal static class TaskbarViewModelSelectors
 			return windows
 				.Select(w =>
 				{
-					var slot = slots.Refs.FirstOrDefault(s => s.ClassHintName == w.ClassHintName);
+					var slot = slots.Refs.FirstOrDefault(s => s.ClassHintName.Equals(w.ClassHintName, StringComparison.OrdinalIgnoreCase));
 					var desktopFile = desktopFiles.First(f => f.Slot == slot).DesktopFile;
 					var lastScreenshot = screenshots.ById.GetValueOrDefault(w.Id);
 
@@ -237,7 +237,7 @@ internal static class TaskbarViewModelSelectors
 			Groups = slots.Refs
 				.Select(slot =>
 				{
-					var windowViewModelsForSlot = windowViewModels.FirstOrDefault(w => w.ClassHintName == slot.ClassHintName).ViewModels ?? ImmutableList<WindowViewModel>.Empty;
+					var windowViewModelsForSlot = windowViewModels.FirstOrDefault(w => w.ClassHintName.Equals(slot.ClassHintName, StringComparison.OrdinalIgnoreCase)).ViewModels ?? ImmutableList<WindowViewModel>.Empty;
 
 					return new SlotViewModel
 					{

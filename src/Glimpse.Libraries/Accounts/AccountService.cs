@@ -7,13 +7,14 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Glimpse.Libraries.Accounts;
 
-public class AccountService(ReduxStore store, OrgFreedesktopAccounts freedesktopAccounts)
+public class AccountService(ReduxStore store)
 {
 	public async Task InitializeAsync(DBusConnections dBusConnections)
 	{
-		var userObjectPath = await freedesktopAccounts.FindUserByNameAsync(Environment.UserName);
 		var service = new AccountsDbusServiceFactory(dBusConnections.System, "org.freedesktop.Accounts");
+		var userObjectPath = await service.CreateAccounts("/org/freedesktop/Accounts").FindUserByNameAsync(Environment.UserName);
 		var userService = service.CreateUser(userObjectPath);
+
 
 		var subject = new Subject<Unit>();
 		_ = await userService.WatchPropertiesChangedAsync((_, _) => subject.OnNext(Unit.Default));

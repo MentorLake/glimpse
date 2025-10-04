@@ -19,6 +19,5 @@ public static class AccountsStartupExtensions
 		var services = builder.Services;
 		services.AddInstance(AccountReducers.AllReducers);
 		services.AddSingleton<AccountService>();
-		services.AddSingleton<OrgFreedesktopAccounts>();
 	}
 }
