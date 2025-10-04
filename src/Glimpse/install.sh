@@ -1,57 +1,5 @@
 #!/bin/bash
 
-scriptDirectory=$(dirname $0)
-installationDirectory="$HOME/.local/bin/"
-
-# Creating ${installationDirectory}"
-if [ ! -d "$installationDirectory" ]; then
-	mkdir -p "$installationDirectory"
-fi
-
-# Copy binary to ${installationDirectory}"
-mv $scriptDirectory/glimpse $installationDirectory
-
-# Updating SUPER_L shortcut"
-xfconf-query \
-	-c xfce4-keyboard-shortcuts \
-	-p "/commands/custom/<Primary>Escape" \
-	-n \
-	-t string \
-	-s "gdbus call --session --dest org.glimpse --object-path /org/glimpse --method org.gtk.Actions.Activate \"OpenStartMenu\" [] {}"
-
-xfconf-query \
-	-c xfce4-keyboard-shortcuts \
-	-p "/commands/custom/Super_L" \
-	-n \
-	-t string \
-	-s "gdbus call --session --dest org.glimpse --object-path /org/glimpse --method org.gtk.Actions.Activate \"OpenStartMenu\" [] {}"
-
-disableXfcePanel
-pkill -9 xfce4-panel
-
-# Disable xfce4-notifyd.service"
-systemctl --user mask xfce4-notifyd.service
-pkill -9 xfce4-notifyd
-tee ~/.config/autostart/xfce4-notifyd.desktop > /dev/null << EOF
-[Desktop Entry]
-Hidden=true
-EOF
-
-# Disable ayatana-indicator-application.service"
-systemctl --user mask ayatana-indicator-application
-pkill -9 ayatana-indicat
-tee ~/.config/autostart/ayatana-indicator-application.desktop > /dev/null << EOF
-[Desktop Entry]
-Hidden=true
-EOF
-
-echo "Installation complete"
-echo "*** If you use a saved X session then you will need to save a new one with Glimpse running"
-
-pkill -9 glimpse
-sleep 1
-setsid ${installationDirectory}/glimpse &
-
 function disableXfcePanel() {
 
 	# Disabling XFCE panel and adding Glimpse to the failsafe session (the default X session)"
@@ -127,4 +75,57 @@ function disableXfcePanel() {
 	else
 		echo "Error: Failed to set XFCE4 panel restart style."
 	fi
+
+	pkill -9 xfce4-panel
 }
+
+scriptDirectory=$(dirname $0)
+installationDirectory="$HOME/.local/bin/"
+
+# Creating ${installationDirectory}"
+if [ ! -d "$installationDirectory" ]; then
+	mkdir -p "$installationDirectory"
+fi
+
+# Copy binary to ${installationDirectory}"
+mv $scriptDirectory/glimpse $installationDirectory
+
+# Updating SUPER_L shortcut"
+xfconf-query \
+	-c xfce4-keyboard-shortcuts \
+	-p "/commands/custom/<Primary>Escape" \
+	-n \
+	-t string \
+	-s "gdbus call --session --dest org.glimpse --object-path /org/glimpse --method org.gtk.Actions.Activate \"OpenStartMenu\" [] {}"
+
+xfconf-query \
+	-c xfce4-keyboard-shortcuts \
+	-p "/commands/custom/Super_L" \
+	-n \
+	-t string \
+	-s "gdbus call --session --dest org.glimpse --object-path /org/glimpse --method org.gtk.Actions.Activate \"OpenStartMenu\" [] {}"
+
+disableXfcePanel
+
+# Disable xfce4-notifyd.service"
+systemctl --user mask xfce4-notifyd.service
+pkill -9 xfce4-notifyd
+tee ~/.config/autostart/xfce4-notifyd.desktop > /dev/null << EOF
+[Desktop Entry]
+Hidden=true
+EOF
+
+# Disable ayatana-indicator-application.service"
+systemctl --user mask ayatana-indicator-application
+pkill -9 ayatana-indicat
+tee ~/.config/autostart/ayatana-indicator-application.desktop > /dev/null << EOF
+[Desktop Entry]
+Hidden=true
+EOF
+
+echo "Installation complete"
+echo "*** If you use a saved X session then you will need to save a new one with Glimpse running"
+
+pkill -9 glimpse
+sleep 1
+setsid ${installationDirectory}/glimpse &
