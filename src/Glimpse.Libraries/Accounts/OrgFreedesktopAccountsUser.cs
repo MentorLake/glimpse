@@ -1,1069 +1,1344 @@
-﻿using System.Reactive.Linq;
-using Glimpse.Libraries.DBus.Core;
-using Tmds.DBus.Protocol;
+﻿using Tmds.DBus.Protocol;
 
 namespace Glimpse.Libraries.Accounts;
 
-public class OrgFreedesktopAccountsUser
+record AccountsProperties
 {
-	private const string Interface = "org.freedesktop.Accounts.User";
-	private readonly Connection _connection;
-	private readonly string _destination;
-	private readonly string _path;
-
-	public OrgFreedesktopAccountsUser(Connection connection, string destination, string path)
+	public string DaemonVersion { get; set; } = default!;
+	public bool HasNoUsers { get; set; } = default!;
+	public bool HasMultipleUsers { get; set; } = default!;
+	public ObjectPath[] AutomaticLoginUsers { get; set; } = default!;
+}
+partial class Accounts : AccountsObject
+{
+	private const string __Interface = "org.freedesktop.Accounts";
+	public Accounts(AccountsDbusServiceFactory dbusServiceFactory, ObjectPath path) : base(dbusServiceFactory, path)
+	{ }
+	public Task<ObjectPath[]> ListCachedUsersAsync()
 	{
-		_connection = connection;
-		_destination = destination;
-		_path = path;
-
-		PropertiesChanged = connection.WatchSignal(
-			new MatchRule
-			{
-				Type = MessageType.Signal,
-				Sender = destination,
-				Path = path,
-				Member = "PropertiesChanged",
-				Interface = "org.freedesktop.DBus.Properties",
-				Arg0 = Interface
-			},
-			(message, _) =>
-			{
-				var reader = message.GetBodyReader();
-				reader.ReadString();
-				List<string> changed = new();
-				return new PropertyChanges<Properties>(ReadProperties(ref reader, changed), changed.ToArray(), reader.ReadArray_as());
-			})
-			.Select(_ => Observable.FromAsync(GetAllPropertiesAsync))
-			.Concat();;
+		return this.Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_ao(m, (AccountsObject)s!), this);
+		MessageBuffer CreateMessage()
+		{
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				member: "ListCachedUsers");
+			return writer.CreateMessage();
+		}
 	}
-
-	public IObservable<Properties> PropertiesChanged { get; }
-
+	public Task<ObjectPath> FindUserByIdAsync(long id)
+	{
+		return this.Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), this);
+		MessageBuffer CreateMessage()
+		{
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "x",
+				member: "FindUserById");
+			writer.WriteInt64(id);
+			return writer.CreateMessage();
+		}
+	}
+	public Task<ObjectPath> FindUserByNameAsync(string name)
+	{
+		return this.Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), this);
+		MessageBuffer CreateMessage()
+		{
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "FindUserByName");
+			writer.WriteString(name);
+			return writer.CreateMessage();
+		}
+	}
+	public Task<ObjectPath> CreateUserAsync(string name, string fullname, int accountType)
+	{
+		return this.Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), this);
+		MessageBuffer CreateMessage()
+		{
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "ssi",
+				member: "CreateUser");
+			writer.WriteString(name);
+			writer.WriteString(fullname);
+			writer.WriteInt32(accountType);
+			return writer.CreateMessage();
+		}
+	}
+	public Task<ObjectPath> CacheUserAsync(string name)
+	{
+		return this.Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), this);
+		MessageBuffer CreateMessage()
+		{
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "CacheUser");
+			writer.WriteString(name);
+			return writer.CreateMessage();
+		}
+	}
+	public Task UncacheUserAsync(string name)
+	{
+		return this.Connection.CallMethodAsync(CreateMessage());
+		MessageBuffer CreateMessage()
+		{
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "UncacheUser");
+			writer.WriteString(name);
+			return writer.CreateMessage();
+		}
+	}
+	public Task DeleteUserAsync(long id, bool removeFiles)
+	{
+		return this.Connection.CallMethodAsync(CreateMessage());
+		MessageBuffer CreateMessage()
+		{
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "xb",
+				member: "DeleteUser");
+			writer.WriteInt64(id);
+			writer.WriteBool(removeFiles);
+			return writer.CreateMessage();
+		}
+	}
+	public Task<string[]> GetUsersLanguagesAsync()
+	{
+		return this.Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_as(m, (AccountsObject)s!), this);
+		MessageBuffer CreateMessage()
+		{
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				member: "GetUsersLanguages");
+			return writer.CreateMessage();
+		}
+	}
+	public ValueTask<IDisposable> WatchUserAddedAsync(Action<Exception?, ObjectPath> handler, bool emitOnCapturedContext = true, ObserverFlags flags = ObserverFlags.None)
+		=> base.WatchSignalAsync(DbusServiceFactory.Destination, __Interface, Path, "UserAdded", (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), handler, emitOnCapturedContext, flags);
+	public ValueTask<IDisposable> WatchUserDeletedAsync(Action<Exception?, ObjectPath> handler, bool emitOnCapturedContext = true, ObserverFlags flags = ObserverFlags.None)
+		=> base.WatchSignalAsync(DbusServiceFactory.Destination, __Interface, Path, "UserDeleted", (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), handler, emitOnCapturedContext, flags);
+	public Task<string> GetDaemonVersionAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "DaemonVersion"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<bool> GetHasNoUsersAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "HasNoUsers"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+	public Task<bool> GetHasMultipleUsersAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "HasMultipleUsers"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+	public Task<ObjectPath[]> GetAutomaticLoginUsersAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "AutomaticLoginUsers"), (Message m, object? s) => ReadMessage_v_ao(m, (AccountsObject)s!), this);
+	public Task<AccountsProperties> GetPropertiesAsync()
+	{
+		return this.Connection.CallMethodAsync(CreateGetAllPropertiesMessage(__Interface), (Message m, object? s) => ReadMessage(m, (AccountsObject)s!), this);
+		static AccountsProperties ReadMessage(Message message, AccountsObject _)
+		{
+			var reader = message.GetBodyReader();
+			return ReadProperties(ref reader);
+		}
+	}
+	public ValueTask<IDisposable> WatchPropertiesChangedAsync(Action<Exception?, PropertyChanges<AccountsProperties>> handler, bool emitOnCapturedContext = true, ObserverFlags flags = ObserverFlags.None)
+	{
+		return base.WatchPropertiesChangedAsync(__Interface, (Message m, object? s) => ReadMessage(m, (AccountsObject)s!), handler, emitOnCapturedContext, flags);
+		static PropertyChanges<AccountsProperties> ReadMessage(Message message, AccountsObject _)
+		{
+			var reader = message.GetBodyReader();
+			reader.ReadString(); // interface
+			List<string> changed = new(), invalidated = new();
+			return new PropertyChanges<AccountsProperties>(ReadProperties(ref reader, changed), ReadInvalidated(ref reader), changed.ToArray());
+		}
+		static string[] ReadInvalidated(ref Reader reader)
+		{
+			List<string>? invalidated = null;
+			ArrayEnd arrayEnd = reader.ReadArrayStart(DBusType.String);
+			while (reader.HasNext(arrayEnd))
+			{
+				invalidated ??= new();
+				var property = reader.ReadString();
+				switch (property)
+				{
+					case "DaemonVersion": invalidated.Add("DaemonVersion"); break;
+					case "HasNoUsers": invalidated.Add("HasNoUsers"); break;
+					case "HasMultipleUsers": invalidated.Add("HasMultipleUsers"); break;
+					case "AutomaticLoginUsers": invalidated.Add("AutomaticLoginUsers"); break;
+				}
+			}
+			return invalidated?.ToArray() ?? Array.Empty<string>();
+		}
+	}
+	private static AccountsProperties ReadProperties(ref Reader reader, List<string>? changedList = null)
+	{
+		var props = new AccountsProperties();
+		ArrayEnd arrayEnd = reader.ReadArrayStart(DBusType.Struct);
+		while (reader.HasNext(arrayEnd))
+		{
+			var property = reader.ReadString();
+			switch (property)
+			{
+				case "DaemonVersion":
+					reader.ReadSignature("s"u8);
+					props.DaemonVersion = reader.ReadString();
+					changedList?.Add("DaemonVersion");
+					break;
+				case "HasNoUsers":
+					reader.ReadSignature("b"u8);
+					props.HasNoUsers = reader.ReadBool();
+					changedList?.Add("HasNoUsers");
+					break;
+				case "HasMultipleUsers":
+					reader.ReadSignature("b"u8);
+					props.HasMultipleUsers = reader.ReadBool();
+					changedList?.Add("HasMultipleUsers");
+					break;
+				case "AutomaticLoginUsers":
+					reader.ReadSignature("ao"u8);
+					props.AutomaticLoginUsers = reader.ReadArrayOfObjectPath();
+					changedList?.Add("AutomaticLoginUsers");
+					break;
+				default:
+					reader.ReadVariantValue();
+					break;
+			}
+		}
+		return props;
+	}
+}
+record UserProperties
+{
+	public ulong Uid { get; set; } = default!;
+	public string UserName { get; set; } = default!;
+	public string RealName { get; set; } = default!;
+	public int AccountType { get; set; } = default!;
+	public string HomeDirectory { get; set; } = default!;
+	public string Shell { get; set; } = default!;
+	public string Email { get; set; } = default!;
+	public string Language { get; set; } = default!;
+	public string[] Languages { get; set; } = default!;
+	public string Session { get; set; } = default!;
+	public string SessionType { get; set; } = default!;
+	public string FormatsLocale { get; set; } = default!;
+	public Dictionary<string, string>[] InputSources { get; set; } = default!;
+	public string XSession { get; set; } = default!;
+	public string Location { get; set; } = default!;
+	public ulong LoginFrequency { get; set; } = default!;
+	public long LoginTime { get; set; } = default!;
+	public (long, long, Dictionary<string, VariantValue>)[] LoginHistory { get; set; } = default!;
+	public bool XHasMessages { get; set; } = default!;
+	public string[] XKeyboardLayouts { get; set; } = default!;
+	public string BackgroundFile { get; set; } = default!;
+	public string IconFile { get; set; } = default!;
+	public bool Saved { get; set; } = default!;
+	public bool Locked { get; set; } = default!;
+	public int PasswordMode { get; set; } = default!;
+	public string PasswordHint { get; set; } = default!;
+	public bool AutomaticLogin { get; set; } = default!;
+	public bool SystemAccount { get; set; } = default!;
+	public bool LocalAccount { get; set; } = default!;
+}
+partial class User : AccountsObject
+{
+	private const string __Interface = "org.freedesktop.Accounts.User";
+	public User(AccountsDbusServiceFactory dbusServiceFactory, ObjectPath path) : base(dbusServiceFactory, path)
+	{ }
 	public Task SetUserNameAsync(string name)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetUserName", "s");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "SetUserName");
 			writer.WriteString(name);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetRealNameAsync(string name)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetRealName", "s");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "SetRealName");
 			writer.WriteString(name);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetEmailAsync(string email)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetEmail", "s");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "SetEmail");
 			writer.WriteString(email);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetLanguageAsync(string language)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetLanguage", "s");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "SetLanguage");
 			writer.WriteString(language);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
-	public Task SetFormatsLocaleAsync(string formats_locale)
+	public Task SetLanguagesAsync(string[] languages)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetFormatsLocale", "s");
-			writer.WriteString(formats_locale);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "as",
+				member: "SetLanguages");
+			writer.WriteArray(languages);
+			return writer.CreateMessage();
 		}
 	}
-
+	public Task SetFormatsLocaleAsync(string formatsLocale)
+	{
+		return this.Connection.CallMethodAsync(CreateMessage());
+		MessageBuffer CreateMessage()
+		{
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "SetFormatsLocale");
+			writer.WriteString(formatsLocale);
+			return writer.CreateMessage();
+		}
+	}
 	public Task SetInputSourcesAsync(Dictionary<string, string>[] sources)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetInputSources", "aa{ss}");
-			writer.WriteArray_aaess(sources);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "aa{ss}",
+				member: "SetInputSources");
+			WriteType_aaess(ref writer, sources);
+			return writer.CreateMessage();
 		}
 	}
-
-	public Task SetXSessionAsync(string x_session)
+	public Task SetXSessionAsync(string xSession)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetXSession", "s");
-			writer.WriteString(x_session);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "SetXSession");
+			writer.WriteString(xSession);
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetSessionAsync(string session)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetSession", "s");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "SetSession");
 			writer.WriteString(session);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
-	public Task SetSessionTypeAsync(string session_type)
+	public Task SetSessionTypeAsync(string sessionType)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetSessionType", "s");
-			writer.WriteString(session_type);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "SetSessionType");
+			writer.WriteString(sessionType);
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetLocationAsync(string location)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetLocation", "s");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "SetLocation");
 			writer.WriteString(location);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetHomeDirectoryAsync(string homedir)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetHomeDirectory", "s");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "SetHomeDirectory");
 			writer.WriteString(homedir);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetShellAsync(string shell)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetShell", "s");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "SetShell");
 			writer.WriteString(shell);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
-	public Task SetXHasMessagesAsync(bool has_messages)
+	public Task SetXHasMessagesAsync(bool hasMessages)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetXHasMessages", "b");
-			writer.WriteBool(has_messages);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "b",
+				member: "SetXHasMessages");
+			writer.WriteBool(hasMessages);
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetXKeyboardLayoutsAsync(string[] layouts)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetXKeyboardLayouts", "as");
-			writer.WriteArray_as(layouts);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "as",
+				member: "SetXKeyboardLayouts");
+			writer.WriteArray(layouts);
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetBackgroundFileAsync(string filename)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetBackgroundFile", "s");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "SetBackgroundFile");
 			writer.WriteString(filename);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetIconFileAsync(string filename)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetIconFile", "s");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "SetIconFile");
 			writer.WriteString(filename);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetLockedAsync(bool locked)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetLocked", "b");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "b",
+				member: "SetLocked");
 			writer.WriteBool(locked);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetAccountTypeAsync(int accountType)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetAccountType", "i");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "i",
+				member: "SetAccountType");
 			writer.WriteInt32(accountType);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetPasswordModeAsync(int mode)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetPasswordMode", "i");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "i",
+				member: "SetPasswordMode");
 			writer.WriteInt32(mode);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetPasswordAsync(string password, string hint)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetPassword", "ss");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "ss",
+				member: "SetPassword");
 			writer.WriteString(password);
 			writer.WriteString(hint);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetPasswordHintAsync(string hint)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetPasswordHint", "s");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "s",
+				member: "SetPasswordHint");
 			writer.WriteString(hint);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
 	public Task SetAutomaticLoginAsync(bool enabled)
 	{
-		return _connection.CallMethodAsync(CreateMessage());
-
+		return this.Connection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "SetAutomaticLogin", "b");
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "b",
+				member: "SetAutomaticLogin");
 			writer.WriteBool(enabled);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			return writer.CreateMessage();
 		}
 	}
-
-	public Task<(long expiration_time, long last_change_time, long min_days_between_changes, long max_days_between_changes, long days_to_warn, long days_after_expiration_until_lock)> GetPasswordExpirationPolicyAsync()
+	public Task<(long ExpirationTime, long LastChangeTime, long MinDaysBetweenChanges, long MaxDaysBetweenChanges, long DaysToWarn, long DaysAfterExpirationUntilLock)> GetPasswordExpirationPolicyAsync()
 	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_xxxxxx);
-
+		return this.Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_xxxxxx(m, (AccountsObject)s!), this);
 		MessageBuffer CreateMessage()
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, Interface, "GetPasswordExpirationPolicy");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				member: "GetPasswordExpirationPolicy");
+			return writer.CreateMessage();
 		}
 	}
-
-	public ValueTask<IDisposable> WatchChangedAsync(Action<Exception?> handler, bool emitOnCapturedContext = true)
+	public Task SetPasswordExpirationPolicyAsync(long minDaysBetweenChanges, long maxDaysBetweenChanges, long daysToWarn, long daysAfterExpirationUntilLock)
+	{
+		return this.Connection.CallMethodAsync(CreateMessage());
+		MessageBuffer CreateMessage()
+		{
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "xxxx",
+				member: "SetPasswordExpirationPolicy");
+			writer.WriteInt64(minDaysBetweenChanges);
+			writer.WriteInt64(maxDaysBetweenChanges);
+			writer.WriteInt64(daysToWarn);
+			writer.WriteInt64(daysAfterExpirationUntilLock);
+			return writer.CreateMessage();
+		}
+	}
+	public Task SetUserExpirationPolicyAsync(long expirationTime)
+	{
+		return this.Connection.CallMethodAsync(CreateMessage());
+		MessageBuffer CreateMessage()
+		{
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: __Interface,
+				signature: "x",
+				member: "SetUserExpirationPolicy");
+			writer.WriteInt64(expirationTime);
+			return writer.CreateMessage();
+		}
+	}
+	public ValueTask<IDisposable> WatchChangedAsync(Action<Exception?> handler, bool emitOnCapturedContext = true, ObserverFlags flags = ObserverFlags.None)
+		=> base.WatchSignalAsync(DbusServiceFactory.Destination, __Interface, Path, "Changed", handler, emitOnCapturedContext, flags);
+	public Task<ulong> GetUidAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Uid"), (Message m, object? s) => ReadMessage_v_t(m, (AccountsObject)s!), this);
+	public Task<string> GetUserNameAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "UserName"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<string> GetRealNameAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "RealName"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<int> GetAccountTypeAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "AccountType"), (Message m, object? s) => ReadMessage_v_i(m, (AccountsObject)s!), this);
+	public Task<string> GetHomeDirectoryAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "HomeDirectory"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<string> GetShellAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Shell"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<string> GetEmailAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Email"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<string> GetLanguageAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Language"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<string[]> GetLanguagesAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Languages"), (Message m, object? s) => ReadMessage_v_as(m, (AccountsObject)s!), this);
+	public Task<string> GetSessionAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Session"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<string> GetSessionTypeAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "SessionType"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<string> GetFormatsLocaleAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "FormatsLocale"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<Dictionary<string, string>[]> GetInputSourcesAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "InputSources"), (Message m, object? s) => ReadMessage_v_aaess(m, (AccountsObject)s!), this);
+	public Task<string> GetXSessionAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "XSession"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<string> GetLocationAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Location"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<ulong> GetLoginFrequencyAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "LoginFrequency"), (Message m, object? s) => ReadMessage_v_t(m, (AccountsObject)s!), this);
+	public Task<long> GetLoginTimeAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "LoginTime"), (Message m, object? s) => ReadMessage_v_x(m, (AccountsObject)s!), this);
+	public Task<(long, long, Dictionary<string, VariantValue>)[]> GetLoginHistoryAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "LoginHistory"), (Message m, object? s) => ReadMessage_v_arxxaesvz(m, (AccountsObject)s!), this);
+	public Task<bool> GetXHasMessagesAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "XHasMessages"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+	public Task<string[]> GetXKeyboardLayoutsAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "XKeyboardLayouts"), (Message m, object? s) => ReadMessage_v_as(m, (AccountsObject)s!), this);
+	public Task<string> GetBackgroundFileAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "BackgroundFile"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<string> GetIconFileAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "IconFile"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<bool> GetSavedAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Saved"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+	public Task<bool> GetLockedAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Locked"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+	public Task<int> GetPasswordModeAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "PasswordMode"), (Message m, object? s) => ReadMessage_v_i(m, (AccountsObject)s!), this);
+	public Task<string> GetPasswordHintAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "PasswordHint"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<bool> GetAutomaticLoginAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "AutomaticLogin"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+	public Task<bool> GetSystemAccountAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "SystemAccount"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+	public Task<bool> GetLocalAccountAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "LocalAccount"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+	public Task<UserProperties> GetPropertiesAsync()
+	{
+		return this.Connection.CallMethodAsync(CreateGetAllPropertiesMessage(__Interface), (Message m, object? s) => ReadMessage(m, (AccountsObject)s!), this);
+		static UserProperties ReadMessage(Message message, AccountsObject _)
+		{
+			var reader = message.GetBodyReader();
+			return ReadProperties(ref reader);
+		}
+	}
+	public ValueTask<IDisposable> WatchPropertiesChangedAsync(Action<Exception?, PropertyChanges<UserProperties>> handler, bool emitOnCapturedContext = true, ObserverFlags flags = ObserverFlags.None)
+	{
+		return base.WatchPropertiesChangedAsync(__Interface, (Message m, object? s) => ReadMessage(m, (AccountsObject)s!), handler, emitOnCapturedContext, flags);
+		static PropertyChanges<UserProperties> ReadMessage(Message message, AccountsObject _)
+		{
+			var reader = message.GetBodyReader();
+			reader.ReadString(); // interface
+			List<string> changed = new(), invalidated = new();
+			return new PropertyChanges<UserProperties>(ReadProperties(ref reader, changed), ReadInvalidated(ref reader), changed.ToArray());
+		}
+		static string[] ReadInvalidated(ref Reader reader)
+		{
+			List<string>? invalidated = null;
+			ArrayEnd arrayEnd = reader.ReadArrayStart(DBusType.String);
+			while (reader.HasNext(arrayEnd))
+			{
+				invalidated ??= new();
+				var property = reader.ReadString();
+				switch (property)
+				{
+					case "Uid": invalidated.Add("Uid"); break;
+					case "UserName": invalidated.Add("UserName"); break;
+					case "RealName": invalidated.Add("RealName"); break;
+					case "AccountType": invalidated.Add("AccountType"); break;
+					case "HomeDirectory": invalidated.Add("HomeDirectory"); break;
+					case "Shell": invalidated.Add("Shell"); break;
+					case "Email": invalidated.Add("Email"); break;
+					case "Language": invalidated.Add("Language"); break;
+					case "Languages": invalidated.Add("Languages"); break;
+					case "Session": invalidated.Add("Session"); break;
+					case "SessionType": invalidated.Add("SessionType"); break;
+					case "FormatsLocale": invalidated.Add("FormatsLocale"); break;
+					case "InputSources": invalidated.Add("InputSources"); break;
+					case "XSession": invalidated.Add("XSession"); break;
+					case "Location": invalidated.Add("Location"); break;
+					case "LoginFrequency": invalidated.Add("LoginFrequency"); break;
+					case "LoginTime": invalidated.Add("LoginTime"); break;
+					case "LoginHistory": invalidated.Add("LoginHistory"); break;
+					case "XHasMessages": invalidated.Add("XHasMessages"); break;
+					case "XKeyboardLayouts": invalidated.Add("XKeyboardLayouts"); break;
+					case "BackgroundFile": invalidated.Add("BackgroundFile"); break;
+					case "IconFile": invalidated.Add("IconFile"); break;
+					case "Saved": invalidated.Add("Saved"); break;
+					case "Locked": invalidated.Add("Locked"); break;
+					case "PasswordMode": invalidated.Add("PasswordMode"); break;
+					case "PasswordHint": invalidated.Add("PasswordHint"); break;
+					case "AutomaticLogin": invalidated.Add("AutomaticLogin"); break;
+					case "SystemAccount": invalidated.Add("SystemAccount"); break;
+					case "LocalAccount": invalidated.Add("LocalAccount"); break;
+				}
+			}
+			return invalidated?.ToArray() ?? Array.Empty<string>();
+		}
+	}
+	private static UserProperties ReadProperties(ref Reader reader, List<string>? changedList = null)
+	{
+		var props = new UserProperties();
+		ArrayEnd arrayEnd = reader.ReadArrayStart(DBusType.Struct);
+		while (reader.HasNext(arrayEnd))
+		{
+			var property = reader.ReadString();
+			switch (property)
+			{
+				case "Uid":
+					reader.ReadSignature("t"u8);
+					props.Uid = reader.ReadUInt64();
+					changedList?.Add("Uid");
+					break;
+				case "UserName":
+					reader.ReadSignature("s"u8);
+					props.UserName = reader.ReadString();
+					changedList?.Add("UserName");
+					break;
+				case "RealName":
+					reader.ReadSignature("s"u8);
+					props.RealName = reader.ReadString();
+					changedList?.Add("RealName");
+					break;
+				case "AccountType":
+					reader.ReadSignature("i"u8);
+					props.AccountType = reader.ReadInt32();
+					changedList?.Add("AccountType");
+					break;
+				case "HomeDirectory":
+					reader.ReadSignature("s"u8);
+					props.HomeDirectory = reader.ReadString();
+					changedList?.Add("HomeDirectory");
+					break;
+				case "Shell":
+					reader.ReadSignature("s"u8);
+					props.Shell = reader.ReadString();
+					changedList?.Add("Shell");
+					break;
+				case "Email":
+					reader.ReadSignature("s"u8);
+					props.Email = reader.ReadString();
+					changedList?.Add("Email");
+					break;
+				case "Language":
+					reader.ReadSignature("s"u8);
+					props.Language = reader.ReadString();
+					changedList?.Add("Language");
+					break;
+				case "Languages":
+					reader.ReadSignature("as"u8);
+					props.Languages = reader.ReadArrayOfString();
+					changedList?.Add("Languages");
+					break;
+				case "Session":
+					reader.ReadSignature("s"u8);
+					props.Session = reader.ReadString();
+					changedList?.Add("Session");
+					break;
+				case "SessionType":
+					reader.ReadSignature("s"u8);
+					props.SessionType = reader.ReadString();
+					changedList?.Add("SessionType");
+					break;
+				case "FormatsLocale":
+					reader.ReadSignature("s"u8);
+					props.FormatsLocale = reader.ReadString();
+					changedList?.Add("FormatsLocale");
+					break;
+				case "InputSources":
+					reader.ReadSignature("aa{ss}"u8);
+					props.InputSources = ReadType_aaess(ref reader);
+					changedList?.Add("InputSources");
+					break;
+				case "XSession":
+					reader.ReadSignature("s"u8);
+					props.XSession = reader.ReadString();
+					changedList?.Add("XSession");
+					break;
+				case "Location":
+					reader.ReadSignature("s"u8);
+					props.Location = reader.ReadString();
+					changedList?.Add("Location");
+					break;
+				case "LoginFrequency":
+					reader.ReadSignature("t"u8);
+					props.LoginFrequency = reader.ReadUInt64();
+					changedList?.Add("LoginFrequency");
+					break;
+				case "LoginTime":
+					reader.ReadSignature("x"u8);
+					props.LoginTime = reader.ReadInt64();
+					changedList?.Add("LoginTime");
+					break;
+				case "LoginHistory":
+					reader.ReadSignature("a(xxa{sv})"u8);
+					props.LoginHistory = ReadType_arxxaesvz(ref reader);
+					changedList?.Add("LoginHistory");
+					break;
+				case "XHasMessages":
+					reader.ReadSignature("b"u8);
+					props.XHasMessages = reader.ReadBool();
+					changedList?.Add("XHasMessages");
+					break;
+				case "XKeyboardLayouts":
+					reader.ReadSignature("as"u8);
+					props.XKeyboardLayouts = reader.ReadArrayOfString();
+					changedList?.Add("XKeyboardLayouts");
+					break;
+				case "BackgroundFile":
+					reader.ReadSignature("s"u8);
+					props.BackgroundFile = reader.ReadString();
+					changedList?.Add("BackgroundFile");
+					break;
+				case "IconFile":
+					reader.ReadSignature("s"u8);
+					props.IconFile = reader.ReadString();
+					changedList?.Add("IconFile");
+					break;
+				case "Saved":
+					reader.ReadSignature("b"u8);
+					props.Saved = reader.ReadBool();
+					changedList?.Add("Saved");
+					break;
+				case "Locked":
+					reader.ReadSignature("b"u8);
+					props.Locked = reader.ReadBool();
+					changedList?.Add("Locked");
+					break;
+				case "PasswordMode":
+					reader.ReadSignature("i"u8);
+					props.PasswordMode = reader.ReadInt32();
+					changedList?.Add("PasswordMode");
+					break;
+				case "PasswordHint":
+					reader.ReadSignature("s"u8);
+					props.PasswordHint = reader.ReadString();
+					changedList?.Add("PasswordHint");
+					break;
+				case "AutomaticLogin":
+					reader.ReadSignature("b"u8);
+					props.AutomaticLogin = reader.ReadBool();
+					changedList?.Add("AutomaticLogin");
+					break;
+				case "SystemAccount":
+					reader.ReadSignature("b"u8);
+					props.SystemAccount = reader.ReadBool();
+					changedList?.Add("SystemAccount");
+					break;
+				case "LocalAccount":
+					reader.ReadSignature("b"u8);
+					props.LocalAccount = reader.ReadBool();
+					changedList?.Add("LocalAccount");
+					break;
+				default:
+					reader.ReadVariantValue();
+					break;
+			}
+		}
+		return props;
+	}
+}
+record AccountsServiceProperties
+{
+	public string BackgroundFile { get; set; } = default!;
+	public bool HasMessages { get; set; } = default!;
+	public string[] KeyboardLayouts { get; set; } = default!;
+}
+partial class AccountsService : AccountsObject
+{
+	private const string __Interface = "org.freedesktop.DisplayManager.AccountsService";
+	public AccountsService(AccountsDbusServiceFactory dbusServiceFactory, ObjectPath path) : base(dbusServiceFactory, path)
+	{ }
+	public Task SetBackgroundFileAsync(string value)
+	{
+		return this.Connection.CallMethodAsync(CreateMessage());
+		MessageBuffer CreateMessage()
+		{
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: "org.freedesktop.DBus.Properties",
+				signature: "ssv",
+				member: "Set");
+			writer.WriteString(__Interface);
+			writer.WriteString("BackgroundFile");
+			writer.WriteSignature("s");
+			writer.WriteString(value);
+			return writer.CreateMessage();
+		}
+	}
+	public Task SetHasMessagesAsync(bool value)
+	{
+		return this.Connection.CallMethodAsync(CreateMessage());
+		MessageBuffer CreateMessage()
+		{
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: "org.freedesktop.DBus.Properties",
+				signature: "ssv",
+				member: "Set");
+			writer.WriteString(__Interface);
+			writer.WriteString("HasMessages");
+			writer.WriteSignature("b");
+			writer.WriteBool(value);
+			return writer.CreateMessage();
+		}
+	}
+	public Task SetKeyboardLayoutsAsync(string[] value)
+	{
+		return this.Connection.CallMethodAsync(CreateMessage());
+		MessageBuffer CreateMessage()
+		{
+			var writer = this.Connection.GetMessageWriter();
+			writer.WriteMethodCallHeader(
+				destination: DbusServiceFactory.Destination,
+				path: Path,
+				@interface: "org.freedesktop.DBus.Properties",
+				signature: "ssv",
+				member: "Set");
+			writer.WriteString(__Interface);
+			writer.WriteString("KeyboardLayouts");
+			writer.WriteSignature("as");
+			writer.WriteArray(value);
+			return writer.CreateMessage();
+		}
+	}
+	public Task<string> GetBackgroundFileAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "BackgroundFile"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+	public Task<bool> GetHasMessagesAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "HasMessages"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+	public Task<string[]> GetKeyboardLayoutsAsync()
+		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "KeyboardLayouts"), (Message m, object? s) => ReadMessage_v_as(m, (AccountsObject)s!), this);
+	public Task<AccountsServiceProperties> GetPropertiesAsync()
+	{
+		return this.Connection.CallMethodAsync(CreateGetAllPropertiesMessage(__Interface), (Message m, object? s) => ReadMessage(m, (AccountsObject)s!), this);
+		static AccountsServiceProperties ReadMessage(Message message, AccountsObject _)
+		{
+			var reader = message.GetBodyReader();
+			return ReadProperties(ref reader);
+		}
+	}
+	public ValueTask<IDisposable> WatchPropertiesChangedAsync(Action<Exception?, PropertyChanges<AccountsServiceProperties>> handler, bool emitOnCapturedContext = true, ObserverFlags flags = ObserverFlags.None)
+	{
+		return base.WatchPropertiesChangedAsync(__Interface, (Message m, object? s) => ReadMessage(m, (AccountsObject)s!), handler, emitOnCapturedContext, flags);
+		static PropertyChanges<AccountsServiceProperties> ReadMessage(Message message, AccountsObject _)
+		{
+			var reader = message.GetBodyReader();
+			reader.ReadString(); // interface
+			List<string> changed = new(), invalidated = new();
+			return new PropertyChanges<AccountsServiceProperties>(ReadProperties(ref reader, changed), ReadInvalidated(ref reader), changed.ToArray());
+		}
+		static string[] ReadInvalidated(ref Reader reader)
+		{
+			List<string>? invalidated = null;
+			ArrayEnd arrayEnd = reader.ReadArrayStart(DBusType.String);
+			while (reader.HasNext(arrayEnd))
+			{
+				invalidated ??= new();
+				var property = reader.ReadString();
+				switch (property)
+				{
+					case "BackgroundFile": invalidated.Add("BackgroundFile"); break;
+					case "HasMessages": invalidated.Add("HasMessages"); break;
+					case "KeyboardLayouts": invalidated.Add("KeyboardLayouts"); break;
+				}
+			}
+			return invalidated?.ToArray() ?? Array.Empty<string>();
+		}
+	}
+	private static AccountsServiceProperties ReadProperties(ref Reader reader, List<string>? changedList = null)
+	{
+		var props = new AccountsServiceProperties();
+		ArrayEnd arrayEnd = reader.ReadArrayStart(DBusType.Struct);
+		while (reader.HasNext(arrayEnd))
+		{
+			var property = reader.ReadString();
+			switch (property)
+			{
+				case "BackgroundFile":
+					reader.ReadSignature("s"u8);
+					props.BackgroundFile = reader.ReadString();
+					changedList?.Add("BackgroundFile");
+					break;
+				case "HasMessages":
+					reader.ReadSignature("b"u8);
+					props.HasMessages = reader.ReadBool();
+					changedList?.Add("HasMessages");
+					break;
+				case "KeyboardLayouts":
+					reader.ReadSignature("as"u8);
+					props.KeyboardLayouts = reader.ReadArrayOfString();
+					changedList?.Add("KeyboardLayouts");
+					break;
+				default:
+					reader.ReadVariantValue();
+					break;
+			}
+		}
+		return props;
+	}
+}
+partial class AccountsDbusServiceFactory
+{
+	public Tmds.DBus.Protocol.Connection Connection { get; }
+	public string Destination { get; }
+	public AccountsDbusServiceFactory(Tmds.DBus.Protocol.Connection connection, string destination)
+		=> (Connection, Destination) = (connection, destination);
+	public Accounts CreateAccounts(ObjectPath path) => new Accounts(this, path);
+	public User CreateUser(ObjectPath path) => new User(this, path);
+	public AccountsService CreateAccountsService(ObjectPath path) => new AccountsService(this, path);
+}
+class AccountsObject
+{
+	public AccountsDbusServiceFactory DbusServiceFactory { get; }
+	public ObjectPath Path { get; }
+	protected Tmds.DBus.Protocol.Connection Connection => DbusServiceFactory.Connection;
+	protected AccountsObject(AccountsDbusServiceFactory dbusServiceFactory, ObjectPath path)
+		=> (DbusServiceFactory, Path) = (dbusServiceFactory, path);
+	protected MessageBuffer CreateGetPropertyMessage(string @interface, string property)
+	{
+		var writer = this.Connection.GetMessageWriter();
+		writer.WriteMethodCallHeader(
+			destination: DbusServiceFactory.Destination,
+			path: Path,
+			@interface: "org.freedesktop.DBus.Properties",
+			signature: "ss",
+			member: "Get");
+		writer.WriteString(@interface);
+		writer.WriteString(property);
+		return writer.CreateMessage();
+	}
+	protected MessageBuffer CreateGetAllPropertiesMessage(string @interface)
+	{
+		var writer = this.Connection.GetMessageWriter();
+		writer.WriteMethodCallHeader(
+			destination: DbusServiceFactory.Destination,
+			path: Path,
+			@interface: "org.freedesktop.DBus.Properties",
+			signature: "s",
+			member: "GetAll");
+		writer.WriteString(@interface);
+		return writer.CreateMessage();
+	}
+	protected ValueTask<IDisposable> WatchPropertiesChangedAsync<TProperties>(string @interface, MessageValueReader<PropertyChanges<TProperties>> reader, Action<Exception?, PropertyChanges<TProperties>> handler, bool emitOnCapturedContext, ObserverFlags flags)
 	{
 		var rule = new MatchRule
 		{
 			Type = MessageType.Signal,
-			Sender = _destination,
-			Path = _path,
-			Member = "Changed",
-			Interface = Interface
+			Sender = DbusServiceFactory.Destination,
+			Path = Path,
+			Interface = "org.freedesktop.DBus.Properties",
+			Member = "PropertiesChanged",
+			Arg0 = @interface
 		};
-		return SignalHelper.WatchSignalAsync(_connection, rule, handler, emitOnCapturedContext);
+		return this.Connection.AddMatchAsync(rule, reader,
+			(Exception? ex, PropertyChanges<TProperties> changes, object? rs, object? hs) => ((Action<Exception?, PropertyChanges<TProperties>>)hs!).Invoke(ex, changes),
+			this, handler, emitOnCapturedContext, flags);
 	}
-
-	public Task<ulong> GetUidPropertyAsync()
+	public ValueTask<IDisposable> WatchSignalAsync<TArg>(string sender, string @interface, ObjectPath path, string signal, MessageValueReader<TArg> reader, Action<Exception?, TArg> handler, bool emitOnCapturedContext, ObserverFlags flags)
 	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_t);
-
-		MessageBuffer CreateMessage()
+		var rule = new MatchRule
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("Uid");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			Type = MessageType.Signal,
+			Sender = sender,
+			Path = path,
+			Member = signal,
+			Interface = @interface
+		};
+		return this.Connection.AddMatchAsync(rule, reader,
+			(Exception? ex, TArg arg, object? rs, object? hs) => ((Action<Exception?, TArg>)hs!).Invoke(ex, arg),
+			this, handler, emitOnCapturedContext, flags);
+	}
+	public ValueTask<IDisposable> WatchSignalAsync(string sender, string @interface, ObjectPath path, string signal, Action<Exception?> handler, bool emitOnCapturedContext, ObserverFlags flags)
+	{
+		var rule = new MatchRule
+		{
+			Type = MessageType.Signal,
+			Sender = sender,
+			Path = path,
+			Member = signal,
+			Interface = @interface
+		};
+		return this.Connection.AddMatchAsync<object>(rule, (Message message, object? state) => null!,
+			(Exception? ex, object v, object? rs, object? hs) => ((Action<Exception?>)hs!).Invoke(ex), this, handler, emitOnCapturedContext, flags);
+	}
+	protected static ObjectPath[] ReadMessage_ao(Message message, AccountsObject _)
+	{
+		var reader = message.GetBodyReader();
+		return reader.ReadArrayOfObjectPath();
+	}
+	protected static ObjectPath ReadMessage_o(Message message, AccountsObject _)
+	{
+		var reader = message.GetBodyReader();
+		return reader.ReadObjectPath();
+	}
+	protected static string[] ReadMessage_as(Message message, AccountsObject _)
+	{
+		var reader = message.GetBodyReader();
+		return reader.ReadArrayOfString();
+	}
+	protected static string ReadMessage_v_s(Message message, AccountsObject _)
+	{
+		var reader = message.GetBodyReader();
+		reader.ReadSignature("s"u8);
+		return reader.ReadString();
+	}
+	protected static bool ReadMessage_v_b(Message message, AccountsObject _)
+	{
+		var reader = message.GetBodyReader();
+		reader.ReadSignature("b"u8);
+		return reader.ReadBool();
+	}
+	protected static ObjectPath[] ReadMessage_v_ao(Message message, AccountsObject _)
+	{
+		var reader = message.GetBodyReader();
+		reader.ReadSignature("ao"u8);
+		return reader.ReadArrayOfObjectPath();
+	}
+	protected static (long, long, long, long, long, long) ReadMessage_xxxxxx(Message message, AccountsObject _)
+	{
+		var reader = message.GetBodyReader();
+		var arg0 = reader.ReadInt64();
+		var arg1 = reader.ReadInt64();
+		var arg2 = reader.ReadInt64();
+		var arg3 = reader.ReadInt64();
+		var arg4 = reader.ReadInt64();
+		var arg5 = reader.ReadInt64();
+		return (arg0, arg1, arg2, arg3, arg4, arg5);
+	}
+	protected static ulong ReadMessage_v_t(Message message, AccountsObject _)
+	{
+		var reader = message.GetBodyReader();
+		reader.ReadSignature("t"u8);
+		return reader.ReadUInt64();
+	}
+	protected static int ReadMessage_v_i(Message message, AccountsObject _)
+	{
+		var reader = message.GetBodyReader();
+		reader.ReadSignature("i"u8);
+		return reader.ReadInt32();
+	}
+	protected static string[] ReadMessage_v_as(Message message, AccountsObject _)
+	{
+		var reader = message.GetBodyReader();
+		reader.ReadSignature("as"u8);
+		return reader.ReadArrayOfString();
+	}
+	protected static Dictionary<string, string>[] ReadMessage_v_aaess(Message message, AccountsObject _)
+	{
+		var reader = message.GetBodyReader();
+		reader.ReadSignature("aa{ss}"u8);
+		return ReadType_aaess(ref reader);
+	}
+	protected static long ReadMessage_v_x(Message message, AccountsObject _)
+	{
+		var reader = message.GetBodyReader();
+		reader.ReadSignature("x"u8);
+		return reader.ReadInt64();
+	}
+	protected static (long, long, Dictionary<string, VariantValue>)[] ReadMessage_v_arxxaesvz(Message message, AccountsObject _)
+	{
+		var reader = message.GetBodyReader();
+		reader.ReadSignature("a(xxa{sv})"u8);
+		return ReadType_arxxaesvz(ref reader);
+	}
+	protected static Dictionary<string, string>[] ReadType_aaess(ref Reader reader)
+	{
+		List<Dictionary<string, string>> list = new();
+		ArrayEnd arrayEnd = reader.ReadArrayStart(DBusType.Array);
+		while (reader.HasNext(arrayEnd))
+		{
+			list.Add(ReadType_aess(ref reader));
 		}
+		return list.ToArray();
 	}
-
-	public Task<string> GetUserNamePropertyAsync()
+	protected static Dictionary<string, string> ReadType_aess(ref Reader reader)
 	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_s);
-
-		MessageBuffer CreateMessage()
+		Dictionary<string, string> dictionary = new();
+		ArrayEnd dictEnd = reader.ReadDictionaryStart();
+		while (reader.HasNext(dictEnd))
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("UserName");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			var key = reader.ReadString();
+			var value = reader.ReadString();
+			dictionary[key] = value;
 		}
+		return dictionary;
 	}
-
-	public Task<string> GetRealNamePropertyAsync()
+	protected static (long, long, Dictionary<string, VariantValue>)[] ReadType_arxxaesvz(ref Reader reader)
 	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_s);
-
-		MessageBuffer CreateMessage()
+		List<(long, long, Dictionary<string, VariantValue>)> list = new();
+		ArrayEnd arrayEnd = reader.ReadArrayStart(DBusType.Struct);
+		while (reader.HasNext(arrayEnd))
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("RealName");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			list.Add(ReadType_rxxaesvz(ref reader));
 		}
+		return list.ToArray();
 	}
-
-	public Task<int> GetAccountTypePropertyAsync()
+	protected static (long, long, Dictionary<string, VariantValue>) ReadType_rxxaesvz(ref Reader reader)
 	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_i);
-
-		MessageBuffer CreateMessage()
+		return (reader.ReadInt64(), reader.ReadInt64(), reader.ReadDictionaryOfStringToVariantValue());
+	}
+	protected static void WriteType_aaess(ref MessageWriter writer, Dictionary<string, string>[] value)
+	{
+		ArrayStart arrayStart = writer.WriteArrayStart(DBusType.Array);
+		foreach (var item in value)
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("AccountType");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			WriteType_aess(ref writer, item);
 		}
+		writer.WriteArrayEnd(arrayStart);
 	}
-
-	public Task<string> GetHomeDirectoryPropertyAsync()
+	protected static void WriteType_aess(ref MessageWriter writer, Dictionary<string, string> value)
 	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_s);
-
-		MessageBuffer CreateMessage()
+		ArrayStart arrayStart = writer.WriteDictionaryStart();
+		foreach (var item in value)
 		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("HomeDirectory");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
+			writer.WriteDictionaryEntryStart();
+			writer.WriteString(item.Key);
+			writer.WriteString(item.Value);
 		}
+		writer.WriteDictionaryEnd(arrayStart);
 	}
-
-	public Task<string> GetShellPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_s);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("Shell");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<string> GetEmailPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_s);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("Email");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<string> GetLanguagePropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_s);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("Language");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<string> GetSessionPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_s);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("Session");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<string> GetSessionTypePropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_s);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("SessionType");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<string> GetFormatsLocalePropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_s);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("FormatsLocale");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<Dictionary<string, string>[]> GetInputSourcesPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_aaess);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("InputSources");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<string> GetXSessionPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_s);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("XSession");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<string> GetLocationPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_s);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("Location");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<ulong> GetLoginFrequencyPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_t);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("LoginFrequency");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<long> GetLoginTimePropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_x);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("LoginTime");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<(long, long, Dictionary<string, DBusVariantItem>)[]> GetLoginHistoryPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_arxxaesvz);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("LoginHistory");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<bool> GetXHasMessagesPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_b);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("XHasMessages");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<string[]> GetXKeyboardLayoutsPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_as);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("XKeyboardLayouts");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<string> GetBackgroundFilePropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_s);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("BackgroundFile");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<string> GetIconFilePropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_s);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("IconFile");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<bool> GetSavedPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_b);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("Saved");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<bool> GetLockedPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_b);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("Locked");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<int> GetPasswordModePropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_i);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("PasswordMode");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<string> GetPasswordHintPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_s);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("PasswordHint");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<bool> GetAutomaticLoginPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_b);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("AutomaticLogin");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<bool> GetSystemAccountPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_b);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("SystemAccount");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<bool> GetLocalAccountPropertyAsync()
-	{
-		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_b);
-
-		MessageBuffer CreateMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "Get", "ss");
-			writer.WriteString(Interface);
-			writer.WriteString("LocalAccount");
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	public Task<Properties> GetAllPropertiesAsync()
-	{
-		return _connection.CallMethodAsync(CreateGetAllMessage(), (message, state) =>
-		{
-			var reader = message.GetBodyReader();
-			return ReadProperties(ref reader);
-		});
-
-		MessageBuffer CreateGetAllMessage()
-		{
-			var writer = _connection.GetMessageWriter();
-			writer.WriteMethodCallHeader(_destination, _path, "org.freedesktop.DBus.Properties", "GetAll", "s");
-			writer.WriteString(Interface);
-			var message = writer.CreateMessage();
-			writer.Dispose();
-			return message;
-		}
-	}
-
-	private static Properties ReadProperties(ref Reader reader, List<string>? changed = null)
-	{
-		var props = new Properties();
-		var headersEnd = reader.ReadArrayStart(DBusType.Struct);
-		while (reader.HasNext(headersEnd))
-		{
-			switch (reader.ReadString())
-			{
-				case "Uid":
-					reader.ReadSignature("t");
-					props.Uid = reader.ReadUInt64();
-					changed?.Add("Uid");
-					break;
-				case "UserName":
-					reader.ReadSignature("s");
-					props.UserName = reader.ReadString();
-					changed?.Add("UserName");
-					break;
-				case "RealName":
-					reader.ReadSignature("s");
-					props.RealName = reader.ReadString();
-					changed?.Add("RealName");
-					break;
-				case "AccountType":
-					reader.ReadSignature("i");
-					props.AccountType = reader.ReadInt32();
-					changed?.Add("AccountType");
-					break;
-				case "HomeDirectory":
-					reader.ReadSignature("s");
-					props.HomeDirectory = reader.ReadString();
-					changed?.Add("HomeDirectory");
-					break;
-				case "Shell":
-					reader.ReadSignature("s");
-					props.Shell = reader.ReadString();
-					changed?.Add("Shell");
-					break;
-				case "Email":
-					reader.ReadSignature("s");
-					props.Email = reader.ReadString();
-					changed?.Add("Email");
-					break;
-				case "Language":
-					reader.ReadSignature("s");
-					props.Language = reader.ReadString();
-					changed?.Add("Language");
-					break;
-				case "Session":
-					reader.ReadSignature("s");
-					props.Session = reader.ReadString();
-					changed?.Add("Session");
-					break;
-				case "SessionType":
-					reader.ReadSignature("s");
-					props.SessionType = reader.ReadString();
-					changed?.Add("SessionType");
-					break;
-				case "FormatsLocale":
-					reader.ReadSignature("s");
-					props.FormatsLocale = reader.ReadString();
-					changed?.Add("FormatsLocale");
-					break;
-				case "InputSources":
-					reader.ReadSignature("aa{ss}");
-					props.InputSources = reader.ReadArray_aaess();
-					changed?.Add("InputSources");
-					break;
-				case "XSession":
-					reader.ReadSignature("s");
-					props.XSession = reader.ReadString();
-					changed?.Add("XSession");
-					break;
-				case "Location":
-					reader.ReadSignature("s");
-					props.Location = reader.ReadString();
-					changed?.Add("Location");
-					break;
-				case "LoginFrequency":
-					reader.ReadSignature("t");
-					props.LoginFrequency = reader.ReadUInt64();
-					changed?.Add("LoginFrequency");
-					break;
-				case "LoginTime":
-					reader.ReadSignature("x");
-					props.LoginTime = reader.ReadInt64();
-					changed?.Add("LoginTime");
-					break;
-				case "LoginHistory":
-					reader.ReadSignature("a(xxa{sv})");
-					props.LoginHistory = reader.ReadArray_arxxaesvz();
-					changed?.Add("LoginHistory");
-					break;
-				case "XHasMessages":
-					reader.ReadSignature("b");
-					props.XHasMessages = reader.ReadBool();
-					changed?.Add("XHasMessages");
-					break;
-				case "XKeyboardLayouts":
-					reader.ReadSignature("as");
-					props.XKeyboardLayouts = reader.ReadArray_as();
-					changed?.Add("XKeyboardLayouts");
-					break;
-				case "BackgroundFile":
-					reader.ReadSignature("s");
-					props.BackgroundFile = reader.ReadString();
-					changed?.Add("BackgroundFile");
-					break;
-				case "IconFile":
-					reader.ReadSignature("s");
-					props.IconFile = reader.ReadString();
-					changed?.Add("IconFile");
-					break;
-				case "Saved":
-					reader.ReadSignature("b");
-					props.Saved = reader.ReadBool();
-					changed?.Add("Saved");
-					break;
-				case "Locked":
-					reader.ReadSignature("b");
-					props.Locked = reader.ReadBool();
-					changed?.Add("Locked");
-					break;
-				case "PasswordMode":
-					reader.ReadSignature("i");
-					props.PasswordMode = reader.ReadInt32();
-					changed?.Add("PasswordMode");
-					break;
-				case "PasswordHint":
-					reader.ReadSignature("s");
-					props.PasswordHint = reader.ReadString();
-					changed?.Add("PasswordHint");
-					break;
-				case "AutomaticLogin":
-					reader.ReadSignature("b");
-					props.AutomaticLogin = reader.ReadBool();
-					changed?.Add("AutomaticLogin");
-					break;
-				case "SystemAccount":
-					reader.ReadSignature("b");
-					props.SystemAccount = reader.ReadBool();
-					changed?.Add("SystemAccount");
-					break;
-				case "LocalAccount":
-					reader.ReadSignature("b");
-					props.LocalAccount = reader.ReadBool();
-					changed?.Add("LocalAccount");
-					break;
-				default:
-					reader.ReadSignature("as");
-					break;
-			}
-		}
-
-		return props;
-	}
-
-	public ValueTask<IDisposable> WatchPropertiesChangedAsync(Action<Exception?, PropertyChanges<Properties>> handler, bool emitOnCapturedContext = true)
-	{
-		return SignalHelper.WatchPropertiesChangedAsync(_connection, _destination, _path, Interface, ReadMessage, handler, emitOnCapturedContext);
-
-		static PropertyChanges<Properties> ReadMessage(Message message, object? _)
-		{
-			var reader = message.GetBodyReader();
-			reader.ReadString();
-			List<string> changed = new();
-			return new PropertyChanges<Properties>(ReadProperties(ref reader, changed), changed.ToArray(), reader.ReadArray_as());
-		}
-	}
-
-	public class Properties
-	{
-		public ulong Uid { get; set; }
-		public string UserName { get; set; }
-		public string RealName { get; set; }
-		public int AccountType { get; set; }
-		public string HomeDirectory { get; set; }
-		public string Shell { get; set; }
-		public string Email { get; set; }
-		public string Language { get; set; }
-		public string Session { get; set; }
-		public string SessionType { get; set; }
-		public string FormatsLocale { get; set; }
-		public Dictionary<string, string>[] InputSources { get; set; }
-		public string XSession { get; set; }
-		public string Location { get; set; }
-		public ulong LoginFrequency { get; set; }
-		public long LoginTime { get; set; }
-		public (long, long, Dictionary<string, DBusVariantItem>)[] LoginHistory { get; set; }
-		public bool XHasMessages { get; set; }
-		public string[] XKeyboardLayouts { get; set; }
-		public string BackgroundFile { get; set; }
-		public string IconFile { get; set; }
-		public bool Saved { get; set; }
-		public bool Locked { get; set; }
-		public int PasswordMode { get; set; }
-		public string PasswordHint { get; set; }
-		public bool AutomaticLogin { get; set; }
-		public bool SystemAccount { get; set; }
-		public bool LocalAccount { get; set; }
-	}
+}
+class PropertyChanges<TProperties>
+{
+	public PropertyChanges(TProperties properties, string[] invalidated, string[] changed)
+		=> (Properties, Invalidated, Changed) = (properties, invalidated, changed);
+	public TProperties Properties { get; }
+	public string[] Invalidated { get; }
+	public string[] Changed { get; }
+	public bool HasChanged(string property) => Array.IndexOf(Changed, property) != -1;
+	public bool IsInvalidated(string property) => Array.IndexOf(Invalidated, property) != -1;
 }
