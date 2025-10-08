@@ -79,13 +79,22 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 
 				XLib.XGetClassHint(windowRef.Display, windowRef.Window, out var classHint);
 
+				var classHintObs = Observable.Return(classHint)
+					.Concat(propertyChangeObs
+						.ObserveAtomNameArray(XAtoms.WmClass)
+						.Select(_ =>
+						{
+							XLib.XGetClassHint(windowRef.Display, windowRef.Window, out var updatedClassHint);
+							return updatedClassHint;
+						}));
+
 				var windowPropsObs = titleObs
-					.CombineLatest(iconObs, iconNameObs, stateObs, allowedActionsObs, defaultScreenshotObs)
+					.CombineLatest(iconObs, iconNameObs, stateObs, allowedActionsObs, defaultScreenshotObs, classHintObs)
 					.Select(t => new WindowProperties()
 					{
 						WindowRef = windowRef,
-						ClassHintName = classHint.res_name,
-						ClassHintClass = classHint.res_class,
+						ClassHintName = t.Seventh.res_name,
+						ClassHintClass = t.Seventh.res_class,
 						IconName = t.Third,
 						Icons = t.Second,
 						Title = t.First,
@@ -95,6 +104,7 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 					})
 					.Throttle(TimeSpan.FromMilliseconds(250))
 					.DistinctUntilChanged()
+					.Where(p => !string.IsNullOrEmpty(p.ClassHintName))
 					.TakeUntil(windowObservable.TakeLast(1))
 					.Replay(1);
 
