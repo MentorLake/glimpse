@@ -5,4 +5,8 @@
 		<EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="NCrontab" Version="3.4.0" />
+	</ItemGroup>
+
 </Project>

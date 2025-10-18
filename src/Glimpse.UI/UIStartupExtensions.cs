@@ -1,3 +1,4 @@
+using Glimpse.Libraries.Configuration;
 using Glimpse.UI.Components.ApplicationIcons;
 using Glimpse.UI.Components.Calendar;
 using Glimpse.UI.Components.NotificationBubbles;
@@ -10,9 +11,9 @@ using Glimpse.UI.Components.StartMenuIcon;
 using Glimpse.UI.Components.SystemTray;
 using MentorLake.Gio;
 using MentorLake.Gtk;
-using MentorLake.Redux.Reducers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace Glimpse.UI;
 
@@ -29,7 +30,7 @@ public static class UIStartupExtensions
 		return Task.CompletedTask;
 	}
 
-	public static void AddUI(this IHostApplicationBuilder builder, string gtkApplicationIdentifier)
+	public static void AddUI(this IHostApplicationBuilder builder)
 	{
 		builder.Services.AddSingleton<NotificationBubblesService>();
 		builder.Services.AddSingleton<NotificationHistoryWindow>();
@@ -43,7 +44,12 @@ public static class UIStartupExtensions
 		builder.Services.AddSingleton<StartMenuWindow>();
 		builder.Services.AddTransient<SystemTrayBox>();
 
-		builder.Services.AddSingleton(_ => GtkApplicationHandle.New(gtkApplicationIdentifier, GApplicationFlags.G_APPLICATION_FLAGS_NONE));
+		builder.Services.AddSingleton(p =>
+		{
+			var appSettings = p.GetRequiredService<IOptions<GlimpseAppSettings>>();
+			return GtkApplicationHandle.New($"org.{appSettings.Value.ApplicationName}", GApplicationFlags.G_APPLICATION_FLAGS_NONE);
+		});
+
 		builder.Services.AddHostedService<GlimpseGtkApplication>();
 		builder.Services.AddSingleton<GlimpseGtkApplication>();
 		builder.Services.AddSingleton<DisplayOrchestrator>();

@@ -15,4 +15,16 @@ public static class TimerFactory
 			observer.OnNext(DateTime.Now);
 		}
 	});
+
+	public static readonly IObservable<DateTime> OneMinuteTimer = Observable.Create<DateTime>(async (observer, cancellationToken) =>
+	{
+		using var timer = new PeriodicTimer(TimeSpan.FromMinutes(1));
+		cancellationToken.Register(observer.OnCompleted);
+
+		while (await timer.WaitForNextTickAsync(cancellationToken))
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			observer.OnNext(DateTime.Now);
+		}
+	});
 }

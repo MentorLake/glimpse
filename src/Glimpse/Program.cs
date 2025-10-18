@@ -7,6 +7,7 @@ using Glimpse.Libraries.DBus;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.StatusNotifierWatcher;
 using Glimpse.Libraries.System.Reactive;
+using Glimpse.Libraries.Wallpaper;
 using Glimpse.Libraries.Xfce.SessionManagement;
 using Glimpse.Libraries.Xorg;
 using Glimpse.Services;
@@ -69,6 +70,8 @@ public static class Program
 			builder.Configuration.AddConfiguration(configuration);
 			builder.Services.AddSingleton<ReduxStore>();
 			builder.Services.AddLogging(b => b.AddConsole().AddJournal(o => o.SyslogIdentifier = appName));
+			builder.Services.AddHttpClient();
+			builder.AddWallpaper();
 			builder.AddReactiveTimers();
 			builder.AddDBus();
 			builder.AddXorg();
@@ -78,7 +81,7 @@ public static class Program
 			builder.AddAccounts();
 			builder.AddGlimpseConfiguration();
 			builder.AddServices();
-			builder.AddUI("org.glimpse");
+			builder.AddUI();
 
 			var host = builder.Build();
 
@@ -105,8 +108,9 @@ public static class Program
 			await host.UseGlimpseConfiguration();
 			await host.UseAccounts();
 			await host.UseStatusNotifier();
-			await host.UseServices(host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>().Value.ConfigurationFilePath);
+			await host.UseServices(appSettings.Value);
 			await host.UseUI();
+			await host.UseWallpaperAsync();
 
 			await store.Dispatch(new InitializeStoreAction());
 

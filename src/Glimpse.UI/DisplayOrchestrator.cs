@@ -4,6 +4,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
+using Glimpse.Libraries.Wallpaper;
 using Glimpse.Libraries.Xorg.State;
 using Glimpse.Services.StartMenu;
 using Glimpse.UI.Components.NotificationBubbles;
@@ -47,6 +48,10 @@ public class DisplayOrchestrator(NotificationBubblesService notificationBubblesS
 			var openStartMenuAction = GSimpleActionHandle.New("OpenStartMenu", null);
 			openStartMenuAction.Signal_Activate().Select(_ => true).SubscribeDebug(_ => store.Dispatch(new StartMenuOpenedAction()));
 			application.AddAction(openStartMenuAction);
+
+			var changeWallpaperAction = GSimpleActionHandle.New("NextWallpaper", null);
+			changeWallpaperAction.Signal_Activate().Select(_ => true).SubscribeDebug(_ => store.Dispatch(new WallpaperActions.NextWallpaperAction()));
+			application.AddAction(changeWallpaperAction);
 
 			_loadPanels = GSimpleActionHandle.New("LoadPanels", null);
 			application.AddAction(_loadPanels);

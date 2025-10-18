@@ -35,20 +35,20 @@ public static class GlimpseServicesStartupExtensions
 		builder.Services.AddTransient<IReducerFactory, SystemTrayItemStateReducers>();
 	}
 
-	public static async Task UseServices(this IHost host, string taskbarConfigFilePath)
+	public static async Task UseServices(this IHost host, GlimpseAppSettings appSettings)
 	{
 		var store = host.Services.GetRequiredService<ReduxStore>();
 		var configurationService = host.Services.GetRequiredService<ConfigurationService>();
 
 		host.UseStartMenu(store, configurationService);
 		await host.UseNotifications(store, configurationService);
-		host.UseTaskbar(store, configurationService, taskbarConfigFilePath);
+		host.UseTaskbar(store, configurationService, appSettings);
 		await host.UseSystemTray();
 	}
 
-	private static void UseTaskbar(this IHost host, ReduxStore store, ConfigurationService configurationService, string taskbarConfigFilePath)
+	private static void UseTaskbar(this IHost host, ReduxStore store, ConfigurationService configurationService, GlimpseAppSettings appSettings)
 	{
-		configurationService.AddIfNotExists(TaskbarConfiguration.ConfigKey, TaskbarConfiguration.New(taskbarConfigFilePath).ToJsonElement());
+		configurationService.AddIfNotExists(TaskbarConfiguration.ConfigKey, TaskbarConfiguration.New(appSettings).ToJsonElement());
 
 		configurationService
 			.ObserveChange(TaskbarConfiguration.ConfigKey)

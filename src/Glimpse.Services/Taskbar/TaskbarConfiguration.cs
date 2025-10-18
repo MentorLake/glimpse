@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Glimpse.Libraries.Configuration;
 
 namespace Glimpse.Services.Taskbar;
 
@@ -32,7 +33,7 @@ public record TaskbarConfiguration
 		return element.Deserialize(typeof(TaskbarConfiguration), TaskbarSerializationContext.Instance) as TaskbarConfiguration;
 	}
 
-	public static TaskbarConfiguration New(string configFilePath)
+	public static TaskbarConfiguration New(GlimpseAppSettings appSettings)
 	{
 		return new TaskbarConfiguration()
 		{
@@ -45,7 +46,8 @@ public record TaskbarConfiguration
 				new() { DisplayText = "Network Connections", Executable = "nm-connection-editor", Icon = "network-wireless" },
 				new() { DisplayText = "Session & Startup", Executable = "xfce4-settings-manager", Arguments = "-d xfce-session-settings", Icon = "gnome-session" },
 				new() { DisplayText = "separator" },
-				new() { DisplayText = "Edit Glimpse config", Executable = "xdg-open", Arguments = configFilePath, Icon = "edit" },
+				new() { DisplayText = "Next Wallpaper", Executable = "gdbus", Arguments = $"call --session --dest org.{appSettings.ApplicationName} --object-path /org/{appSettings.ApplicationName} --method org.gtk.Actions.Activate \"NextWallpaper\" [] {{}}", Icon = "accessories-image-viewer" },
+				new() { DisplayText = "Edit Glimpse config", Executable = "xdg-open", Arguments = appSettings.ConfigurationFilePath, Icon = "edit" },
 				new() { DisplayText = "System Settings", Executable = "xfce4-settings-manager", Icon = "system-settings" },
 				new() { DisplayText = "separator" },
 				new() { DisplayText = "Shutdown or sign out", Executable = "xfce4-session-logout", Icon = "system-shutdown" })

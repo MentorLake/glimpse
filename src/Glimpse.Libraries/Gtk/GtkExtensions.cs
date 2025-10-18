@@ -128,7 +128,7 @@ public static class GtkExtensions
 	public static List<T> ToList<T>(this GListHandle gListHandle) where T : SafeHandle, new()
 	{
 		var length = GList.Length(gListHandle);
-		var result = new List<T>((int) length);
+		var result = new List<T>((int)length);
 
 		for (uint i = 0; i < length; i++)
 		{
@@ -136,6 +136,20 @@ public static class GtkExtensions
 			var handle = new T();
 			Marshal.InitHandle(handle, ptr);
 			result.Add(handle);
+		}
+
+		return result;
+	}
+
+	public static List<string> ToListOfStrings(this GListHandle gListHandle)
+	{
+		var length = GList.Length(gListHandle);
+		var result = new List<string>((int) length);
+
+		for (uint i = 0; i < length; i++)
+		{
+			var ptr = GList.NthData(gListHandle, i);
+			result.Add(Marshal.PtrToStringUTF8(ptr));
 		}
 
 		return result;

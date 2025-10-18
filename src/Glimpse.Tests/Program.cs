@@ -8,10 +8,10 @@ using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.StatusNotifierWatcher;
 using Glimpse.Libraries.System.Reactive;
+using Glimpse.Libraries.Wallpaper;
 using Glimpse.Libraries.Xfce.SessionManagement;
 using Glimpse.Libraries.Xorg;
 using Glimpse.Services;
-using Glimpse.UI.Components.Shared;
 using MentorLake.Gdk;
 using MentorLake.Gio;
 using MentorLake.GLib;
@@ -44,6 +44,8 @@ public class Program
 		var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder([]);
 		builder.Configuration.AddConfiguration(configuration);
 		builder.Services.AddSingleton<ReduxStore>();
+		builder.Services.AddHttpClient();
+		builder.AddWallpaper();
 		builder.Services.AddLogging(b => b.AddConsole().AddJournal(o => o.SyslogIdentifier = appName));
 		builder.AddReactiveTimers();
 		builder.AddDBus();
@@ -54,7 +56,7 @@ public class Program
 		builder.AddAccounts();
 		builder.AddGlimpseConfiguration();
 		builder.AddServices();
-		builder.AddUI("org.glimpsetests");
+		builder.AddUI();
 
 		var host = builder.Build();
 		var store = host.Services.GetRequiredService<ReduxStore>();
@@ -72,7 +74,6 @@ public class Program
 		var appSettings = host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>();
 
 		GLibGlobalFunctions.SetPrgname(appSettings.Value.ApplicationName);
-
 		await host.UseXSessionManagement();
 		await host.UseDBus();
 		await host.UseDesktopFiles();
@@ -80,8 +81,9 @@ public class Program
 		await host.UseGlimpseConfiguration();
 		await host.UseAccounts();
 		await host.UseStatusNotifier();
-		await host.UseServices(host.Services.GetRequiredService<IOptions<GlimpseAppSettings>>().Value.ConfigurationFilePath);
+		await host.UseServices(appSettings.Value);
 		await host.UseUI();
+		await host.UseWallpaperAsync();
 
 		var orchestrator = host.Services.GetRequiredService<DisplayOrchestrator>();
 		var application = host.Services.GetRequiredService<GtkApplicationHandle>();
