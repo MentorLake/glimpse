@@ -71,6 +71,11 @@ public static class VariantReader
 						throw new InvalidOperationException("Failed to deserialize array item");
 					}
 
+					if (innerDBusType == DBusType.Byte)
+					{
+						return new DBusByteArrayItem(reader.ReadArrayOfByte());
+					}
+
 					List<DBusItem> items = new();
 					var arrayEnd = reader.ReadArrayStart(innerDBusType);
 					while (reader.HasNext(arrayEnd))

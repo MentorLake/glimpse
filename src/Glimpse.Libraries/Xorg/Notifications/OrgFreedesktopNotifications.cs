@@ -265,10 +265,11 @@ public class OrgFreedesktopNotifications(DBusConnections dBusConnections) : IMet
 		var rowStride = imageStruct[2] as DBusInt32Item;
 		var hasAlpha = imageStruct[3] as DBusBoolItem;
 		var bitsPerSample = imageStruct[4] as DBusInt32Item;
-		var channels = imageStruct[5] as DBusInt32Item;
-		var data = imageStruct[6] as DBusArrayItem;
-		var dataArray = data.Select(i => i as DBusByteItem).Select(i => i.Value).ToArray();
-		return GdkPixbufFactory.From(dataArray, hasAlpha.Value, bitsPerSample.Value, width.Value, height.Value, rowStride.Value);
+		var data = imageStruct[6] as DBusByteArrayItem;
+
+		var buffer = data.Value;
+		using var fullSizeImage = GdkPixbufFactory.From(buffer, buffer.Length, hasAlpha.Value, bitsPerSample.Value, width.Value, height.Value, rowStride.Value);
+		return fullSizeImage.ScaleToFit(34, 34);
 	}
 
 	private ValueTask<uint> OnNotifyAsync(string app_name, uint replaces_id, string app_icon, string summary, string body, string[] actions, Dictionary<string, DBusVariantItem> hints, int expire_timeout)

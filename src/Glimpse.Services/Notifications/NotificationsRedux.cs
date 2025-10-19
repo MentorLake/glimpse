@@ -99,7 +99,7 @@ internal class NotificationsReducers : IReducerFactory
 					Summary = a.Notification.Summary,
 					DesktopEntry = a.Notification.DesktopEntry,
 					ImagePath = a.Notification.ImagePath,
-					Image = a.Notification.Image?.ScaleToFit(34, 34)
+					Image = a.Notification.Image
 				};
 
 				if (result.KnownApplications.All(app => app.Name != a.Notification.AppName))

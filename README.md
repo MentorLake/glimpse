@@ -10,6 +10,7 @@ Glimpse is a Windows 11-like panel for XFCE.
 4. Windows 11-like start menu with pinning and searching
 5. Customizable start menu context menu
 6. Slide-out side pane with notification history and a calendar
+7. Integrated Iris wallpaper
 
 ## Installation - Per User
 

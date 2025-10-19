@@ -1,10 +1,8 @@
 using System.Reflection;
-using System.Resources;
 using MentorLake.cairo;
 using MentorLake.Gdk;
 using MentorLake.GdkPixbuf;
 using MentorLake.GLib;
-using Tmds.DBus.Protocol;
 
 namespace Glimpse.Libraries.Images;
 
@@ -41,10 +39,12 @@ public static class GdkPixbufFactory
 		return GdkPixbufHandle.NewFromFile(path);
 	}
 
-	public static GdkPixbufHandle From(byte[] data, bool hasAlpha, int bitsPerSample, int width, int height, int rowStride)
+	public static GdkPixbufHandle From(byte[] data, int dataLength, bool hasAlpha, int bitsPerSample, int width, int height, int rowStride)
 	{
-		var bytes = GBytesHandle.New(data, (uint) data.Length);
-		return GdkPixbufHandle.NewFromBytes(bytes, GdkColorspace.GDK_COLORSPACE_RGB, hasAlpha, bitsPerSample, width, height, rowStride);
+		var bytes = GBytesHandle.New(data, (uint) dataLength);
+		var pixbuf = GdkPixbufHandle.NewFromBytes(bytes, GdkColorspace.GDK_COLORSPACE_RGB, hasAlpha, bitsPerSample, width, height, rowStride);
+		bytes.Unref();
+		return pixbuf;
 	}
 
 	public static GdkPixbufHandle FromResource(Assembly sourceAssembly, string resourceName)
