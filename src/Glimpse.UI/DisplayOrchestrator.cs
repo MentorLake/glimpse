@@ -139,7 +139,7 @@ public class DisplayOrchestrator(NotificationBubblesService notificationBubblesS
 				.SubscribeDebug(obs =>
 				{
 					var newPanel = CreatePanel(obs.Key);
-					DockToBottom(newPanel.Widget, obs.Key.GetGeometryRect(), obs.Key.GetWorkAreaRect(), 0);
+					obs.SkipLast(1).Subscribe(_ => DockToBottom(newPanel.Widget, obs.Key.GetGeometryRect(), obs.Key.GetWorkAreaRect(), 0));
 					obs.TakeLast(1).Subscribe(_ => newPanel.Widget.Destroy());
 				});
 		});
