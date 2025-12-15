@@ -25,6 +25,7 @@ public static class GlimpseServicesStartupExtensions
 
 		builder.Services.AddSingleton<OrgFreedesktopNotifications>();
 		builder.Services.AddSingleton<XorgNotificationsService>();
+		builder.Services.AddSingleton<IconManager>();
 		builder.Services.AddTransient<IEffectsFactory, NotificationsEffects>();
 		builder.Services.AddTransient<IReducerFactory, NotificationsReducers>();
 

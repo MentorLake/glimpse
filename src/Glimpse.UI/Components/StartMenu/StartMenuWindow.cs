@@ -5,6 +5,7 @@ using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.Xorg.State;
+using Glimpse.Services;
 using Glimpse.Services.StartMenu;
 using Glimpse.Services.Taskbar;
 using MentorLake.Gdk;
@@ -25,7 +26,7 @@ public class StartMenuWindow
 	public IObservable<Point> WindowMoved { get; }
 	public GtkWindowHandle Window => _root;
 
-	public StartMenuWindow(ReduxStore store, TaskbarService taskbarService)
+	public StartMenuWindow(ReduxStore store, TaskbarService taskbarService, IconManager iconManager)
 	{
 		_root = GtkWindowHandle.New(GtkWindowType.GTK_WINDOW_TOPLEVEL)
 			.SetSkipPagerHint(true)
@@ -59,7 +60,7 @@ public class StartMenuWindow
 			DesktopFileRunner.Run(command);
 		});
 
-		_startMenuContent = new StartMenuContent(actionBar);
+		_startMenuContent = new StartMenuContent(actionBar, iconManager);
 
 		var searchResults = viewModelObservable.Select(vm => vm.SearchResults).DistinctUntilChanged();
 

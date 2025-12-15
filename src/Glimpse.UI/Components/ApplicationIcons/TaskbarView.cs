@@ -5,6 +5,7 @@ using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.Xorg;
 using Glimpse.Libraries.Xorg.State;
+using Glimpse.Services;
 using Glimpse.Services.Taskbar;
 using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.Shared.ForEach;
@@ -18,7 +19,7 @@ public class TaskbarView
 {
 	public GtkWidgetHandle Widget { get; }
 
-	public TaskbarView(ReduxStore store, IDisplayServer displayServer)
+	public TaskbarView(ReduxStore store, IDisplayServer displayServer, IconManager iconManager)
 	{
 		Widget = GtkBoxHandle.New(GtkOrientation.GTK_ORIENTATION_HORIZONTAL, 0);
 
@@ -42,9 +43,9 @@ public class TaskbarView
 		{
 			var viewModelObservable = viewModelObservableWithIndex.Select(i => i.Item1);
 			var replayLatestViewModelObservable = viewModelObservable.Replay(1).AutoConnect();
-			var windowPicker = new TaskbarWindowPicker(viewModelObservable);
+			var windowPicker = new TaskbarWindowPicker(viewModelObservable, iconManager);
 			var appIconViewModelObs = viewModelObservable.Select(vm => new AppIconViewModel<SlotContextMenuItemViewModel>() { IconInfo = vm.Icon, ContextMenuItems = vm.ContextMenuItems });
-			var groupIcon = new TaskbarGroupIcon(windowPicker, appIconViewModelObs);
+			var groupIcon = new TaskbarGroupIcon(windowPicker, appIconViewModelObs, iconManager);
 
 			viewModelObservable.Select(vm => vm.Tasks.Count).DistinctUntilChanged().Subscribe(c => groupIcon.UpdateTaskCount(c));
 			viewModelObservable.Select(vm => vm.DemandsAttention).DistinctUntilChanged().Subscribe(c => groupIcon.UpdateDemandsAttention(c));

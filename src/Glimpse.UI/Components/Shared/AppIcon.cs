@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Reactive.Linq;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
+using Glimpse.Services;
 using Glimpse.UI.Components.Shared.ContextMenu;
 using Glimpse.UI.Components.Shared.ForEach;
 using MentorLake.GdkPixbuf;
@@ -23,6 +24,7 @@ public class AppIcon<TContextMenuViewModel> : IGlimpseFlowBoxItem where TContext
 	private Icon _primaryIcon;
 
 	private readonly int _iconSize;
+	private readonly IconManager _iconManager;
 	private readonly GtkEventBoxHandle _root;
 	private readonly GtkLabelHandle _name;
 	private readonly ContextMenu<TContextMenuViewModel> _contextMenu;
@@ -33,10 +35,11 @@ public class AppIcon<TContextMenuViewModel> : IGlimpseFlowBoxItem where TContext
 	public GdkPixbufHandle DragIcon { get; set; }
 	public IObservable<TContextMenuViewModel> ContextMenuItemActivated { get; }
 
-	public AppIcon(string id, int iconSize, IObservable<AppIconViewModel<TContextMenuViewModel>> viewModelObs)
+	public AppIcon(string id, int iconSize, IObservable<AppIconViewModel<TContextMenuViewModel>> viewModelObs, IconManager iconManager)
 	{
 		Id = id;
 		_iconSize = iconSize;
+		_iconManager = iconManager;
 
 		_root = GtkEventBoxHandle.New()
 			.SetCanFocus(false);
@@ -80,21 +83,19 @@ public class AppIcon<TContextMenuViewModel> : IGlimpseFlowBoxItem where TContext
 
 	private void SetDragIcon(int size)
 	{
-		DragIcon = IconManager.GetDefault().GetIcon(_primaryIcon.Info, size).Image;
+		DragIcon = _iconManager.GetIcon(_primaryIcon.Info, size).Image;
 	}
 
 	private void SetIcon(IconInfo iconInfo)
 	{
-		var manager = IconManager.GetDefault();
-
-		if (manager.TryGetUpdatedIcon(iconInfo, _iconSize, _primaryIcon, out var newIcon))
+		if (_iconManager.TryGetUpdatedIcon(iconInfo, _iconSize, _primaryIcon, out var newIcon))
 		{
 			_primaryIcon = newIcon;
 			_imageWidget.SetFromPixbuf(newIcon.Image);
 			if (_root.GetMapped()) SetDragIcon(_root.GetAllocatedHeight());
 		}
 
-		if (manager.TryGetUpdatedIcon(iconInfo, _iconSize - 6, _activatedIcon, out var newActivatedIcon))
+		if (_iconManager.TryGetUpdatedIcon(iconInfo, _iconSize - 6, _activatedIcon, out var newActivatedIcon))
 		{
 			_activatedIcon = newActivatedIcon;
 		}

@@ -2,8 +2,8 @@ using System.Collections.Immutable;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.Xorg;
+using Glimpse.Services;
 using Glimpse.Services.Taskbar;
-using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.Shared.ContextMenu;
 
 namespace Glimpse.UI.Components.ApplicationIcons;

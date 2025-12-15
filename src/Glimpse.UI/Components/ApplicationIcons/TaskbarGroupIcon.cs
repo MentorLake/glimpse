@@ -1,4 +1,5 @@
 using Glimpse.Libraries.Gtk;
+using Glimpse.Services;
 using Glimpse.Services.Taskbar;
 using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.Shared.ForEach;
@@ -23,10 +24,10 @@ internal class TaskbarGroupIcon : IGlimpseFlowBoxItem
 	public SlotRef SlotRef { get; private set; }
 	public IObservable<SlotContextMenuItemViewModel> ContextMenuItemActivated => _appIcon.ContextMenuItemActivated;
 
-	public TaskbarGroupIcon(TaskbarWindowPicker taskbarWindowPicker, IObservable<AppIconViewModel<SlotContextMenuItemViewModel>> viewModelObs)
+	public TaskbarGroupIcon(TaskbarWindowPicker taskbarWindowPicker, IObservable<AppIconViewModel<SlotContextMenuItemViewModel>> viewModelObs, IconManager iconManager)
 	{
 		_taskbarWindowPicker = taskbarWindowPicker;
-		_appIcon = new AppIcon<SlotContextMenuItemViewModel>("", 26, viewModelObs);
+		_appIcon = new AppIcon<SlotContextMenuItemViewModel>("", 26, viewModelObs, iconManager);
 		_appIcon.Widget
 			.SetVisible(false)
 			.SetValign(GtkAlign.GTK_ALIGN_FILL)

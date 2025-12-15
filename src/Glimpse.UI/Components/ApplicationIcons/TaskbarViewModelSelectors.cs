@@ -5,11 +5,10 @@ using Glimpse.Libraries.System.Collections;
 using Glimpse.Libraries.Xorg;
 using Glimpse.Libraries.Xorg.State;
 using Glimpse.Services.Taskbar;
-using Glimpse.UI.Components.Shared;
 using MentorLake.GdkPixbuf;
 using MentorLake.Redux.Selectors;
 using static MentorLake.Redux.Selectors.SelectorFactory;
-using IconInfo = Glimpse.UI.Components.Shared.IconInfo;
+using IconInfo = Glimpse.Services.IconInfo;
 
 namespace Glimpse.UI.Components.ApplicationIcons;
 
@@ -59,7 +58,7 @@ internal static class TaskbarViewModelSelectors
 			return new SlotReferences { Refs = result };
 		});
 
-	private static readonly ISelector<ImmutableList<(SlotRef Slot, Libraries.DesktopEntries.DesktopFile DesktopFile)>> s_slotToDesktopFile = Create(
+	private static readonly ISelector<ImmutableList<(SlotRef Slot, DesktopFile DesktopFile)>> s_slotToDesktopFile = Create(
 		CurrentSlots,
 		DesktopFileSelectors.DesktopFiles,
 		(slots, desktopFiles) =>
@@ -73,7 +72,7 @@ internal static class TaskbarViewModelSelectors
 		},
 		(x, y) => CollectionComparer.Sequence(x, y, (i, j) => i.Slot == j.Slot && i.DesktopFile.Id == j.DesktopFile.Id));
 
-	private static readonly ISelector<ImmutableList<(SlotRef Slot, Shared.IconInfo IconInfo)>> s_slotToWindowGroupIcons =
+	private static readonly ISelector<ImmutableList<(SlotRef Slot, IconInfo IconInfo)>> s_slotToWindowGroupIcons =
 		Create(
 			CurrentSlots,
 			s_windowPropertiesList.WithSequenceComparer((x, y) => x.WindowRef.Id == y.WindowRef.Id && x.Icons == y.Icons),
@@ -96,14 +95,14 @@ internal static class TaskbarViewModelSelectors
 				.Select(slot =>
 				{
 					var desktopFile = desktopFiles.FirstOrDefault(f => f.Slot == slot).DesktopFile;
-					var iconInfo = IconInfo.FromNameOrPath(desktopFile?.IconName);
 
-					if (iconInfo == null)
+					if (string.IsNullOrEmpty(desktopFile.Id))
 					{
-						iconInfo = windowGroups.FirstOrDefault(w => w.Slot == slot).IconInfo;
+						var windowIcon = windowGroups.FirstOrDefault(w => w.Slot == slot).IconInfo;
+						return (Slot: slot, Icon: windowIcon);
 					}
 
-					return (Slot: slot, Icon: iconInfo);
+					return (Slot: slot, Icon: IconInfo.FromNameOrPath(desktopFile?.IconName));
 				})
 				.ToImmutableList();
 		},

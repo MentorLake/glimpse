@@ -1,8 +1,10 @@
 using Glimpse.Libraries.System;
+using Glimpse.Libraries.Xorg.State;
 using MentorLake.GdkPixbuf;
 using MentorLake.Gtk;
+using MentorLake.Redux;
 
-namespace Glimpse.UI.Components.Shared;
+namespace Glimpse.Services;
 
 public class IconInfo
 {
@@ -41,14 +43,11 @@ public class Icon
 	public required int Size { get; init; }
 }
 
-public class IconManager
+public class IconManager(ReduxStore store)
 {
-	private readonly GtkIconThemeHandle _theme = GtkIconThemeHandle.GetDefault();
+	private readonly Lazy<GtkIconThemeHandle> _theme = new(GtkIconThemeHandle.GetDefault);
 	private readonly Dictionary<string, CachedIconSet> _cache = new();
 	private const string ImageMissingIconName = "image-missing";
-
-	private static IconManager s_instance;
-	public static IconManager GetDefault() => s_instance ??= new IconManager();
 
 	public Icon GetIcon(IconInfo info, int size)
 	{
@@ -80,6 +79,20 @@ public class IconManager
 
 	private Icon LoadFromKey(IconInfo info, int size)
 	{
+		var windows = XorgSelectors.Windows.Apply(store.State);
+
+		if (!_cache.ContainsKey(info.Key) && windows.AllIds.Any(id => id.ToString() == info.Id))
+		{
+			_cache[info.Key] = new();
+
+			windows.Get(ulong.Parse(info.Key))
+				.Icons
+				.Select(i => new Icon() { Image = i, Info = new() { Key = info.Key }, Size = i.GetWidth() })
+				.DistinctBy(i => i.Size)
+				.ToList()
+				.ForEach(i => _cache[info.Key].Sizes.Add(i.Size, i));
+		}
+
 		if (!_cache.ContainsKey(info.Key))
 		{
 			return LoadFromName(new IconInfo() { Name = ImageMissingIconName }, size);
@@ -108,7 +121,7 @@ public class IconManager
 			_cache[info.Name] = new CachedIconSet();
 		}
 
-		var image = _theme.LoadIconForScale(info.Name, size, 1, GtkIconLookupFlags.GTK_ICON_LOOKUP_FORCE_SIZE);
+		var image = _theme.Value.LoadIconForScale(info.Name, size, 1, GtkIconLookupFlags.GTK_ICON_LOOKUP_FORCE_SIZE);
 		_cache[info.Name].Sizes.Add(size, new Icon() { Image = image, Size = size, Info = new IconInfo() { Name = info.Name } });
 		return _cache[info.Name].Sizes[size];
 	}
@@ -128,24 +141,6 @@ public class IconManager
 		var image = GdkPixbufHandle.NewFromFileAtSize(info.Path, size, size);
 		_cache[info.Path].Sizes.Add(size, new Icon() { Image = image, Size = size, Info = new IconInfo() { Path = info.Path } });
 		return _cache[info.Path].Sizes[size];
-	}
-
-	public Icon AddKeyedIcon(string key, GdkPixbufHandle pixbuf)
-	{
-		if (!_cache.ContainsKey(key))
-		{
-			_cache[key] = new();
-		}
-
-		var iconUpdated = _cache[key].Sizes.ContainsKey(pixbuf.GetWidth());
-		_cache[key].Sizes[pixbuf.GetWidth()] = new Icon() { Image = pixbuf, Size = pixbuf.GetWidth(), Info = new IconInfo() { Key = key } };
-
-		if (iconUpdated)
-		{
-			// Dispatch action that the icon was updated
-		}
-
-		return _cache[key].Sizes[pixbuf.GetWidth()];
 	}
 
 	public void RemoveKeyedIcon(string key)

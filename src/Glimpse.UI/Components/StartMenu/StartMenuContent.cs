@@ -4,6 +4,7 @@ using System.Reactive.Subjects;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
+using Glimpse.Services;
 using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.Shared.ForEach;
 using MentorLake.Gdk;
@@ -14,6 +15,7 @@ namespace Glimpse.UI.Components.StartMenu;
 
 public class StartMenuContent
 {
+	private readonly IconManager _iconManager;
 	private readonly GtkBoxHandle _root;
 	private readonly Subject<DesktopFileAction> _runActionSubject = new();
 	private readonly Subject<DesktopFile> _appLaunch = new();
@@ -42,8 +44,9 @@ public class StartMenuContent
 	public IObservable<string> ToggleTaskbarPinning => _toggleTaskbarPinningSubject;
 	public IObservable<string> ToggleStartMenuPinning => _toggleStartMenuPinningSubject;
 
-	public StartMenuContent(StartMenuActionBar actionBar)
+	public StartMenuContent(StartMenuActionBar actionBar, IconManager iconManager)
 	{
+		_iconManager = iconManager;
 		_root = GtkBoxHandle.New(GtkOrientation.GTK_ORIENTATION_HORIZONTAL, 0);
 
 		_searchEntry = GtkEntryHandle.New()
@@ -157,7 +160,7 @@ public class StartMenuContent
 
 	private AppIcon<StartMenuAppContextMenuItem> CreateAppIcon(string applicationId, IObservable<AppIconViewModel<StartMenuAppContextMenuItem>> viewModelObs)
 	{
-		var appIcon = new AppIcon<StartMenuAppContextMenuItem>(applicationId, 36, viewModelObs);
+		var appIcon = new AppIcon<StartMenuAppContextMenuItem>(applicationId, 36, viewModelObs, _iconManager);
 		appIcon.Widget.AddClass("start-menu__app-icon-container");
 
 		appIcon.ContextMenuItemActivated

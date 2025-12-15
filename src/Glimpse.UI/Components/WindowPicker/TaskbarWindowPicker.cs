@@ -3,8 +3,8 @@ using System.Reactive.Subjects;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.Xorg;
+using Glimpse.Services;
 using Glimpse.UI.Components.ApplicationIcons;
-using Glimpse.UI.Components.Shared;
 using MentorLake.Gdk;
 using MentorLake.Gtk;
 using MentorLake.Pango;
@@ -13,12 +13,14 @@ namespace Glimpse.UI.Components.WindowPicker;
 
 internal class TaskbarWindowPicker
 {
+	private readonly IconManager _iconManager;
 	private readonly Subject<IWindowRef> _previewWindowClicked = new();
 	private readonly Subject<IWindowRef> _closeWindow = new();
 	public GtkWindowHandle Widget { get; }
 
-	public TaskbarWindowPicker(IObservable<SlotViewModel> viewModelObservable)
+	public TaskbarWindowPicker(IObservable<SlotViewModel> viewModelObservable, IconManager iconManager)
 	{
+		_iconManager = iconManager;
 		Widget = GtkWindowHandle.New(GtkWindowType.GTK_WINDOW_POPUP);
 		Widget.SetSkipPagerHint(true);
 		Widget.SetSkipTaskbarHint(true);
@@ -100,7 +102,7 @@ internal class TaskbarWindowPicker
 			.AddButtonStates();
 
 		taskObservable.Select(t => t.Title).DistinctUntilChanged().Subscribe(t => appName.SetText(t));
-		taskObservable.Select(t => t.Icon).DistinctUntilChanged().Subscribe(i => appIcon.SetFromPixbuf(IconManager.GetDefault().GetIcon(i, 18).Image));
+		taskObservable.Select(t => t.Icon).DistinctUntilChanged().Subscribe(i => appIcon.SetFromPixbuf(_iconManager.GetIcon(i, 18).Image));
 		closeIconBox.ObserveEvent(w => w.Signal_ButtonReleaseEvent()).WithLatestFrom(taskObservable).Subscribe(t => _closeWindow.OnNext(t.Second.WindowRef));
 		screenshotImage.BindViewModel(taskObservable.Select(s => s.Screenshot).DistinctUntilChanged(), 200, 100);
 		appPreview.ObserveEvent(w => w.Signal_ButtonReleaseEvent()).WithLatestFrom(taskObservable).Subscribe(t => _previewWindowClicked.OnNext(t.Second.WindowRef));

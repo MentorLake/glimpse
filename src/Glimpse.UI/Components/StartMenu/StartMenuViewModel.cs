@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
-using Glimpse.UI.Components.Shared;
+using Glimpse.Services;
 using Glimpse.UI.Components.Shared.ContextMenu;
 
 namespace Glimpse.UI.Components.StartMenu;

@@ -6,14 +6,13 @@ using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.Wallpaper;
 using Glimpse.Libraries.Xorg.State;
+using Glimpse.Services;
 using Glimpse.Services.StartMenu;
 using Glimpse.UI.Components.NotificationBubbles;
 using Glimpse.UI.Components.Panel;
-using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.SidePane;
 using Glimpse.UI.Components.StartMenu;
 using MentorLake.Gdk;
-using MentorLake.GdkPixbuf;
 using MentorLake.Gio;
 using MentorLake.Gtk;
 using MentorLake.Gtk3;
@@ -23,7 +22,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Glimpse.UI;
 
-public class DisplayOrchestrator(NotificationBubblesService notificationBubblesService, GtkApplicationHandle application, IServiceProvider serviceProvider, ReduxStore store, ILogger<DisplayOrchestrator> logger)
+public class DisplayOrchestrator(IconManager iconManager, NotificationBubblesService notificationBubblesService, GtkApplicationHandle application, IServiceProvider serviceProvider, ReduxStore store, ILogger<DisplayOrchestrator> logger)
 {
 	private readonly List<Panel> _panels = new();
 	private StartMenuWindow _startMenuWindow;
@@ -33,15 +32,8 @@ public class DisplayOrchestrator(NotificationBubblesService notificationBubblesS
 	{
 		application.Signal_Startup().Take(1).SubscribeDebug(_ =>
 		{
-			var iconManager = IconManager.GetDefault();
-
 			store.Select(XorgSelectors.Windows).ObserveOn(GLibExt.Scheduler).Select(w => w.ById).UnbundleMany(w => w.Key).RemoveIndex().SubscribeDebug(windowObs =>
 			{
-				windowObs.SubscribeDebug(props =>
-				{
-					var icon = props.Value.Icons.MaxBy(i => i.GetWidth());
-					if (icon != null) iconManager.AddKeyedIcon(props.Key.ToString(), icon);
-				});
 				windowObs.TakeLast(1).Subscribe(props => iconManager.RemoveKeyedIcon(props.Key.ToString()));
 			});
 
