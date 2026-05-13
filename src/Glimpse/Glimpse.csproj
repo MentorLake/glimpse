@@ -41,7 +41,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+		<PackageReference Include="MentorLake.Redux" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" />
+		<PackageReference Include="ReactiveMarbles.ObservableEvents.SourceGenerator" PrivateAssets="all" />
+		<PackageReference Include="System.CommandLine" />
+		<PackageReference Include="Tmds.Systemd.Logging" />
 	</ItemGroup>
 
 </Project>
