@@ -31,25 +31,25 @@ public static class Program
 	public static async Task<int> Main(string[] args)
 	{
 		var installCommand = new Command("install", "Install Glimpse");
-		installCommand.AddAlias("i");
-		installCommand.SetHandler(_ => Installation.RunScript(Installation.InstallScriptResourceName));
+		installCommand.Aliases.Add("i");
+		installCommand.SetAction(_ => Installation.RunScript(Installation.InstallScriptResourceName));
 
 		var uninstallCommand = new Command("uninstall", "Uninstall Glimpse");
-		uninstallCommand.SetHandler(_ => Installation.RunScript(Installation.UninstallScriptResourceName));
+		uninstallCommand.SetAction(_ => Installation.RunScript(Installation.UninstallScriptResourceName));
 
 		var version = Assembly.GetExecutingAssembly().GetName().Version;
 		var formattedVersion = $"{version.Major}.{version.Minor:D2}.{version.Build:D2}.{version.Revision}";
 		var updateCommand = new Command("update", "Download and install the latest version");
-		updateCommand.SetHandler(_ => Installation.RunScript(Installation.UpdateScriptResourceName, formattedVersion));
+		updateCommand.SetAction(_ => Installation.RunScript(Installation.UpdateScriptResourceName, formattedVersion));
 
 		var rootCommand = new RootCommand("Glimpse");
-		rootCommand.AddCommand(installCommand);
-		rootCommand.AddCommand(uninstallCommand);
-		rootCommand.AddCommand(updateCommand);
-		rootCommand.AddOption(new Option<string>("--sm-client-id"));
-		rootCommand.SetHandler(async c => c.ExitCode = await RunGlimpseAsync());
+		rootCommand.Subcommands.Add(installCommand);
+		rootCommand.Subcommands.Add(uninstallCommand);
+		rootCommand.Subcommands.Add(updateCommand);
+		rootCommand.Options.Add(new Option<string>("--sm-client-id"));
+		rootCommand.SetAction(async _ => await RunGlimpseAsync());
 
-		return await rootCommand.InvokeAsync(args);
+		return await rootCommand.Parse(args).InvokeAsync();
 	}
 
 	private static async Task<int> RunGlimpseAsync()

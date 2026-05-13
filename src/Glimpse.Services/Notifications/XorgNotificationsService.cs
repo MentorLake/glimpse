@@ -1,7 +1,9 @@
 using System.Reactive.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Glimpse.Libraries.DBus;
 using Glimpse.Libraries.System.Reactive;
+using Glimpse.Libraries.System.Text.Json;
 using Glimpse.Libraries.Xorg.Notifications;
 using MentorLake.Redux;
 using Microsoft.Extensions.Logging;
@@ -63,8 +65,11 @@ public class XorgNotificationsService(
 		if (File.Exists(notificationsFilePath))
 		{
 			var historyJson = await File.ReadAllTextAsync(notificationsFilePath);
-			var history = JsonSerializer.Deserialize(historyJson, typeof(NotificationHistory), NotificationsJsonSerializer.Instance) as NotificationHistory;
-			await store.Dispatch(new LoadNotificationHistoryAction(history));
+
+			if (JsonSerializer.TryDeserialize<NotificationHistory>(historyJson, NotificationsJsonSerializer.Instance, out var history))
+			{
+				await store.Dispatch(new LoadNotificationHistoryAction(history));
+			}
 		}
 
 		store
