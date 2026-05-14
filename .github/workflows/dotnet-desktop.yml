@@ -60,7 +60,7 @@ jobs:
 
     - name: Zip release
       run: |
-        zip --junk-paths ${{ steps.asset_name.outputs.asset_name }} src/Glimpse/bin/Release/net8.0/${{ env.Runtime }}/publish/glimpse
+        zip --junk-paths ${{ steps.asset_name.outputs.asset_name }} src/Glimpse/bin/Release/net10.0/${{ env.Runtime }}/publish/glimpse
 
     - name: Create release
       uses: actions/create-release@v1
