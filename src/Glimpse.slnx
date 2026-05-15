@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Glimpse.Libraries/Glimpse.Libraries.csproj" />
+  <Project Path="Glimpse.Services/Glimpse.Services.csproj" />
+  <Project Path="Glimpse.Tests/Glimpse.Tests.csproj" />
+  <Project Path="Glimpse.UI/Glimpse.UI.csproj" />
+  <Project Path="Glimpse/Glimpse.csproj" />
+</Solution>

@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      Solution_Name: Glimpse.sln
+      Solution_Name: src/Glimpse.slnx
       OutputFileExtension: .zip
       Runtime: linux-x64
       ApplicationName: glimpse
@@ -53,10 +53,10 @@ jobs:
         dotnet-version: 10.0.x
 
     - name: Execute unit tests
-      run: dotnet test
+      run: dotnet test ${{ env.Solution_Name }}
 
     - name: Publish
-      run: dotnet publish -r ${{ env.Runtime }} -c Release /p:Version=${{ steps.version.outputs.version }}
+      run: dotnet publish src/Glimpse/Glimpse.csproj -r ${{ env.Runtime }} -c Release /p:Version=${{ steps.version.outputs.version }}
 
     - name: Zip release
       run: |
