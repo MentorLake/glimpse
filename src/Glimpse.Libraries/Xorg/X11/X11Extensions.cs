@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Collections.Immutable;
+using System.Drawing;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -15,6 +16,20 @@ internal static unsafe class X11Extensions
 		return obs
 			.Where(t => t.someEvent.type == (int)Event.PropertyNotify)
 			.Select(t => Marshal.PtrToStructure<XPropertyEvent>(t.eventPointer));
+	}
+
+	public static IObservable<Rectangle> ObserveGeometry(this IObservable<(XAnyEvent someEvent, IntPtr eventPointer)> obs)
+	{
+		return obs
+			.Where(t => t.someEvent.type == (int)Event.ConfigureNotify)
+			.Select(t => new XWindowRef() { Window = t.someEvent.window, Display = t.someEvent.display }.GetGeometry());
+	}
+
+	public static Rectangle GetGeometry(this XWindowRef windowRef)
+	{
+		XLib.XGetWindowAttributes(windowRef.Display, windowRef.Window, out var attributes);
+		XLib.XTranslateCoordinates(windowRef.Display, windowRef.Window, attributes.root, 0, 0, out var x, out var y, out _);
+		return new Rectangle(x, y, (int) attributes.width, (int) attributes.height);
 	}
 
 	public static IObservable<ImmutableList<GdkPixbufHandle>> ObserveIcons(this IObservable<XPropertyEvent> obs, ulong property)

@@ -31,6 +31,8 @@ internal record SlotContextMenuItemViewModel : IContextMenuItemViewModel<SlotCon
 	public string DisplayText { get; set; }
 	public ImageViewModel Icon { get; set; } = ImageViewModel.Empty;
 	public string Id { get; set; }
+	public bool IsChecked { get; set; }
+	public bool IsEnabled { get; set; } = true;
 	public Rectangle MonitorGeometry { get; set; }
 	public ImmutableList<SlotContextMenuItemViewModel> Children { get; set; } = ImmutableList<SlotContextMenuItemViewModel>.Empty;
 }

@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Drawing;
 using MentorLake.GdkPixbuf;
 using MentorLake.Redux;
 
@@ -17,6 +18,7 @@ public record WindowProperties : IKeyed<ulong>
 	public AllowedWindowActions[] AllowActions { get; set; }
 	public DateTime CreationDate { get; set; }
 	public GdkPixbufHandle DefaultScreenshot { get; set; }
+	public Rectangle Geometry { get; init; }
 
 	public virtual bool Equals(WindowProperties other) => ReferenceEquals(this, other);
 }

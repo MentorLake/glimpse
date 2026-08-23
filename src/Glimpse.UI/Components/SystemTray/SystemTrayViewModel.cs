@@ -17,6 +17,8 @@ public record SystemTrayContextMenuItemViewModel : IContextMenuItemViewModel<Sys
 	public string DisplayText { get; set; }
 	public ImageViewModel Icon { get; set; } = ImageViewModel.Empty;
 	public string Id { get; set; }
+	public bool IsChecked { get; set; }
+	public bool IsEnabled { get; set; } = true;
 	public ImmutableList<SystemTrayContextMenuItemViewModel> Children { get; set; } = ImmutableList<SystemTrayContextMenuItemViewModel>.Empty;
 }
 

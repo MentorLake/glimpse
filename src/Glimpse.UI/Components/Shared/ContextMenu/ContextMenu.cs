@@ -113,13 +113,34 @@ public class ContextMenu<T> where T : IContextMenuItemViewModel<T>
 
 		box.Add(GtkLabelHandle.New(item.DisplayText));
 
-		var menuItem = GtkMenuItemHandle.New()
-			.Add(box)
-			.ObserveEvent(x => x.Signal_Activate(), _ => _itemActivatedSubject.OnNext(item));
+		GtkMenuItemHandle menuItem;
+		if (item.IsChecked)
+		{
+			menuItem = GtkCheckMenuItemHandle.New()
+				.Add(box)
+				.SetActive(true);
+		}
+		else
+		{
+			menuItem = GtkMenuItemHandle.New().Add(box);
+		}
+
+		menuItem.SetSensitive(item.IsEnabled);
+
+		if (item.IsEnabled)
+		{
+			menuItem.ObserveEvent(x => x.Signal_Activate(), _ => _itemActivatedSubject.OnNext(item));
+		}
 
 		if (item.Children != null && item.Children.Any())
 		{
-			menuItem.SetSubmenu(GtkMenuHandle.New().AddMany(CreateMenuItems(item.Children)));
+			var submenu = GtkMenuHandle.New().AddMany(CreateMenuItems(item.Children));
+			if (item.Children.Any(c => c.IsChecked))
+			{
+				submenu.SetReserveToggleSize(true);
+			}
+
+			menuItem.SetSubmenu(submenu);
 		}
 
 		return menuItem;

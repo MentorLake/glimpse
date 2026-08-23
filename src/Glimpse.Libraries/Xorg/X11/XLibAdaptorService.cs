@@ -31,10 +31,11 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 
 		_rootWindowRef = new XWindowRef() { Window = rootWindow, Display = display };
 
-		var windowEventMask = EventMask.SubstructureNotifyMask | EventMask.PropertyChangeMask | EventMask.KeyPressMask | EventMask.KeyReleaseMask;
+		var rootEventMask = EventMask.SubstructureNotifyMask | EventMask.PropertyChangeMask | EventMask.KeyPressMask | EventMask.KeyReleaseMask;
+		var clientEventMask = EventMask.StructureNotifyMask | EventMask.PropertyChangeMask;
 		var windowEvents = _events.Where(e => e.someEvent.window == rootWindow).Publish();
 
-		XLib.XSelectInput(display, rootWindow, windowEventMask);
+		XLib.XSelectInput(display, rootWindow, rootEventMask);
 
 		windowEvents.ObservePropertyEvent()
 			.ObserveULongArrayProperty(XAtoms.NetActiveWindow)
@@ -49,16 +50,17 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 			.Subscribe(windowObservable =>
 			{
 				var windowRef = windowObservable.Key;
-				XLib.XSelectInput(windowRef.Display, windowRef.Window, windowEventMask);
+				XLib.XSelectInput(windowRef.Display, windowRef.Window, clientEventMask);
 
 				windowObservable
 					.TakeLast(1)
 					.Subscribe(_ => XLib.XSelectInput(windowRef.Display, windowRef.Window, EventMask.NoEventMask));
 
-				var propertyChangeObs = _events.Where(e => e.someEvent.window == windowRef.Window)
+				var windowXEvents = _events.Where(e => e.someEvent.window == windowRef.Window)
 					.TakeUntil(windowObservable.TakeLast(1))
-					.ObservePropertyEvent()
 					.Publish();
+
+				var propertyChangeObs = windowXEvents.ObservePropertyEvent().Publish();
 
 				var titleObs = Observable.Return(windowRef.GetStringProperty(XAtoms.NetWmName)).Concat(propertyChangeObs.ObserveStringProperty(XAtoms.NetWmName));
 				var iconObs = Observable.Return(windowRef.GetIcons()).Concat(propertyChangeObs.ObserveIcons(XAtoms.NetWmIcon));
@@ -78,6 +80,10 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 					.Select(s => ParseWindowActions(s).Where(l => l == AllowedWindowActions.Close).ToArray())
 					.DistinctUntilChanged((s1, s2) => s1.SequenceEqual(s2));
 
+				var geometryObs = Observable.Return(windowRef.GetGeometry())
+					.Concat(windowXEvents.ObserveGeometry())
+					.DistinctUntilChanged();
+
 				XLib.XGetClassHint(windowRef.Display, windowRef.Window, out var classHint);
 
 				var classHintObs = Observable.Return(classHint)
@@ -90,7 +96,7 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 						}));
 
 				var windowPropsObs = titleObs
-					.CombineLatest(iconObs, iconNameObs, stateObs, allowedActionsObs, defaultScreenshotObs, classHintObs)
+					.CombineLatest(iconObs, iconNameObs, stateObs, allowedActionsObs, defaultScreenshotObs, classHintObs, geometryObs)
 					.Select(t => new WindowProperties()
 					{
 						WindowRef = windowRef,
@@ -101,7 +107,8 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 						Title = t.First,
 						AllowActions = t.Fifth,
 						DemandsAttention = t.Fourth.Contains(XAtoms.NetWmStateDemandsAttention),
-						DefaultScreenshot = t.Sixth
+						DefaultScreenshot = t.Sixth,
+						Geometry = t.Eighth
 					})
 					.Throttle(TimeSpan.FromMilliseconds(250))
 					.DistinctUntilChanged()
@@ -112,6 +119,7 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 				_windows.OnNext(windowPropsObs);
 				windowPropsObs.Connect();
 				propertyChangeObs.Connect();
+				windowXEvents.Connect();
 			});
 
 		windowEvents.Connect();
@@ -153,7 +161,8 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 
 		while (!cancellationToken.IsCancellationRequested && await timer.WaitForNextTickAsync(cancellationToken))
 		{
-			while (XLib.XCheckMaskEvent(_rootWindowRef.Display, (long) EventMask.PropertyChangeMask, eventPointer))
+			var eventMask = (long) (EventMask.PropertyChangeMask | EventMask.StructureNotifyMask | EventMask.SubstructureNotifyMask | EventMask.KeyPressMask | EventMask.KeyReleaseMask);
+			while (XLib.XCheckMaskEvent(_rootWindowRef.Display, eventMask, eventPointer))
 			{
 				var someEvent = Marshal.PtrToStructure<XAnyEvent>(eventPointer);
 				_events.OnNext((someEvent, eventPointer));

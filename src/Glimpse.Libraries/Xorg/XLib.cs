@@ -363,6 +363,7 @@ public struct XPropertyEvent
 	public int state;
 }
 
+
 [StructLayout(LayoutKind.Sequential, Size = (24 * sizeof(long)))]
 public struct XDestroyWindowEvent
 {

@@ -117,12 +117,33 @@ internal static class TaskbarViewModelSelectors
 		},
 		(x, y) => CollectionComparer.Sequence(x, y, (i, j) => i.Slot == j.Slot && i.CanClose == j.CanClose));
 
+	private static readonly ISelector<ImmutableList<(SlotRef Slot, ImmutableList<WindowProperties> Windows)>> s_slotToWindows = Create(
+		CurrentSlots,
+		s_windowPropertiesList.WithSequenceComparer((x, y) =>
+			x.WindowRef.Id == y.WindowRef.Id
+			&& x.ClassHintName.Equals(y.ClassHintName, StringComparison.OrdinalIgnoreCase)
+			&& x.Geometry == y.Geometry),
+		(slots, windows) =>
+		{
+			return slots.Refs
+				.Select(slot => (
+					Slot: slot,
+					Windows: windows
+						.Where(w => w.ClassHintName.Equals(slot.ClassHintName, StringComparison.OrdinalIgnoreCase))
+						.ToImmutableList()))
+				.ToImmutableList();
+		},
+		(x, y) => CollectionComparer.Sequence(x, y, (i, j) =>
+			i.Slot == j.Slot
+			&& CollectionComparer.Sequence(i.Windows, j.Windows, (a, b) => a.WindowRef.Id == b.WindowRef.Id && a.Geometry == b.Geometry)));
+
 	private static readonly ISelector<ImmutableList<(SlotRef Slot, ImmutableList<SlotContextMenuItemViewModel> ViewModel)>> s_contextMenu = Create(
 		CurrentSlots,
 		s_slotToCanClose,
 		s_slotToDesktopFile,
 		XorgSelectors.Monitors,
-		(slots, canClose, desktopFiles, monitors) =>
+		s_slotToWindows,
+		(slots, canClose, desktopFiles, monitors, slotWindows) =>
 		{
 			return slots.Refs.Select(slot =>
 			{
@@ -168,16 +189,23 @@ internal static class TaskbarViewModelSelectors
 
 				if (closeable && monitors.Count > 1)
 				{
+					var windows = slotWindows.First(w => w.Slot == slot).Windows;
 					contextMenuItems.Add(new SlotContextMenuItemViewModel()
 					{
 						Id = "MoveToMonitor",
 						DisplayText = "Move to monitor",
 						Icon = new ImageViewModel() { IconNameOrPath = "video-display-symbolic" },
-						Children = monitors.Select(m => new SlotContextMenuItemViewModel()
+						Children = monitors.Select(m =>
 						{
-							Id = "MoveToMonitor",
-							DisplayText = m.Name,
-							MonitorGeometry = m.WorkArea.IsEmpty ? m.Geometry : m.WorkArea
+							var isCurrent = windows.Count > 0 && windows.All(w => IsWindowOnMonitor(w, m));
+							return new SlotContextMenuItemViewModel()
+							{
+								Id = "MoveToMonitor",
+								DisplayText = m.Name,
+								MonitorGeometry = m.WorkArea.IsEmpty ? m.Geometry : m.WorkArea,
+								IsChecked = isCurrent,
+								IsEnabled = !isCurrent
+							};
 						}).ToImmutableList()
 					});
 				}
@@ -198,6 +226,15 @@ internal static class TaskbarViewModelSelectors
 		},
 		(x, y) => CollectionComparer.Sequence(x, y));
 
+	private static bool IsWindowOnMonitor(WindowProperties window, MonitorInfo monitor)
+	{
+		var geometry = window.Geometry;
+		if (geometry.IsEmpty) return false;
+
+		var centerX = geometry.X + geometry.Width / 2;
+		var centerY = geometry.Y + geometry.Height / 2;
+		return monitor.Geometry.Contains(centerX, centerY);
+	}
 	private static readonly ISelector<ImmutableList<KeyValuePair<IWindowRef, ImageViewModel>>> s_windowToScreenshot = Create(
 		CurrentSlots,
 		XorgSelectors.Screenshots,

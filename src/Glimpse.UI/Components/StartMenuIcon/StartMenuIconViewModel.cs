@@ -12,6 +12,8 @@ internal record StartMenuIconContextMenuItem : IContextMenuItemViewModel<StartMe
 	public string DisplayText { get; set; }
 	public ImageViewModel Icon { get; set; } = ImageViewModel.Empty;
 	public string Id { get; set; }
+	public bool IsChecked { get; set; }
+	public bool IsEnabled { get; set; } = true;
 	public ImmutableList<StartMenuIconContextMenuItem> Children { get; set; } = ImmutableList<StartMenuIconContextMenuItem>.Empty;
 }
 
