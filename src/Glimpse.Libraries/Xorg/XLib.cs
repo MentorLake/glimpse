@@ -85,6 +85,9 @@ public class XLib
 	public static extern int XFlush(ulong display);
 
 	[DllImport(LibraryName)]
+	public static extern int XSync(ulong display, bool discard);
+
+	[DllImport(LibraryName)]
 	public static extern int XIconifyWindow(ulong display, ulong window, int screen_number);
 
 	[DllImport(LibraryName)]

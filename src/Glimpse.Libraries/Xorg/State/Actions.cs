@@ -1,7 +1,10 @@
+using System.Collections.Immutable;
 using Glimpse.Libraries.Images;
 using MentorLake.GdkPixbuf;
 
 namespace Glimpse.Libraries.Xorg.State;
+
+public record UpdateMonitorsAction(ImmutableList<MonitorInfo> Monitors);
 
 public record AddWindowAction(WindowProperties WindowProperties);
 

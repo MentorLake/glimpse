@@ -1,3 +1,4 @@
+using System.Drawing;
 using Glimpse.Libraries.Images;
 using MentorLake.GdkPixbuf;
 
@@ -47,5 +48,11 @@ internal class X11DisplayServer(XLibAdaptorService xService) : IDisplayServer
 	{
 		xService.MakeWindowVisible((XWindowRef) windowRef);
 		xService.StartMoving((XWindowRef) windowRef);
+	}
+
+	public void MoveToMonitor(IWindowRef windowRef, Rectangle monitorGeometry)
+	{
+		xService.MakeWindowVisible((XWindowRef) windowRef);
+		xService.MoveToMonitor((XWindowRef) windowRef, monitorGeometry);
 	}
 }

@@ -30,7 +30,9 @@ internal static class XAtoms
 	public static readonly ulong NetWmStateMaximizedVert;
 	public static readonly ulong NetWmStateMaximizedHorz;
 	public static readonly ulong NetWmStateHidden;
+	public static readonly ulong NetWmStateFullscreen;
 	public static readonly ulong NetWmMoveresize;
+	public static readonly ulong NetMoveresizeWindow;
 	public static readonly ulong WmClass;
 	public static readonly ulong NetWmStateDemandsAttention;
 	public static readonly ulong WmProtocols;
@@ -61,7 +63,9 @@ internal static class XAtoms
 		NetWmStateMaximizedVert = XLib.XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_VERT", true);
 		NetWmStateMaximizedHorz = XLib.XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_HORZ", true);
 		NetWmStateHidden = XLib.XInternAtom(display, "_NET_WM_STATE_HIDDEN", true);
+		NetWmStateFullscreen = XLib.XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", true);
 		NetWmMoveresize = XLib.XInternAtom(display, "_NET_WM_MOVERESIZE", true);
+		NetMoveresizeWindow = XLib.XInternAtom(display, "_NET_MOVERESIZE_WINDOW", true);
 		WmClass = XLib.XInternAtom(display, "WM_CLASS", true);
 		NetWmStateDemandsAttention = XLib.XInternAtom(display, "_NET_WM_STATE_DEMANDS_ATTENTION", true);
 		WmProtocols = XLib.XInternAtom(display, "WM_PROTOCOLS", true);

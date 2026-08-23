@@ -1,3 +1,4 @@
+using System.Drawing;
 using Glimpse.Libraries.Images;
 using MentorLake.GdkPixbuf;
 
@@ -12,5 +13,6 @@ public interface IDisplayServer
 	void StartResizing(IWindowRef windowRef);
 	void StartMoving(IWindowRef windowRef);
 	void CloseWindow(IWindowRef windowRef);
+	void MoveToMonitor(IWindowRef windowRef, Rectangle monitorGeometry);
 	GdkPixbufHandle TakeScreenshot(IWindowRef windowRef);
 }

@@ -121,7 +121,8 @@ internal static class TaskbarViewModelSelectors
 		CurrentSlots,
 		s_slotToCanClose,
 		s_slotToDesktopFile,
-		(slots, canClose, desktopFiles) =>
+		XorgSelectors.Monitors,
+		(slots, canClose, desktopFiles, monitors) =>
 		{
 			return slots.Refs.Select(slot =>
 			{
@@ -162,6 +163,22 @@ internal static class TaskbarViewModelSelectors
 						DisplayText = isPinned ? "Unpin from taskbar" : "Pin to taskbar",
 						Icon = new ImageViewModel() { IconNameOrPath = isPinned ? "list-remove-symbolic" : "list-add-symbolic" },
 						DesktopFilePath = desktopFile.FilePath
+					});
+				}
+
+				if (closeable && monitors.Count > 1)
+				{
+					contextMenuItems.Add(new SlotContextMenuItemViewModel()
+					{
+						Id = "MoveToMonitor",
+						DisplayText = "Move to monitor",
+						Icon = new ImageViewModel() { IconNameOrPath = "video-display-symbolic" },
+						Children = monitors.Select(m => new SlotContextMenuItemViewModel()
+						{
+							Id = "MoveToMonitor",
+							DisplayText = m.Name,
+							MonitorGeometry = m.WorkArea.IsEmpty ? m.Geometry : m.WorkArea
+						}).ToImmutableList()
 					});
 				}
 

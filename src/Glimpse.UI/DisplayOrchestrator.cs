@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.Wallpaper;
+using Glimpse.Libraries.Xorg;
 using Glimpse.Libraries.Xorg.State;
 using Glimpse.Services;
 using Glimpse.Services.StartMenu;
@@ -123,10 +124,19 @@ public class DisplayOrchestrator(IconManager iconManager, NotificationBubblesSer
 			var forcedPanelRefresh = _loadPanels.Signal_Activate().SelectMany(_ => new[] { new List<GdkMonitorHandle>(), display.GetMonitors() });
 			var initial = Observable.Return(display.GetMonitors());
 
-			initial
+			var monitorStream = initial
 				.Merge(partialUpdated)
 				.Merge(forcedPanelRefresh)
 				.ObserveOn(GLibExt.Scheduler)
+				.Publish();
+
+			monitorStream
+				.Select(monitors => monitors
+					.Select((m, index) => ToMonitorInfo(m, index))
+					.ToImmutableList())
+				.SubscribeDebug(monitors => store.Dispatch(new UpdateMonitorsAction(monitors)));
+
+			monitorStream
 				.UnbundleMany(m => m.GetManagedUniqueId())
 				.SubscribeDebug(obs =>
 				{
@@ -134,7 +144,21 @@ public class DisplayOrchestrator(IconManager iconManager, NotificationBubblesSer
 					obs.SkipLast(1).Subscribe(_ => DockToBottom(newPanel.Widget, obs.Key.GetGeometryRect(), obs.Key.GetWorkAreaRect(), 0));
 					obs.TakeLast(1).Subscribe(_ => newPanel.Widget.Destroy());
 				});
+
+			monitorStream.Connect();
 		});
+	}
+
+	private static MonitorInfo ToMonitorInfo(GdkMonitorHandle monitor, int index)
+	{
+		return new MonitorInfo
+		{
+			Id = monitor.GetManagedUniqueId(),
+			Name = MonitorDisplayName.FromGdkMonitor(monitor, index),
+			Geometry = monitor.GetGeometryRect(),
+			WorkArea = monitor.GetWorkAreaRect(),
+			IsPrimary = monitor.IsPrimary()
+		};
 	}
 
 	public void WatchNotifications()

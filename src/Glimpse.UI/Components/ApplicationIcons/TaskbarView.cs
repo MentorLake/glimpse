@@ -143,6 +143,11 @@ public class TaskbarView
 				.Subscribe(t => t.Second.Tasks.ForEach(task => displayServer.CloseWindow(task.WindowRef)));
 
 			groupIcon.ContextMenuItemActivated
+				.Where(i => i.Id == "MoveToMonitor" && !i.MonitorGeometry.IsEmpty)
+				.WithLatestFrom(viewModelObservable)
+				.Subscribe(t => t.Second.Tasks.ForEach(task => displayServer.MoveToMonitor(task.WindowRef, t.First.MonitorGeometry)));
+
+			groupIcon.ContextMenuItemActivated
 				.Where(i => i.DesktopAction != null)
 				.WithLatestFrom(viewModelObservable)
 				.Subscribe(t => DesktopFileRunner.Run(t.First.DesktopAction));

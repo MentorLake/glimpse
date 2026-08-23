@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Drawing;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.Xorg;
@@ -30,6 +31,7 @@ internal record SlotContextMenuItemViewModel : IContextMenuItemViewModel<SlotCon
 	public string DisplayText { get; set; }
 	public ImageViewModel Icon { get; set; } = ImageViewModel.Empty;
 	public string Id { get; set; }
+	public Rectangle MonitorGeometry { get; set; }
 	public ImmutableList<SlotContextMenuItemViewModel> Children { get; set; } = ImmutableList<SlotContextMenuItemViewModel>.Empty;
 }
 

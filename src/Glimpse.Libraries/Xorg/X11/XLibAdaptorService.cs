@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Drawing;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
@@ -204,25 +205,13 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 
 	private void ModifyNetWmState(XWindowRef windowRef, ulong[] properties, bool add)
 	{
-		var message = new XClientMessageEvent();
-		message.window = windowRef.Window;
-		message.display = windowRef.Display;
-		message.ptr1 = (IntPtr) (add ? 1 : 0);
-		message.format = 32;
-		message.message_type = XAtoms.NetWmState;
-		message.type = (int) Event.ClientMessage;
-		message.send_event = 1;
-
-		if (properties.Length >= 1) message.ptr2 = (IntPtr) properties[0];
-		if (properties.Length >= 2) message.ptr3 = (IntPtr) properties[1];
-		if (properties.Length >= 3) message.ptr4 = (IntPtr) properties[2];
-		if (properties.Length >= 4) message.ptr5 = (IntPtr) properties[3];
-
-		var pointer = Marshal.AllocHGlobal(24 * sizeof(long));
-		Marshal.StructureToPtr(message, pointer, true);
-		XLib.XSendEvent(windowRef.Display, windowRef.Window, true, (long)EventMask.SubstructureNotifyMask, pointer);
-		XLib.XFlush(windowRef.Display);
-		Marshal.FreeHGlobal(pointer);
+		// EWMH requires _NET_WM_STATE client messages be sent to the root window.
+		var data = new ulong[5];
+		data[0] = add ? 1UL : 0UL; // _NET_WM_STATE_ADD / _NET_WM_STATE_REMOVE
+		if (properties.Length >= 1) data[1] = properties[0];
+		if (properties.Length >= 2) data[2] = properties[1];
+		data[3] = 1; // source indication: application
+		SendClientMessageToRoot(windowRef, XAtoms.NetWmState, data);
 	}
 
 	public void MaximizeWindow(XWindowRef windowRef)
@@ -321,6 +310,57 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 		SendClientMessage(windowRef, XAtoms.NetWmMoveresize, args);
 	}
 
+	public void MoveToMonitor(XWindowRef windowRef, Rectangle monitorGeometry)
+	{
+		XLib.XGetWindowAttributes(windowRef.Display, windowRef.Window, out var windowAttributes);
+
+		var state = windowRef.GetULongArray(XAtoms.NetWmState);
+		var isMaximized = state.Any(a => a == XAtoms.NetWmStateMaximizedHorz || a == XAtoms.NetWmStateMaximizedVert);
+		var isFullscreen = state.Any(a => a == XAtoms.NetWmStateFullscreen);
+
+		if (isMaximized)
+		{
+			ModifyNetWmState(windowRef, new[] { XAtoms.NetWmStateMaximizedHorz, XAtoms.NetWmStateMaximizedVert }, false);
+		}
+
+		if (isFullscreen)
+		{
+			ModifyNetWmState(windowRef, new[] { XAtoms.NetWmStateFullscreen }, false);
+		}
+
+		XLib.XSync(windowRef.Display, false);
+
+		var width = (int) windowAttributes.width;
+		var height = (int) windowAttributes.height;
+		var x = monitorGeometry.X + Math.Max(0, (monitorGeometry.Width - width) / 2);
+		var y = monitorGeometry.Y + Math.Max(0, (monitorGeometry.Height - height) / 2);
+
+		const ulong flags = 0x100 | 0x200 | 0x400 | 0x800;
+		SendClientMessageToRoot(windowRef, XAtoms.NetMoveresizeWindow, new[]
+		{
+			flags,
+			(ulong) x,
+			(ulong) y,
+			(ulong) width,
+			(ulong) height
+		});
+
+		XLib.XSync(windowRef.Display, false);
+
+		if (isMaximized)
+		{
+			ModifyNetWmState(windowRef, new[] { XAtoms.NetWmStateMaximizedHorz, XAtoms.NetWmStateMaximizedVert }, true);
+		}
+
+		if (isFullscreen)
+		{
+			ModifyNetWmState(windowRef, new[] { XAtoms.NetWmStateFullscreen }, true);
+		}
+
+		XLib.XRaiseWindow(windowRef.Display, windowRef.Window);
+		XLib.XFlush(windowRef.Display);
+	}
+
 	private void SendClientMessage(XWindowRef windowRef, ulong messageType, ulong[] data)
 	{
 		var message = new XClientMessageEvent();
@@ -340,6 +380,30 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 		var pointer = Marshal.AllocHGlobal(24 * sizeof(long));
 		Marshal.StructureToPtr(message, pointer, true);
 		XLib.XSendEvent(windowRef.Display, windowRef.Window, true, (long)EventMask.SubstructureNotifyMask, pointer);
+		XLib.XFlush(windowRef.Display);
+		Marshal.FreeHGlobal(pointer);
+	}
+
+	private void SendClientMessageToRoot(XWindowRef windowRef, ulong messageType, ulong[] data)
+	{
+		var message = new XClientMessageEvent();
+		message.display = windowRef.Display;
+		message.window = windowRef.Window;
+		message.format = 32;
+		message.type = (int) Event.ClientMessage;
+		message.message_type = messageType;
+		message.send_event = 1;
+
+		if (data.Length >= 1) message.ptr1 = (IntPtr) data[0];
+		if (data.Length >= 2) message.ptr2 = (IntPtr) data[1];
+		if (data.Length >= 3) message.ptr3 = (IntPtr) data[2];
+		if (data.Length >= 4) message.ptr4 = (IntPtr) data[3];
+		if (data.Length >= 5) message.ptr5 = (IntPtr) data[4];
+
+		var pointer = Marshal.AllocHGlobal(24 * sizeof(long));
+		Marshal.StructureToPtr(message, pointer, true);
+		var eventMask = (long) (EventMask.SubstructureNotifyMask | EventMask.SubstructureRedirectMask);
+		XLib.XSendEvent(windowRef.Display, _rootWindowRef.Window, false, eventMask, pointer);
 		XLib.XFlush(windowRef.Display);
 		Marshal.FreeHGlobal(pointer);
 	}

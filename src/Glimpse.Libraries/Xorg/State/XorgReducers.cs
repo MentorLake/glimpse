@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using MentorLake.GdkPixbuf;
 using MentorLake.Redux;
 using MentorLake.Redux.Reducers;
@@ -14,6 +15,8 @@ internal class XorgReducers
 			.On<AddWindowAction>((s, a) => s.UpsertOne(a.WindowProperties)),
 		FeatureReducer.Build(new DataTable<ulong, GdkPixbufHandle>())
 			.On<RemoveWindowAction>((s, a) => s.Remove(a.WindowProperties.WindowRef.Id))
-			.On<UpdateScreenshotsAction>((s, a) => s.UpsertMany(a.Screenshots))
+			.On<UpdateScreenshotsAction>((s, a) => s.UpsertMany(a.Screenshots)),
+		FeatureReducer.Build(ImmutableList<MonitorInfo>.Empty)
+			.On<UpdateMonitorsAction>((_, a) => a.Monitors)
 	};
 }
