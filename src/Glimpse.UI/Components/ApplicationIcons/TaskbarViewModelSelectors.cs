@@ -39,7 +39,7 @@ internal static class TaskbarViewModelSelectors
 
 				if (matchingSlot == null)
 				{
-					result = result.Add(new SlotRef() { ClassHintName = window.ClassHintName, DiscoveredDesktopFileId = desktopFile?.Id ?? "", Id = window.ClassHintName });
+					result = result.Add(new SlotRef() { ClassHintName = window.ClassHintName, DiscoveredDesktopFileId = desktopFile?.Id ?? "" });
 				}
 				else if (string.IsNullOrEmpty(matchingSlot.ClassHintName))
 				{

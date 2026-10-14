@@ -49,7 +49,7 @@ public static class TaskbarSelectors
 		(x, y) => CollectionComparer.Sequence(x, y));
 }
 
-public record UpdateTaskbarSlotOrderingBulkAction(ImmutableList<SlotRef> Slots);
+public record UpdateTaskbarSlotOrderingBulkAction(ImmutableList<string> SlotIds);
 public record UpdateTaskbarConfigurationAction(TaskbarConfiguration Config);
 public record ToggleTaskbarPinningAction(string DesktopFileId);
 
@@ -115,7 +115,13 @@ internal static class TaskbarReducers
 			})
 			.On<UpdateTaskbarSlotOrderingBulkAction>((s, a) =>
 			{
-				return s with { StoredSlots = new SlotReferences() { Refs = a.Slots } };
+				var reordered = a.SlotIds
+					.Where(id => !string.IsNullOrEmpty(id))
+					.Select(id => s.StoredSlots.Refs.FirstOrDefault(r => r.Id == id))
+					.Where(r => r != null)
+					.ToImmutableList();
+				var remaining = s.StoredSlots.Refs.Where(r => !a.SlotIds.Contains(r.Id));
+				return s with { StoredSlots = new SlotReferences() { Refs = reordered.AddRange(remaining) } };
 			})
 	];
 

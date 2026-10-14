@@ -171,7 +171,7 @@ public class TaskbarView
 
 		forEachGroup.OrderingChanged
 			.TakeUntilDestroyed(Widget)
-			.Subscribe(ordering => store.Dispatch(new UpdateTaskbarSlotOrderingBulkAction(ordering.Select(s => s.SlotRef).ToImmutableList())));
+			.Subscribe(ordering => store.Dispatch(new UpdateTaskbarSlotOrderingBulkAction(ordering.Select(s => s.SlotRef.Id).ToImmutableList())));
 
 		forEachGroup.DragBeginObservable
 			.TakeUntilDestroyed(Widget)

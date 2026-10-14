@@ -27,7 +27,7 @@ public static class DesktopFileStartupExtensions
 	{
 		var desktopFiles = GAppInfoHandleExtensions.GetAll();
 
-		await store.Dispatch(new UpdateDesktopFilesAction()
+		store.Dispatch(new UpdateDesktopFilesAction()
 		{
 			DesktopFiles = desktopFiles
 				.ToList<GDesktopAppInfoHandle>()

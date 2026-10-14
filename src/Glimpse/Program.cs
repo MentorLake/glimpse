@@ -112,7 +112,7 @@ public static class Program
 			await host.UseUI();
 			await host.UseWallpaperAsync();
 
-			await store.Dispatch(new InitializeStoreAction());
+			store.Dispatch(new InitializeStoreAction());
 
 			var orchestrator = host.Services.GetRequiredService<DisplayOrchestrator>();
 			orchestrator.WatchMonitorChanges();

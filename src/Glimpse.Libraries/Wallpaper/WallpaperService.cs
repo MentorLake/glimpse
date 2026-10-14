@@ -122,7 +122,7 @@ internal class WallpaperService(IHttpClientFactory clientFactory, IOptions<Glimp
 		}
 
 		await File.WriteAllTextAsync(StateFilePath, JsonSerializer.Serialize(state, WallpaperJsonSerializer.Default.WallpaperState));
-		await store.Dispatch(new InternalWallpaperActions.UpdateStateAction(state));
+		store.Dispatch(new InternalWallpaperActions.UpdateStateAction(state));
 	}
 
 	private string StateFilePath

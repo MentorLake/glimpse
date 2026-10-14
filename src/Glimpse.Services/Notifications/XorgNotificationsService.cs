@@ -68,7 +68,7 @@ public class XorgNotificationsService(
 
 			if (JsonSerializer.TryDeserialize<NotificationHistory>(historyJson, NotificationsJsonSerializer.Instance, out var history))
 			{
-				await store.Dispatch(new LoadNotificationHistoryAction(history));
+				store.Dispatch(new LoadNotificationHistoryAction(history));
 			}
 		}
 
