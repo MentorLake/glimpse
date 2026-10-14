@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
+using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.Images;
 using MentorLake.GdkPixbuf;
@@ -110,7 +111,7 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 						DefaultScreenshot = t.Sixth,
 						Geometry = t.Eighth
 					})
-					.Throttle(TimeSpan.FromMilliseconds(250))
+					.Throttle(TimeSpan.FromMilliseconds(250), GLibExt.Scheduler)
 					.DistinctUntilChanged()
 					.Where(p => !string.IsNullOrEmpty(p.ClassHintName))
 					.TakeUntil(windowObservable.TakeLast(1))
