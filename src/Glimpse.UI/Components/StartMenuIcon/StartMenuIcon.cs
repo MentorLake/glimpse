@@ -37,7 +37,7 @@ public class StartMenuIcon
 
 		var viewModelObservable = store.Select(StartMenuIconViewModelSelectors.s_viewModel)
 			.TakeUntilDestroyed(_root)
-			.ObserveOn(GLibExt.Scheduler)
+			.ConflateLatest(GLibExt.Scheduler)
 			.Replay(1)
 			.AutoConnect();
 

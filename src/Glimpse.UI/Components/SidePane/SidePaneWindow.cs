@@ -48,7 +48,7 @@ public class SidePaneWindow
 		_root.SetSizeRequest(348, 734);
 
 		store.Actions.OfType<WindowFocusedChangedAction>()
-			.ObserveOn(GLibExt.Scheduler)
+			.ConflateLatest(GLibExt.Scheduler)
 			.TakeUntilDestroyed(_root)
 			.Where(action => _root.IsVisible() && action.WindowRef.Id != _root.GetWindow().GetXid().Value)
 			.Subscribe(_ => HideInternal());
@@ -60,7 +60,7 @@ public class SidePaneWindow
 	private void HideInternal()
 	{
 		_layoutRevealer.SetRevealChild(false);
-		Observable.Timer(TimeSpan.FromMilliseconds(_layoutRevealer.GetTransitionDuration())).ObserveOn(GLibExt.Scheduler).Subscribe(_ => _root.Hide());
+		Observable.Timer(TimeSpan.FromMilliseconds(_layoutRevealer.GetTransitionDuration())).ConflateLatest(GLibExt.Scheduler).Subscribe(_ => _root.Hide());
 	}
 
 	public void ToggleVisibility(int right, int bottom)

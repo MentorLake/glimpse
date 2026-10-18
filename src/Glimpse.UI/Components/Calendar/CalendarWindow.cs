@@ -24,7 +24,7 @@ public class CalendarWindow
 
 		oneSecondTimer
 			.DistinctUntilChanged(x => x.Date)
-			.ObserveOn(GLibExt.Scheduler)
+			.ConflateLatest(GLibExt.Scheduler)
 			.Subscribe(dt => todayLabel.SetText(dt.ToString("dddd, MMMM dd")));
 
 		var monthLabel = GtkLabelHandle.New("")

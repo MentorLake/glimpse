@@ -1,3 +1,4 @@
+using System.Reactive.Concurrency;
 using Glimpse.Libraries.DBus;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.System.Text.Json;
@@ -38,6 +39,7 @@ public class XorgNotificationsService(
 
 		store
 			.Select(NotificationSelectors.NotificationsState)
+			.ConflateLatest(TaskPoolScheduler.Default)
 			.Select(s => s.ById.Values)
 			.UnbundleMany(n => n.Id)
 			.RemoveIndex()
@@ -68,6 +70,7 @@ public class XorgNotificationsService(
 
 		store
 			.Select(NotificationSelectors.NotificationHistory)
+			.ConflateLatest(TaskPoolScheduler.Default)
 			.Subscribe(history =>
 			{
 				try

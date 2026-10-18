@@ -54,7 +54,7 @@ public class Panel
 		var taskManagerObs = store
 			.Select(TaskbarSelectors.TaskManagerCommand)
 			.TakeUntilDestroyed(root)
-			.ObserveOn(GLibExt.Scheduler);
+			.ConflateLatest(GLibExt.Scheduler);
 
 		var contextMenuViewModel = Observable
 			.Return(ImmutableList<ContextMenuItemViewModel>.Empty
@@ -72,7 +72,7 @@ public class Panel
 		menu.ItemActivated.WithLatestFrom(taskManagerObs).SubscribeDebug(t => DesktopFileRunner.Run(t.Second));
 		contextMenuViewModel.DistinctUntilChanged().Subscribe(items => menu.UpdateItems(items));
 
-		panelRootEventBox.Signal_Destroy().ObserveOn(GLibExt.Scheduler).Take(1).SubscribeDebug(_ => menu.Widget.Destroy());
+		panelRootEventBox.Signal_Destroy().ConflateLatest(GLibExt.Scheduler).Take(1).SubscribeDebug(_ => menu.Widget.Destroy());
 
 		var window = GtkWindowHandle.New(GtkWindowType.GTK_WINDOW_TOPLEVEL)
 			.SetDecorated(false)
@@ -116,7 +116,7 @@ public class Panel
 
 		_oneSecondTimer
 			.TakeUntilDestroyed(parent)
-			.ObserveOn(GLibExt.Scheduler)
+			.ConflateLatest(GLibExt.Scheduler)
 			.Select(dt => dt.ToString(ClockFormat))
 			.DistinctUntilChanged()
 			.SubscribeDebug(t => clockLabel.SetText(t));

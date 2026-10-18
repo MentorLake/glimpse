@@ -97,5 +97,6 @@ public class Program
 			});
 
 		await host.RunAsync();
+		await store.DisposeAsync();
 	}
 }

@@ -36,7 +36,7 @@ public class SystemTrayBox
 		store
 			.Select(SystemTrayViewModelSelector.ViewModel)
 			.TakeUntilDestroyed(_root)
-			.ObserveOn(GLibExt.Scheduler)
+			.ConflateLatest(GLibExt.Scheduler)
 			.Select(x => x.Items)
 			.DistinctUntilChanged()
 			.UnbundleMany(i => i.Id)

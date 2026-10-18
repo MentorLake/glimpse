@@ -15,7 +15,7 @@ public class NotificationBubblesService(
 	{
 		Notifications = store
 			.Select(NotificationBubbleSelectors.ViewModel)
-			.ObserveOn(GLibExt.Scheduler)
+			.ConflateLatest(GLibExt.Scheduler)
 			.Select(vm => vm.Notifications)
 			.UnbundleMany(n => n.Id)
 			.Select(notificationObservable =>
@@ -34,7 +34,7 @@ public class NotificationBubblesService(
 
 					notificationObservable
 						.TakeLast(1)
-						.ObserveOn(GLibExt.Scheduler)
+						.ConflateLatest(GLibExt.Scheduler)
 						.Subscribe(_ => newWindow.Window.Destroy());
 
 					return newWindow;

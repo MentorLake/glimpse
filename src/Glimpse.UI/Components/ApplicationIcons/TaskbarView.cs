@@ -22,7 +22,7 @@ public class TaskbarView
 		var viewModelSelector = store
 			.Select(TaskbarViewModelSelectors.ViewModel)
 			.TakeUntilDestroyed(Widget)
-			.ObserveOn(GLibExt.Scheduler)
+			.ConflateLatest(GLibExt.Scheduler)
 			.Replay(1)
 			.AutoConnect();
 
@@ -33,7 +33,7 @@ public class TaskbarView
 			.TakeUntilDestroyed(forEachGroup.Widget)
 			.Select(g => g.Groups)
 			.DistinctUntilChanged()
-			.ObserveOn(GLibExt.Scheduler)
+			.ConflateLatest(GLibExt.Scheduler)
 			.UnbundleMany(i => i.SlotRef.Id)
 			.Subscribe(viewModelObservableWithIndex =>
 		{

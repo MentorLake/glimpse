@@ -86,6 +86,7 @@ public static class Program
 			var host = builder.Build();
 
 			var store = host.Services.GetRequiredService<ReduxStore>();
+			store.Errors.Subscribe(exception => bootstrapLogger.LogError(exception, "Redux dispatch pipeline failure"));
 			store.RegisterReducers(host.Services.GetServices<IReducerFactory>().ToArray());
 			store.RegisterReducers(host.Services.GetServices<FeatureReducerCollection>().ToArray());
 			store.RegisterEffects(host.Services.GetServices<IEffectsFactory>().ToArray()
@@ -127,6 +128,7 @@ public static class Program
 			});
 
 			await host.RunAsync();
+			await store.DisposeAsync();
 			return 0;
 		}
 		catch (Exception e)

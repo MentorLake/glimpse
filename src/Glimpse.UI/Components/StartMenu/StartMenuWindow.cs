@@ -43,7 +43,7 @@ public class StartMenuWindow
 		var viewModelObservable = store
 			.Select(StartMenuViewModelSelectors.ViewModel)
 			.TakeUntilDestroyed(_root)
-			.ObserveOn(GLibExt.Scheduler)
+			.ConflateLatest(GLibExt.Scheduler)
 			.Replay(1);
 
 		var actionBar = new StartMenuActionBar(viewModelObservable.Select(v => v.ActionBarViewModel).DistinctUntilChanged());
@@ -85,13 +85,13 @@ public class StartMenuWindow
 
 		store.Actions
 			.OfType<WindowFocusedChangedAction>()
-			.ObserveOn(GLibExt.Scheduler)
+			.ConflateLatest(GLibExt.Scheduler)
 			.TakeUntilDestroyed(_root)
 			.Where(action => _root.IsVisible() && action.WindowRef.Id != _root.GetWindow().GetXid().Value)
 			.SubscribeDebug(_ => ToggleVisibility());
 
 		store.Actions.OfType<StartMenuOpenedAction>()
-			.ObserveOn(GLibExt.Scheduler)
+			.ConflateLatest(GLibExt.Scheduler)
 			.TakeUntilDestroyed(_root)
 			.SubscribeDebug(_ => ToggleVisibility());
 
@@ -115,7 +115,7 @@ public class StartMenuWindow
 		if (_root.IsVisible())
 		{
 			_revealer.SetRevealChild(false);
-			Observable.Timer(TimeSpan.FromMilliseconds(250)).ObserveOn(GLibExt.Scheduler).SubscribeDebug(_ => _root.Hide());
+			Observable.Timer(TimeSpan.FromMilliseconds(250)).ConflateLatest(GLibExt.Scheduler).SubscribeDebug(_ => _root.Hide());
 		}
 		else
 		{

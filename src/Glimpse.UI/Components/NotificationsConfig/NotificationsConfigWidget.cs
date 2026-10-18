@@ -16,7 +16,7 @@ public class NotificationsConfigWidget
 		_root = GtkBoxHandle.New(GtkOrientation.GTK_ORIENTATION_VERTICAL, 8);
 
 		var viewModelObs = store.Select(NotificationsConfigSelectors.ViewModel)
-			.ObserveOn(GLibExt.Scheduler)
+			.ConflateLatest(GLibExt.Scheduler)
 			.TakeUntilDestroyed(_root)
 			.Replay(1);
 

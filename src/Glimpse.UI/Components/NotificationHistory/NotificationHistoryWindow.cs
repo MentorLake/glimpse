@@ -26,7 +26,7 @@ public class NotificationHistoryWindow
 		var viewModelObs = store
 			.Select(SidePaneSelectors.ViewModel)
 			.Select(vm => vm.NotificationHistory.OrderBy(n => n.AppName).ThenBy(n => n.CreationDate))
-			.ObserveOn(GLibExt.Scheduler)
+			.ConflateLatest(GLibExt.Scheduler)
 			.Replay(1);
 
 		viewModelObs
