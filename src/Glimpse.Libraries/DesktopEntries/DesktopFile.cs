@@ -1,5 +1,3 @@
-using MentorLake.Redux;
-
 namespace Glimpse.Libraries.DesktopEntries;
 
 public class DesktopFile : IKeyed<string>

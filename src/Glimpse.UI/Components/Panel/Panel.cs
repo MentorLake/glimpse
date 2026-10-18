@@ -1,7 +1,3 @@
-using System.Collections.Immutable;
-using System.Drawing;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
@@ -11,13 +7,7 @@ using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.Shared.ContextMenu;
 using Glimpse.UI.Components.SidePane;
 using Glimpse.UI.Components.SystemTray;
-using MentorLake.Gdk;
-using MentorLake.Gtk;
-using MentorLake.Gtk3;
-using MentorLake.Redux;
-using Microsoft.Extensions.DependencyInjection;
 using DateTime = System.DateTime;
-using Unit = System.Reactive.Unit;
 
 namespace Glimpse.UI.Components.Panel;
 

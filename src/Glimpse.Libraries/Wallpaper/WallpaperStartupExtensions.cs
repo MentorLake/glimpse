@@ -1,11 +1,5 @@
 using Glimpse.Libraries.Configuration;
 using Glimpse.Libraries.System.Reactive;
-using MentorLake.Redux;
-using MentorLake.Redux.Effects;
-using MentorLake.Redux.Reducers;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using NCrontab;
 
 namespace Glimpse.Libraries.Wallpaper;

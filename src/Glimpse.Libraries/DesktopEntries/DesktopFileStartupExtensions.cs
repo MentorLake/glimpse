@@ -1,11 +1,6 @@
-using System.Collections.Immutable;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.Microsoft.Extensions;
 using MentorLake.Gio;
-using MentorLake.Redux;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Task = System.Threading.Tasks.Task;
 
 namespace Glimpse.Libraries.DesktopEntries;
 

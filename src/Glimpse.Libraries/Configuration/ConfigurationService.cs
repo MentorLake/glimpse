@@ -1,9 +1,3 @@
-using System.Reactive;
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using Microsoft.Extensions.Logging;
 using ReactiveMarbles.ObservableEvents;
 
 namespace Glimpse.Libraries.Configuration;

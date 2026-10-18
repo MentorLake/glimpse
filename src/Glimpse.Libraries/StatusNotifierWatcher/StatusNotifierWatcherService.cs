@@ -1,10 +1,6 @@
-using System.Reactive.Linq;
 using Glimpse.Libraries.DBus;
 using Glimpse.Libraries.DBus.Core;
 using Glimpse.Libraries.Images;
-using MentorLake.Redux;
-using Microsoft.Extensions.Logging;
-using Tmds.DBus.Protocol;
 
 namespace Glimpse.Libraries.StatusNotifierWatcher;
 

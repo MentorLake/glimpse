@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-
-namespace Glimpse.Libraries.Xfce.SessionManagement;
+﻿namespace Glimpse.Libraries.Xfce.SessionManagement;
 
 public class OrgXfceSessionClient(IHostApplicationLifetime applicationLifetime, ILogger<OrgXfceSessionClient> logger)
 {

@@ -1,13 +1,7 @@
-using System.Reactive.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Glimpse.Libraries.DBus;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.System.Text.Json;
 using Glimpse.Libraries.Xorg.Notifications;
-using MentorLake.Redux;
-using Microsoft.Extensions.Logging;
-using Task = System.Threading.Tasks.Task;
 
 namespace Glimpse.Services.Notifications;
 

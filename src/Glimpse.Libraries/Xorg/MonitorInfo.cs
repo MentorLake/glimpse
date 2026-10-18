@@ -1,5 +1,3 @@
-using System.Drawing;
-
 namespace Glimpse.Libraries.Xorg;
 
 public record MonitorInfo

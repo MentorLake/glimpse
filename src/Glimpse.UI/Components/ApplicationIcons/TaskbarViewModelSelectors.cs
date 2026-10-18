@@ -1,12 +1,9 @@
-using System.Collections.Immutable;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Collections;
 using Glimpse.Libraries.Xorg;
 using Glimpse.Libraries.Xorg.State;
 using Glimpse.Services.Taskbar;
-using MentorLake.GdkPixbuf;
-using MentorLake.Redux.Selectors;
 using static MentorLake.Redux.Selectors.SelectorFactory;
 using IconInfo = Glimpse.Services.IconInfo;
 

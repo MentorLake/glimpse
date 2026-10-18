@@ -1,8 +1,3 @@
-using System.Reactive;
-using System.Reactive.Linq;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-
 namespace Glimpse.Libraries.System.Reactive;
 
 public static class TimerStartupExtensions

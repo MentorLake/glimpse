@@ -1,9 +1,4 @@
-using System.Reactive.Linq;
 using Glimpse.Libraries.System.Reactive;
-using MentorLake.Redux;
-using MentorLake.Redux.Effects;
-using MentorLake.Redux.Reducers;
-using MentorLake.Redux.Selectors;
 using NCrontab;
 
 namespace Glimpse.Libraries.Wallpaper;

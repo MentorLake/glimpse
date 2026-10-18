@@ -5,9 +5,6 @@ using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.Shared.ForEach;
 using Glimpse.UI.Components.WindowPicker;
 using MentorLake.cairo;
-using MentorLake.Gdk;
-using MentorLake.GdkPixbuf;
-using MentorLake.Gtk;
 
 namespace Glimpse.UI.Components.ApplicationIcons;
 

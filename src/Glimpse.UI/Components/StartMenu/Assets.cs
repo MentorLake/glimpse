@@ -1,6 +1,5 @@
 using System.Reflection;
 using Glimpse.Libraries.Images;
-using MentorLake.GdkPixbuf;
 
 namespace Glimpse.UI.Components.StartMenu;
 

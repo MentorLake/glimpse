@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 namespace Glimpse.Libraries.Xorg;
 
 public class XLib

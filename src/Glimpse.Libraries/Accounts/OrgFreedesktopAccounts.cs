@@ -1,6 +1,4 @@
-﻿using Tmds.DBus.Protocol;
-
-namespace Glimpse.Libraries.Accounts;
+﻿namespace Glimpse.Libraries.Accounts;
 
 record AccountsProperties
 {

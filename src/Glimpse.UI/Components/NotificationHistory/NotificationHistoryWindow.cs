@@ -1,13 +1,9 @@
-using System.Reactive.Linq;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Services.Notifications;
 using Glimpse.UI.Components.NotificationsConfig;
 using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.Shared.Accordion;
-using MentorLake.Gtk;
-using MentorLake.Pango;
-using MentorLake.Redux;
 
 namespace Glimpse.UI.Components.NotificationHistory;
 

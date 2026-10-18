@@ -1,5 +1,3 @@
-using System.Reactive.Linq;
-
 namespace Glimpse.Libraries.System.Reactive;
 
 public static class TimerFactory

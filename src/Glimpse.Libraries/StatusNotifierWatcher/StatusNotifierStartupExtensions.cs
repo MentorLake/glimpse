@@ -1,7 +1,3 @@
-using MentorLake.Redux.Reducers;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-
 namespace Glimpse.Libraries.StatusNotifierWatcher;
 
 public static class StatusNotifierStartupExtensions

@@ -1,6 +1,3 @@
-using System.Runtime.InteropServices;
-using MentorLake.GLib;
-
 namespace Glimpse.Libraries.Xfce.SessionManagement;
 
 internal static class LibXfconfExterns

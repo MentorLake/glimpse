@@ -1,5 +1,3 @@
-using MentorLake.GdkPixbuf;
-
 namespace Glimpse.Libraries.Gtk;
 
 public record ImageViewModel

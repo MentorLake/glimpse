@@ -1,6 +1,3 @@
-using MentorLake.Redux.Reducers;
-using MentorLake.Redux.Selectors;
-
 namespace Glimpse.Services.SystemTray;
 
 public record SystemTrayState

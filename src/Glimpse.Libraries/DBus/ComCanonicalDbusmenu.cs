@@ -1,6 +1,4 @@
-﻿using System.Reactive.Linq;
-using Glimpse.Libraries.DBus.Core;
-using Tmds.DBus.Protocol;
+﻿using Glimpse.Libraries.DBus.Core;
 
 namespace Glimpse.Libraries.DBus;
 

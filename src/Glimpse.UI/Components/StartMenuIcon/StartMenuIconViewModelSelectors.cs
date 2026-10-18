@@ -1,8 +1,6 @@
-using System.Collections.Immutable;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Services.Taskbar;
 using Glimpse.UI.Components.Shared;
-using MentorLake.Redux.Selectors;
 
 namespace Glimpse.UI.Components.StartMenuIcon;
 

@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Services;

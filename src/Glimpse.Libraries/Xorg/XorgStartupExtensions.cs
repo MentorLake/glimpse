@@ -1,10 +1,6 @@
 using Glimpse.Libraries.Microsoft.Extensions;
 using Glimpse.Libraries.Xorg.State;
 using Glimpse.Libraries.Xorg.X11;
-using MentorLake.Redux.Effects;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Task = System.Threading.Tasks.Task;
 
 namespace Glimpse.Libraries.Xorg;
 

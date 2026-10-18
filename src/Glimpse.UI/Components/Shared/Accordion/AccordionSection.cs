@@ -1,5 +1,3 @@
-using MentorLake.Gtk;
-
 namespace Glimpse.UI.Components.Shared.Accordion;
 
 public class AccordionSection

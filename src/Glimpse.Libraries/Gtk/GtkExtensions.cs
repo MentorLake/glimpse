@@ -1,18 +1,11 @@
-using System.Drawing;
-using System.Reactive.Linq;
-using System.Runtime.InteropServices;
 using Glimpse.Libraries.Images;
 using Glimpse.Libraries.System;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.Xorg;
 using Glimpse.Libraries.Xorg.X11;
 using MentorLake.cairo;
-using MentorLake.Gdk;
-using MentorLake.GdkPixbuf;
 using MentorLake.GdkX11;
-using MentorLake.GLib;
 using MentorLake.Gtk;
-using MentorLake.Gtk3;
 
 namespace Glimpse.Libraries.Gtk;
 

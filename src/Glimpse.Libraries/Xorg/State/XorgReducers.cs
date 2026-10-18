@@ -1,8 +1,3 @@
-using System.Collections.Immutable;
-using MentorLake.GdkPixbuf;
-using MentorLake.Redux;
-using MentorLake.Redux.Reducers;
-
 namespace Glimpse.Libraries.Xorg.State;
 
 internal class XorgReducers

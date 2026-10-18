@@ -1,8 +1,3 @@
-using System.Reactive.Concurrency;
-using System.Runtime.InteropServices;
-using MentorLake.GLib;
-using MentorLake.Gtk3;
-
 namespace Glimpse.Libraries.Gtk;
 
 public class GLibExt

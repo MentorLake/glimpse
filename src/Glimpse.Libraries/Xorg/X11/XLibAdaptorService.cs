@@ -1,15 +1,7 @@
 using System.Buffers;
-using System.Drawing;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Runtime.InteropServices;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.Images;
-using MentorLake.GdkPixbuf;
-using MentorLake.GObject;
-using Microsoft.Extensions.Hosting;
-using Task = System.Threading.Tasks.Task;
 
 namespace Glimpse.Libraries.Xorg.X11;
 

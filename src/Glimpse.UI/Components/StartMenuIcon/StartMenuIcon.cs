@@ -1,12 +1,7 @@
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
 using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.Shared.ContextMenu;
-using MentorLake.Gdk;
-using MentorLake.Gtk;
-using MentorLake.Redux;
 
 namespace Glimpse.UI.Components.StartMenuIcon;
 

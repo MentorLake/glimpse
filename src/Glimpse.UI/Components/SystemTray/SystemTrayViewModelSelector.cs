@@ -1,11 +1,8 @@
-using System.Collections.Immutable;
 using Glimpse.Libraries.DBus;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.Images;
 using Glimpse.Libraries.StatusNotifierWatcher;
 using Glimpse.UI.Components.Shared;
-using MentorLake.GdkPixbuf;
-using MentorLake.Redux.Selectors;
 
 namespace Glimpse.UI.Components.SystemTray;
 

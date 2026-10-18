@@ -1,5 +1,3 @@
-using Tmds.DBus.Protocol;
-
 namespace Glimpse.Libraries.DBus;
 
 public class DBusConnections

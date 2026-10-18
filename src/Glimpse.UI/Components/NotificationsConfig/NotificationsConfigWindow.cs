@@ -1,7 +1,5 @@
 using Glimpse.Libraries.Gtk;
 using Glimpse.UI.Components.Shared;
-using MentorLake.Gdk;
-using MentorLake.Gtk;
 
 namespace Glimpse.UI.Components.NotificationsConfig;
 

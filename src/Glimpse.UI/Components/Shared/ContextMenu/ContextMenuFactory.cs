@@ -1,7 +1,4 @@
-using System.Reactive.Linq;
 using Glimpse.Libraries.Gtk;
-using MentorLake.Gdk;
-using MentorLake.Gtk;
 
 namespace Glimpse.UI.Components.Shared.ContextMenu;
 

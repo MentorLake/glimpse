@@ -1,6 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
 namespace Glimpse.Libraries.System.Text.Json;
 
 public static class JsonSerializerExtensions

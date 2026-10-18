@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-using System.Drawing;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.Xorg;

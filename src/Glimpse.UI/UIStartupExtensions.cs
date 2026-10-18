@@ -10,8 +10,6 @@ using Glimpse.UI.Components.StartMenu;
 using Glimpse.UI.Components.StartMenuIcon;
 using Glimpse.UI.Components.SystemTray;
 using MentorLake.Gio;
-using MentorLake.Gtk;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 

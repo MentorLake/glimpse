@@ -1,5 +1,4 @@
 using Glimpse.Libraries.Images;
-using MentorLake.GdkPixbuf;
 
 namespace Glimpse.Libraries.StatusNotifierWatcher;
 

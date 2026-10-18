@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-using MentorLake.Gdk;
 using MentorLake.GdkX11;
 
 namespace Glimpse.Libraries.Xorg;

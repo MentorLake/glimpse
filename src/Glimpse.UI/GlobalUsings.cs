@@ -1,0 +1,17 @@
+global using System;
+global using System.Collections.Immutable;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Drawing;
+global using System.Reactive;
+global using System.Reactive.Linq;
+global using System.Reactive.Subjects;
+global using MentorLake.Gdk;
+global using MentorLake.GdkPixbuf;
+global using MentorLake.Gtk;
+global using MentorLake.Gtk3;
+global using MentorLake.Pango;
+global using MentorLake.Redux;
+global using MentorLake.Redux.Selectors;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;

@@ -1,10 +1,7 @@
-using System.Reactive.Linq;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.Images;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.UI.Components.Shared;
-using MentorLake.GdkPixbuf;
-using MentorLake.Gtk;
 
 namespace Glimpse.UI.Components.StartMenu;
 

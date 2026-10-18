@@ -4,12 +4,9 @@ using Glimpse.Libraries.Configuration;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reflection;
 using Glimpse.UI.Components.Shared;
-using MentorLake.Gdk;
 using MentorLake.Gio;
 using MentorLake.GLib;
-using MentorLake.Gtk;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Task = System.Threading.Tasks.Task;
 

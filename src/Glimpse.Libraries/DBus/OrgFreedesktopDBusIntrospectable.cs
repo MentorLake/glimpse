@@ -1,5 +1,4 @@
 ﻿using Glimpse.Libraries.DBus.Core;
-using Tmds.DBus.Protocol;
 
 namespace Glimpse.Libraries.DBus;
 

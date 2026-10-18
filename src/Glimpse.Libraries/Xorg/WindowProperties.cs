@@ -1,8 +1,3 @@
-using System.Collections.Immutable;
-using System.Drawing;
-using MentorLake.GdkPixbuf;
-using MentorLake.Redux;
-
 namespace Glimpse.Libraries.Xorg;
 
 public record WindowProperties : IKeyed<ulong>

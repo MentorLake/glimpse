@@ -1,13 +1,9 @@
-using System.Reactive.Linq;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.Xorg.State;
 using Glimpse.UI.Components.Calendar;
 using Glimpse.UI.Components.NotificationHistory;
 using Glimpse.UI.Components.Shared;
-using MentorLake.Gdk;
 using MentorLake.GdkX11;
-using MentorLake.Gtk;
-using MentorLake.Redux;
 
 namespace Glimpse.UI.Components.SidePane;
 

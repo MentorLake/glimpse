@@ -1,11 +1,5 @@
 using System.Buffers;
-using System.Collections.Immutable;
-using System.Drawing;
-using System.Reactive.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using Glimpse.Libraries.Images;
-using MentorLake.GdkPixbuf;
 
 namespace Glimpse.Libraries.Xorg.X11;
 

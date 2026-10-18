@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using Glimpse.Libraries.Gtk;
 
 namespace Glimpse.UI.Components.Shared.ContextMenu;

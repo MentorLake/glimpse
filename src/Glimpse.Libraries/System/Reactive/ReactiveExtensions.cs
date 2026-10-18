@@ -1,6 +1,3 @@
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-
 namespace Glimpse.Libraries.System.Reactive;
 
 public static class ReactiveExtensions

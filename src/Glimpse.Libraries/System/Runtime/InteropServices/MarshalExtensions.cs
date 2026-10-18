@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices;
-
 namespace Glimpse.Libraries.System.Runtime.InteropServices;
 
 public class MarshalExtensions

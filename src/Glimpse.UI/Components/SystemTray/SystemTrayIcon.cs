@@ -1,10 +1,6 @@
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Glimpse.Libraries.Gtk;
 using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.Shared.ContextMenu;
-using MentorLake.Gdk;
-using MentorLake.Gtk;
 
 namespace Glimpse.UI.Components.SystemTray;
 

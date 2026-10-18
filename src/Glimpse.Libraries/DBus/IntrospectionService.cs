@@ -1,6 +1,5 @@
 using System.Xml.Linq;
 using System.Xml.XPath;
-using Tmds.DBus.Protocol;
 
 namespace Glimpse.Libraries.DBus;
 

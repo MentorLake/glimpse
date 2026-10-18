@@ -1,10 +1,6 @@
-﻿using System.Reactive.Subjects;
-using Glimpse.Libraries.DBus;
+﻿using Glimpse.Libraries.DBus;
 using Glimpse.Libraries.DBus.Core;
 using Glimpse.Libraries.Images;
-using MentorLake.GdkPixbuf;
-using MentorLake.Redux;
-using Tmds.DBus.Protocol;
 
 #pragma warning disable
 namespace Glimpse.Libraries.Xorg.Notifications;

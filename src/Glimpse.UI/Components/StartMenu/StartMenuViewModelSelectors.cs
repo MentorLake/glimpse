@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using Glimpse.Libraries.Accounts;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
@@ -6,8 +5,6 @@ using Glimpse.Libraries.System;
 using Glimpse.Services;
 using Glimpse.Services.StartMenu;
 using Glimpse.Services.Taskbar;
-using MentorLake.Redux;
-using MentorLake.Redux.Selectors;
 using static MentorLake.Redux.Selectors.SelectorFactory;
 
 namespace Glimpse.UI.Components.StartMenu;

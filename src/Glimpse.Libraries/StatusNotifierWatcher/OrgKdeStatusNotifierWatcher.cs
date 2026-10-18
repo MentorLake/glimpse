@@ -1,8 +1,5 @@
-﻿using System.Reactive.Subjects;
-using System.Text;
-using Glimpse.Libraries.DBus;
+﻿using Glimpse.Libraries.DBus;
 using Glimpse.Libraries.DBus.Core;
-using Tmds.DBus.Protocol;
 
 namespace Glimpse.Libraries.StatusNotifierWatcher;
 

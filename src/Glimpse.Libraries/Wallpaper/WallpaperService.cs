@@ -1,12 +1,8 @@
+using System.Net.Http;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using Glimpse.Libraries.Configuration;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.Xfce.SessionManagement;
-using MentorLake.GLib;
-using MentorLake.Redux;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Glimpse.Libraries.Wallpaper;
 

@@ -1,6 +1,4 @@
-using System.Collections.Immutable;
 using Glimpse.Libraries.Images;
-using MentorLake.GdkPixbuf;
 
 namespace Glimpse.Libraries.Xorg.State;
 

@@ -1,7 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Tmds.DBus.Protocol;
-
 namespace Glimpse.Libraries.DBus;
 
 public static class DBusStartupExtensions

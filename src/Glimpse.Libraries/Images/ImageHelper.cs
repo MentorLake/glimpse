@@ -1,6 +1,3 @@
-using MentorLake.GdkPixbuf;
-using MentorLake.GObject;
-
 namespace Glimpse.Libraries.Images;
 
 public static class ImageHelper

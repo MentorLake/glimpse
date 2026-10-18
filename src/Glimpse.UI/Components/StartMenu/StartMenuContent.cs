@@ -1,15 +1,9 @@
-using System.Collections.Immutable;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Services;
 using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.Shared.ForEach;
-using MentorLake.Gdk;
-using MentorLake.Gtk;
-using MentorLake.Gtk3;
 
 namespace Glimpse.UI.Components.StartMenu;
 

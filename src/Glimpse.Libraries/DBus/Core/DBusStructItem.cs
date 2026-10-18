@@ -1,5 +1,3 @@
-using System.Collections;
-
 namespace Glimpse.Libraries.DBus.Core;
 
 public class DBusStructItem : DBusItem, IReadOnlyList<DBusItem>

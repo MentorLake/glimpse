@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Text;
 
 namespace Glimpse.Libraries.System.Reflection;
 

@@ -1,7 +1,4 @@
-using System.Collections.Immutable;
 using Glimpse.Libraries.DBus;
-using MentorLake.Redux.Reducers;
-using MentorLake.Redux.Selectors;
 
 namespace Glimpse.Libraries.StatusNotifierWatcher;
 

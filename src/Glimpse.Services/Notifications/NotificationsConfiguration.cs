@@ -1,7 +1,3 @@
-using System.Collections.Immutable;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-
 namespace Glimpse.Services.Notifications;
 
 public record NotificationsConfiguration

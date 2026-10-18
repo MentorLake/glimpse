@@ -1,11 +1,4 @@
-using System.Collections.Immutable;
-using System.Reactive.Linq;
-using Glimpse.Libraries.Configuration;
 using Glimpse.Libraries.System.Collections;
-using MentorLake.Redux;
-using MentorLake.Redux.Effects;
-using MentorLake.Redux.Reducers;
-using MentorLake.Redux.Selectors;
 
 namespace Glimpse.Services.Taskbar;
 

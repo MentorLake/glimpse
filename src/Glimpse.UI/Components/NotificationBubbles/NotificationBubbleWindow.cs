@@ -1,8 +1,5 @@
 using Glimpse.Libraries.Gtk;
 using Glimpse.UI.Components.Shared;
-using MentorLake.Gdk;
-using MentorLake.Gtk;
-using Unit = System.Reactive.Unit;
 
 namespace Glimpse.UI.Components.NotificationBubbles;
 

@@ -1,5 +1,4 @@
 using Glimpse.Libraries.Gtk;
-using MentorLake.Gtk;
 
 namespace Glimpse.UI.Components.Shared.Accordion;
 

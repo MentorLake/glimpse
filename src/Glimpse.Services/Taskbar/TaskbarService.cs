@@ -1,5 +1,3 @@
-using MentorLake.Redux;
-
 namespace Glimpse.Services.Taskbar;
 
 public class TaskbarService(ReduxStore store)

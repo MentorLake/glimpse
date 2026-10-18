@@ -1,15 +1,5 @@
-using System.Collections.Immutable;
-using System.Reactive.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Glimpse.Libraries.Configuration;
 using Glimpse.Libraries.Images;
 using Glimpse.Libraries.Xorg.Notifications;
-using MentorLake.GdkPixbuf;
-using MentorLake.Redux;
-using MentorLake.Redux.Effects;
-using MentorLake.Redux.Reducers;
-using MentorLake.Redux.Selectors;
 
 namespace Glimpse.Services.Notifications;
 

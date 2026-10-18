@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-using System.Reactive.Linq;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
@@ -10,8 +8,6 @@ using Glimpse.Services.Taskbar;
 using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.Shared.ForEach;
 using Glimpse.UI.Components.WindowPicker;
-using MentorLake.Gtk;
-using MentorLake.Redux;
 
 namespace Glimpse.UI.Components.ApplicationIcons;
 

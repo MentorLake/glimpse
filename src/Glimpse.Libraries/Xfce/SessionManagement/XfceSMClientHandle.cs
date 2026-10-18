@@ -1,10 +1,5 @@
-using System.Reactive;
 using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Runtime.InteropServices;
 using MentorLake.Gtk;
-using MentorLake.GObject;
-using MentorLake.Gtk3;
 
 namespace Glimpse.Libraries.Xfce.SessionManagement;
 

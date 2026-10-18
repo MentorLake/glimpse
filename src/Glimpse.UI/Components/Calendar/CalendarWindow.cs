@@ -1,10 +1,5 @@
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
-using Glimpse.UI.Components.Shared;
-using MentorLake.Gtk;
-using Microsoft.Extensions.DependencyInjection;
 using DateTime = System.DateTime;
 
 namespace Glimpse.UI.Components.Calendar;

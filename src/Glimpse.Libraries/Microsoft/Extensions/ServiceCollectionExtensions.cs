@@ -1,5 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Glimpse.Libraries.Microsoft.Extensions;
 
 public static class ServiceCollectionExtensions

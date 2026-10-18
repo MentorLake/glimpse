@@ -1,13 +1,9 @@
-using System.Reactive.Linq;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.StatusNotifierWatcher;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Services.SystemTray;
 using Glimpse.UI.Components.Shared;
-using MentorLake.Gdk;
-using MentorLake.Gtk;
-using MentorLake.Redux;
 
 namespace Glimpse.UI.Components.SystemTray;
 

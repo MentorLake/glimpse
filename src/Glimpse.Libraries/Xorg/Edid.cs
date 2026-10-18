@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace Glimpse.Libraries.Xorg;
 
 internal static class Edid

@@ -1,10 +1,6 @@
-using System.Reactive.Linq;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Services.Notifications;
-using MentorLake.Gtk;
-using MentorLake.Redux;
-using Microsoft.Extensions.Logging;
 
 namespace Glimpse.UI.Components.NotificationBubbles;
 

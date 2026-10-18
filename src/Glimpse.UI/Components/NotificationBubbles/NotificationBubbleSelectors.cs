@@ -1,10 +1,8 @@
-using System.Collections.Immutable;
 using Glimpse.Libraries.DesktopEntries;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System;
 using Glimpse.Services.Notifications;
 using Glimpse.UI.Components.Shared;
-using MentorLake.Redux.Selectors;
 
 namespace Glimpse.UI.Components.NotificationBubbles;
 

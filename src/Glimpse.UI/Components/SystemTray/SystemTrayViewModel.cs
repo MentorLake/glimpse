@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using Glimpse.Libraries.DBus;
 using Glimpse.Libraries.Gtk;
 using Glimpse.UI.Components.Shared;

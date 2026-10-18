@@ -1,10 +1,5 @@
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Glimpse.Libraries.Gtk;
 using Glimpse.UI.Components.Shared;
-using MentorLake.Gtk;
-using MentorLake.Pango;
-using Unit = System.Reactive.Unit;
 
 namespace Glimpse.UI.Components.NotificationBubbles;
 

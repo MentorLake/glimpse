@@ -1,7 +1,4 @@
-using System.Collections.Immutable;
-using System.Drawing;
 using System.Reactive;
-using System.Reactive.Linq;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.Wallpaper;
@@ -13,13 +10,7 @@ using Glimpse.UI.Components.NotificationBubbles;
 using Glimpse.UI.Components.Panel;
 using Glimpse.UI.Components.SidePane;
 using Glimpse.UI.Components.StartMenu;
-using MentorLake.Gdk;
 using MentorLake.Gio;
-using MentorLake.Gtk;
-using MentorLake.Gtk3;
-using MentorLake.Redux;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Glimpse.UI;
 

@@ -1,6 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
-
 namespace Glimpse.Libraries.Wallpaper;
 
 internal record WallpaperConfiguration

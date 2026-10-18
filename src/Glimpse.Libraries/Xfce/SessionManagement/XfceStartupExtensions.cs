@@ -1,6 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-
 namespace Glimpse.Libraries.Xfce.SessionManagement;
 
 public static class XfceStartupExtensions

@@ -1,8 +1,5 @@
 using System.Reflection;
 using MentorLake.cairo;
-using MentorLake.Gdk;
-using MentorLake.GdkPixbuf;
-using MentorLake.GLib;
 
 namespace Glimpse.Libraries.Images;
 

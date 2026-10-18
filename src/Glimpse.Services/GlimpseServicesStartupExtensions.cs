@@ -1,4 +1,3 @@
-using Glimpse.Libraries.Configuration;
 using Glimpse.Libraries.Microsoft.Extensions;
 using Glimpse.Libraries.StatusNotifierWatcher;
 using Glimpse.Libraries.System.Reactive;
@@ -7,12 +6,6 @@ using Glimpse.Services.Notifications;
 using Glimpse.Services.StartMenu;
 using Glimpse.Services.SystemTray;
 using Glimpse.Services.Taskbar;
-using MentorLake.Redux;
-using MentorLake.Redux.Effects;
-using MentorLake.Redux.Reducers;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 
 namespace Glimpse.Services;
 

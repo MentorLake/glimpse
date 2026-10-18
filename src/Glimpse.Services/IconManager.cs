@@ -1,8 +1,5 @@
 using Glimpse.Libraries.System;
 using Glimpse.Libraries.Xorg.State;
-using MentorLake.GdkPixbuf;
-using MentorLake.Gtk;
-using MentorLake.Redux;
 
 namespace Glimpse.Services;
 

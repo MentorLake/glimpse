@@ -1,8 +1,3 @@
-using System.Collections.Immutable;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using Glimpse.Libraries.Configuration;
-
 namespace Glimpse.Services.Taskbar;
 
 public record ContextMenuItem

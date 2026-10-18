@@ -1,13 +1,8 @@
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.Xorg;
 using Glimpse.Services;
 using Glimpse.UI.Components.ApplicationIcons;
-using MentorLake.Gdk;
-using MentorLake.Gtk;
-using MentorLake.Pango;
 
 namespace Glimpse.UI.Components.WindowPicker;
 

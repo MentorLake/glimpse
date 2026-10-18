@@ -1,13 +1,8 @@
-using System.Collections.Immutable;
-using System.Reactive.Linq;
 using Glimpse.Libraries.Gtk;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Services;
 using Glimpse.UI.Components.Shared.ContextMenu;
 using Glimpse.UI.Components.Shared.ForEach;
-using MentorLake.GdkPixbuf;
-using MentorLake.Gtk;
-using MentorLake.Pango;
 
 namespace Glimpse.UI.Components.Shared;
 

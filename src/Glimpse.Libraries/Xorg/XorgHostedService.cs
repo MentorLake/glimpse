@@ -1,10 +1,6 @@
-using System.Reactive.Linq;
 using Glimpse.Libraries.Xorg.State;
 using Glimpse.Libraries.Xorg.X11;
-using MentorLake.Redux;
-using Microsoft.Extensions.Hosting;
 using DateTime = System.DateTime;
-using Task = System.Threading.Tasks.Task;
 
 namespace Glimpse.Libraries.Xorg;
 
