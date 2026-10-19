@@ -17,7 +17,7 @@ public class NotificationBubblesService(
 			.Select(NotificationBubbleSelectors.ViewModel)
 			.ConflateLatest(GLibExt.Scheduler)
 			.Select(vm => vm.Notifications)
-			.UnbundleMany(n => n.Id)
+			.PerKey(n => n.Id)
 			.Select(notificationObservable =>
 			{
 				try

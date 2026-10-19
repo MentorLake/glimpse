@@ -24,7 +24,8 @@ public class DisplayOrchestrator(IconManager iconManager, NotificationBubblesSer
 	{
 		application.Signal_Startup().Take(1).SubscribeDebug(_ =>
 		{
-			store.Select(XorgSelectors.Windows).ConflateLatest(GLibExt.Scheduler).Select(w => w.ById).UnbundleMany(w => w.Key).RemoveIndex().SubscribeDebug(windowObs =>
+			store.Select(XorgSelectors.Windows).ConflateLatest(GLibExt.Scheduler).Select(w => w.ById)
+			.PerKey(w => w.Key).RemoveIndex().SubscribeDebug(windowObs =>
 			{
 				windowObs.TakeLast(1).Subscribe(props => iconManager.RemoveKeyedIcon(props.Key.ToString()));
 			});
@@ -128,7 +129,8 @@ public class DisplayOrchestrator(IconManager iconManager, NotificationBubblesSer
 				.SubscribeDebug(monitors => store.Dispatch(new UpdateMonitorsAction(monitors)));
 
 			monitorStream
-				.UnbundleMany(m => m.GetManagedUniqueId())
+				.Select(items => items.ToArray())
+				.PerKey(m => m.GetManagedUniqueId())
 				.SubscribeDebug(obs =>
 				{
 					var newPanel = CreatePanel(obs.Key);

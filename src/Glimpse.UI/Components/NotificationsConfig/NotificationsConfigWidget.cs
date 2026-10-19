@@ -28,7 +28,7 @@ public class NotificationsConfigWidget
 
 		viewModelObs
 			.Select(vm => vm.KnownApplications.OrderBy(a => a.AppName))
-			.UnbundleMany(a => a.AppName)
+			.PerKey(a => a.AppName)
 			.RemoveIndex()
 			.Subscribe(appObs =>
 			{

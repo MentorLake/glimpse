@@ -34,7 +34,7 @@ public class TaskbarView
 			.Select(g => g.Groups)
 			.DistinctUntilChanged()
 			.ConflateLatest(GLibExt.Scheduler)
-			.UnbundleMany(i => i.SlotRef.Id)
+			.PerKey(i => i.SlotRef.Id)
 			.Subscribe(viewModelObservableWithIndex =>
 		{
 			var viewModelObservable = viewModelObservableWithIndex.Select(i => i.Item1);

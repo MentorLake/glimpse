@@ -12,6 +12,7 @@ global using MentorLake.Gtk;
 global using MentorLake.Gtk3;
 global using MentorLake.Pango;
 global using MentorLake.Redux;
+global using MentorLake.Redux.Effects;
 global using MentorLake.Redux.Selectors;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;

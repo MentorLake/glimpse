@@ -2,52 +2,6 @@ namespace Glimpse.Libraries.System.Reactive;
 
 public static class ReactiveExtensions
 {
-	public static IObservable<(TSource, T1, T2)> WithLatestFrom<TSource, T1, T2>(
-		this IObservable<TSource> source,
-		IObservable<T1> first,
-		IObservable<T2> second)
-	{
-		return source
-			.WithLatestFrom(first, (s, f) => (s, f))
-			.WithLatestFrom(second, (t, s) => (t.Item1, t.Item2, s));
-	}
-
-	public static IObservable<(TSource, T1, T2, T3)> WithLatestFrom<TSource, T1, T2, T3>(
-		this IObservable<TSource> source,
-		IObservable<T1> first,
-		IObservable<T2> second,
-		IObservable<T3> third)
-	{
-		return source
-			.WithLatestFrom(first, second)
-			.WithLatestFrom(third, (t, th) => (t.Item1, t.Item2, t.Item3, th));
-	}
-
-	public static IObservable<(TSource, T1, T2, T3, T4)> WithLatestFrom<TSource, T1, T2, T3, T4>(
-		this IObservable<TSource> source,
-		IObservable<T1> first,
-		IObservable<T2> second,
-		IObservable<T3> third,
-		IObservable<T4> fourth)
-	{
-		return source
-			.WithLatestFrom(first, second, third)
-			.WithLatestFrom(fourth, (t, fo) => (t.Item1, t.Item2, t.Item3, t.Item4, fo));
-	}
-
-	public static IObservable<(TSource, T1, T2, T3, T4, T5)> WithLatestFrom<TSource, T1, T2, T3, T4, T5>(
-		this IObservable<TSource> source,
-		IObservable<T1> first,
-		IObservable<T2> second,
-		IObservable<T3> third,
-		IObservable<T4> fourth,
-		IObservable<T5> fifth)
-	{
-		return source
-			.WithLatestFrom(first, second, third, fourth)
-			.WithLatestFrom(fifth, (t, fi) => (t.Item1, t.Item2, t.Item3, t.Item4, t.Item5, fi));
-	}
-
 	public static IObservable<T> DistinctUntilChanged<T>(this IObservable<T> obs, Func<T, T, bool> comparison)
 	{
 		return obs.DistinctUntilChanged(FuncEqualityComparer<T>.Create(comparison));
@@ -57,53 +11,5 @@ public static class ReactiveExtensions
 		this IObservable<IGroupedObservable<TKey, (TValue, int)>> source)
 	{
 		return source.Select(s => new GroupedObservable<TKey, TValue>(s.Key, s.Select(i => i.Item1)));
-	}
-
-	public static IObservable<IGroupedObservable<TValue, (TValue, int)>> UnbundleMany<TValue, TKey>(
-		this IObservable<IEnumerable<TValue>> source, Func<TValue, TKey> keySelector) where TKey : IEquatable<TKey>
-	{
-		return Observable.Create<IGroupedObservable<TValue, (TValue, int)>>(obs =>
-		{
-			var groupSubjects = new Dictionary<TKey, Subject<(TValue, int)>>();
-
-			return source.Subscribe(elements =>
-				{
-					var elementList = new List<TValue>();
-					elementList.AddRange(elements);
-
-					for (var i = 0; i < elementList.Count; i++)
-					{
-						var e = elementList[i];
-						var key = keySelector(e);
-
-						if (!groupSubjects.ContainsKey(key))
-						{
-							groupSubjects.Add(key, new Subject<(TValue, int)>());
-							obs.OnNext(new GroupedObservable<TValue, (TValue, int)>(e, groupSubjects[key]));
-						}
-
-						groupSubjects[key].OnNext((e, i));
-					}
-
-					foreach (var key in groupSubjects.Keys)
-					{
-						if (elements.All(e => !keySelector(e).Equals(key)))
-						{
-							groupSubjects[key].OnCompleted();
-							groupSubjects.Remove(key);
-						}
-					}
-				},
-				e =>
-				{
-					obs.OnError(e);
-					foreach (var s in groupSubjects.Values) s.OnError(e);
-				},
-				() =>
-				{
-					foreach (var s in groupSubjects.Values) s.OnCompleted();
-					obs.OnCompleted();
-				});
-		});
 	}
 }

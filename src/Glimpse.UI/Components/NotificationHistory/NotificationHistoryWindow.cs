@@ -30,7 +30,7 @@ public class NotificationHistoryWindow
 			.Replay(1);
 
 		viewModelObs
-			.UnbundleMany(e => e.AppName)
+			.PerKey(e => e.AppName)
 			.RemoveIndex()
 			.SubscribeDebug(obs =>
 			{
@@ -62,7 +62,8 @@ public class NotificationHistoryWindow
 			});
 
 		viewModelObs
-			.UnbundleMany(e => e.Id)
+			.Select(items => items.ToArray())
+			.PerKey(e => e.Id)
 			.RemoveIndex()
 			.SubscribeDebug(o =>
 			{

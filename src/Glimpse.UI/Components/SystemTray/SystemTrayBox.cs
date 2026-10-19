@@ -39,7 +39,7 @@ public class SystemTrayBox
 			.ConflateLatest(GLibExt.Scheduler)
 			.Select(x => x.Items)
 			.DistinctUntilChanged()
-			.UnbundleMany(i => i.Id)
+			.PerKey(i => i.Id)
 			.RemoveIndex()
 			.Subscribe(itemObservable =>
 			{

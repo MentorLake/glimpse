@@ -41,7 +41,7 @@ public class XorgNotificationsService(
 			.Select(NotificationSelectors.NotificationsState)
 			.ConflateLatest(TaskPoolScheduler.Default)
 			.Select(s => s.ById.Values)
-			.UnbundleMany(n => n.Id)
+			.PerKey(n => n.Id)
 			.RemoveIndex()
 			.Subscribe(obs =>
 			{

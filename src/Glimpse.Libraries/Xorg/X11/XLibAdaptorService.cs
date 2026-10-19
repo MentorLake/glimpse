@@ -39,7 +39,7 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 				.ObservePropertyEvent()
 				.ObserveULongArrayProperty(XAtoms.NetClientList))
 			.Select(windows => windows.Select(w => _rootWindowRef with { Window = w }).Where(w => w.IsNormalWindow()).ToArray())
-			.UnbundleMany(w => w)
+			.PerKey(w => w.Id)
 			.Subscribe(windowObservable =>
 			{
 				var windowRef = windowObservable.Key;

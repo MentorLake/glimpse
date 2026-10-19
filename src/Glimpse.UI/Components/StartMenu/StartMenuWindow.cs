@@ -58,7 +58,8 @@ public class StartMenuWindow
 
 		var searchResults = viewModelObservable.Select(vm => vm.SearchResults).DistinctUntilChanged();
 
-		viewModelObservable.Select(vm => vm.AllApps).DistinctUntilChanged().UnbundleMany(i => i.Key).RemoveIndex().SubscribeDebug(itemObservable =>
+		viewModelObservable.Select(vm => vm.AllApps).DistinctUntilChanged()
+		.PerKey(i => i.Key).RemoveIndex().SubscribeDebug(itemObservable =>
 		{
 			_startMenuContent.AddApplication(
 				itemObservable.Key.Key,

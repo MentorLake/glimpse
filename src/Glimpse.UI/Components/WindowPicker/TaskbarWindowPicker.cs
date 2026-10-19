@@ -31,7 +31,8 @@ internal class TaskbarWindowPicker
 		Widget.Add(layout);
 		Widget.ObserveEvent(w => w.Signal_FocusOutEvent()).Subscribe(_ => ClosePopup());
 
-		viewModelObservable.Select(vm => vm.Tasks).UnbundleMany(t => t.WindowRef.Id).RemoveIndex().Subscribe(taskObservable =>
+		viewModelObservable.Select(vm => vm.Tasks)
+		.PerKey(t => t.WindowRef.Id).RemoveIndex().Subscribe(taskObservable =>
 		{
 			var preview = CreateAppPreview(taskObservable);
 			layout.Add(preview);
