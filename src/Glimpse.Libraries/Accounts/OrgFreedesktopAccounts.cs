@@ -14,10 +14,10 @@ partial class Accounts : AccountsObject
 	{ }
 	public Task<ObjectPath[]> ListCachedUsersAsync()
 	{
-		return this.Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_ao(m, (AccountsObject)s!), this);
+		return this.DBusConnection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_ao(m, (AccountsObject)s!), this);
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -28,10 +28,10 @@ partial class Accounts : AccountsObject
 	}
 	public Task<ObjectPath> FindUserByIdAsync(long id)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), this);
+		return this.DBusConnection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), this);
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -44,10 +44,10 @@ partial class Accounts : AccountsObject
 	}
 	public Task<ObjectPath> FindUserByNameAsync(string name)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), this);
+		return this.DBusConnection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), this);
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -60,10 +60,10 @@ partial class Accounts : AccountsObject
 	}
 	public Task<ObjectPath> CreateUserAsync(string name, string fullname, int accountType)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), this);
+		return this.DBusConnection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), this);
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -78,10 +78,10 @@ partial class Accounts : AccountsObject
 	}
 	public Task<ObjectPath> CacheUserAsync(string name)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), this);
+		return this.DBusConnection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), this);
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -94,10 +94,10 @@ partial class Accounts : AccountsObject
 	}
 	public Task UncacheUserAsync(string name)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -110,10 +110,10 @@ partial class Accounts : AccountsObject
 	}
 	public Task DeleteUserAsync(long id, bool removeFiles)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -127,10 +127,10 @@ partial class Accounts : AccountsObject
 	}
 	public Task<string[]> GetUsersLanguagesAsync()
 	{
-		return this.Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_as(m, (AccountsObject)s!), this);
+		return this.DBusConnection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_as(m, (AccountsObject)s!), this);
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -144,16 +144,16 @@ partial class Accounts : AccountsObject
 	public ValueTask<IDisposable> WatchUserDeletedAsync(Action<Exception?, ObjectPath> handler, bool emitOnCapturedContext = true, ObserverFlags flags = ObserverFlags.None)
 		=> base.WatchSignalAsync(DbusServiceFactory.Destination, __Interface, Path, "UserDeleted", (Message m, object? s) => ReadMessage_o(m, (AccountsObject)s!), handler, emitOnCapturedContext, flags);
 	public Task<string> GetDaemonVersionAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "DaemonVersion"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "DaemonVersion"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<bool> GetHasNoUsersAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "HasNoUsers"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "HasNoUsers"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
 	public Task<bool> GetHasMultipleUsersAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "HasMultipleUsers"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "HasMultipleUsers"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
 	public Task<ObjectPath[]> GetAutomaticLoginUsersAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "AutomaticLoginUsers"), (Message m, object? s) => ReadMessage_v_ao(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "AutomaticLoginUsers"), (Message m, object? s) => ReadMessage_v_ao(m, (AccountsObject)s!), this);
 	public Task<AccountsProperties> GetPropertiesAsync()
 	{
-		return this.Connection.CallMethodAsync(CreateGetAllPropertiesMessage(__Interface), (Message m, object? s) => ReadMessage(m, (AccountsObject)s!), this);
+		return this.DBusConnection.CallMethodAsync(CreateGetAllPropertiesMessage(__Interface), (Message m, object? s) => ReadMessage(m, (AccountsObject)s!), this);
 		static AccountsProperties ReadMessage(Message message, AccountsObject _)
 		{
 			var reader = message.GetBodyReader();
@@ -265,10 +265,10 @@ partial class User : AccountsObject
 	{ }
 	public Task SetUserNameAsync(string name)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -281,10 +281,10 @@ partial class User : AccountsObject
 	}
 	public Task SetRealNameAsync(string name)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -297,10 +297,10 @@ partial class User : AccountsObject
 	}
 	public Task SetEmailAsync(string email)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -313,10 +313,10 @@ partial class User : AccountsObject
 	}
 	public Task SetLanguageAsync(string language)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -329,10 +329,10 @@ partial class User : AccountsObject
 	}
 	public Task SetLanguagesAsync(string[] languages)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -345,10 +345,10 @@ partial class User : AccountsObject
 	}
 	public Task SetFormatsLocaleAsync(string formatsLocale)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -361,10 +361,10 @@ partial class User : AccountsObject
 	}
 	public Task SetInputSourcesAsync(Dictionary<string, string>[] sources)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -377,10 +377,10 @@ partial class User : AccountsObject
 	}
 	public Task SetXSessionAsync(string xSession)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -393,10 +393,10 @@ partial class User : AccountsObject
 	}
 	public Task SetSessionAsync(string session)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -409,10 +409,10 @@ partial class User : AccountsObject
 	}
 	public Task SetSessionTypeAsync(string sessionType)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -425,10 +425,10 @@ partial class User : AccountsObject
 	}
 	public Task SetLocationAsync(string location)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -441,10 +441,10 @@ partial class User : AccountsObject
 	}
 	public Task SetHomeDirectoryAsync(string homedir)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -457,10 +457,10 @@ partial class User : AccountsObject
 	}
 	public Task SetShellAsync(string shell)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -473,10 +473,10 @@ partial class User : AccountsObject
 	}
 	public Task SetXHasMessagesAsync(bool hasMessages)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -489,10 +489,10 @@ partial class User : AccountsObject
 	}
 	public Task SetXKeyboardLayoutsAsync(string[] layouts)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -505,10 +505,10 @@ partial class User : AccountsObject
 	}
 	public Task SetBackgroundFileAsync(string filename)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -521,10 +521,10 @@ partial class User : AccountsObject
 	}
 	public Task SetIconFileAsync(string filename)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -537,10 +537,10 @@ partial class User : AccountsObject
 	}
 	public Task SetLockedAsync(bool locked)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -553,10 +553,10 @@ partial class User : AccountsObject
 	}
 	public Task SetAccountTypeAsync(int accountType)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -569,10 +569,10 @@ partial class User : AccountsObject
 	}
 	public Task SetPasswordModeAsync(int mode)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -585,10 +585,10 @@ partial class User : AccountsObject
 	}
 	public Task SetPasswordAsync(string password, string hint)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -602,10 +602,10 @@ partial class User : AccountsObject
 	}
 	public Task SetPasswordHintAsync(string hint)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -618,10 +618,10 @@ partial class User : AccountsObject
 	}
 	public Task SetAutomaticLoginAsync(bool enabled)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -634,10 +634,10 @@ partial class User : AccountsObject
 	}
 	public Task<(long ExpirationTime, long LastChangeTime, long MinDaysBetweenChanges, long MaxDaysBetweenChanges, long DaysToWarn, long DaysAfterExpirationUntilLock)> GetPasswordExpirationPolicyAsync()
 	{
-		return this.Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_xxxxxx(m, (AccountsObject)s!), this);
+		return this.DBusConnection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_xxxxxx(m, (AccountsObject)s!), this);
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -648,10 +648,10 @@ partial class User : AccountsObject
 	}
 	public Task SetPasswordExpirationPolicyAsync(long minDaysBetweenChanges, long maxDaysBetweenChanges, long daysToWarn, long daysAfterExpirationUntilLock)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -667,10 +667,10 @@ partial class User : AccountsObject
 	}
 	public Task SetUserExpirationPolicyAsync(long expirationTime)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -684,66 +684,66 @@ partial class User : AccountsObject
 	public ValueTask<IDisposable> WatchChangedAsync(Action<Exception?> handler, bool emitOnCapturedContext = true, ObserverFlags flags = ObserverFlags.None)
 		=> base.WatchSignalAsync(DbusServiceFactory.Destination, __Interface, Path, "Changed", handler, emitOnCapturedContext, flags);
 	public Task<ulong> GetUidAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Uid"), (Message m, object? s) => ReadMessage_v_t(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Uid"), (Message m, object? s) => ReadMessage_v_t(m, (AccountsObject)s!), this);
 	public Task<string> GetUserNameAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "UserName"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "UserName"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<string> GetRealNameAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "RealName"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "RealName"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<int> GetAccountTypeAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "AccountType"), (Message m, object? s) => ReadMessage_v_i(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "AccountType"), (Message m, object? s) => ReadMessage_v_i(m, (AccountsObject)s!), this);
 	public Task<string> GetHomeDirectoryAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "HomeDirectory"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "HomeDirectory"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<string> GetShellAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Shell"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Shell"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<string> GetEmailAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Email"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Email"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<string> GetLanguageAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Language"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Language"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<string[]> GetLanguagesAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Languages"), (Message m, object? s) => ReadMessage_v_as(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Languages"), (Message m, object? s) => ReadMessage_v_as(m, (AccountsObject)s!), this);
 	public Task<string> GetSessionAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Session"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Session"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<string> GetSessionTypeAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "SessionType"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "SessionType"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<string> GetFormatsLocaleAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "FormatsLocale"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "FormatsLocale"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<Dictionary<string, string>[]> GetInputSourcesAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "InputSources"), (Message m, object? s) => ReadMessage_v_aaess(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "InputSources"), (Message m, object? s) => ReadMessage_v_aaess(m, (AccountsObject)s!), this);
 	public Task<string> GetXSessionAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "XSession"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "XSession"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<string> GetLocationAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Location"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Location"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<ulong> GetLoginFrequencyAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "LoginFrequency"), (Message m, object? s) => ReadMessage_v_t(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "LoginFrequency"), (Message m, object? s) => ReadMessage_v_t(m, (AccountsObject)s!), this);
 	public Task<long> GetLoginTimeAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "LoginTime"), (Message m, object? s) => ReadMessage_v_x(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "LoginTime"), (Message m, object? s) => ReadMessage_v_x(m, (AccountsObject)s!), this);
 	public Task<(long, long, Dictionary<string, VariantValue>)[]> GetLoginHistoryAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "LoginHistory"), (Message m, object? s) => ReadMessage_v_arxxaesvz(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "LoginHistory"), (Message m, object? s) => ReadMessage_v_arxxaesvz(m, (AccountsObject)s!), this);
 	public Task<bool> GetXHasMessagesAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "XHasMessages"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "XHasMessages"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
 	public Task<string[]> GetXKeyboardLayoutsAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "XKeyboardLayouts"), (Message m, object? s) => ReadMessage_v_as(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "XKeyboardLayouts"), (Message m, object? s) => ReadMessage_v_as(m, (AccountsObject)s!), this);
 	public Task<string> GetBackgroundFileAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "BackgroundFile"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "BackgroundFile"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<string> GetIconFileAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "IconFile"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "IconFile"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<bool> GetSavedAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Saved"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Saved"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
 	public Task<bool> GetLockedAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Locked"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "Locked"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
 	public Task<int> GetPasswordModeAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "PasswordMode"), (Message m, object? s) => ReadMessage_v_i(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "PasswordMode"), (Message m, object? s) => ReadMessage_v_i(m, (AccountsObject)s!), this);
 	public Task<string> GetPasswordHintAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "PasswordHint"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "PasswordHint"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<bool> GetAutomaticLoginAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "AutomaticLogin"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "AutomaticLogin"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
 	public Task<bool> GetSystemAccountAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "SystemAccount"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "SystemAccount"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
 	public Task<bool> GetLocalAccountAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "LocalAccount"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "LocalAccount"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
 	public Task<UserProperties> GetPropertiesAsync()
 	{
-		return this.Connection.CallMethodAsync(CreateGetAllPropertiesMessage(__Interface), (Message m, object? s) => ReadMessage(m, (AccountsObject)s!), this);
+		return this.DBusConnection.CallMethodAsync(CreateGetAllPropertiesMessage(__Interface), (Message m, object? s) => ReadMessage(m, (AccountsObject)s!), this);
 		static UserProperties ReadMessage(Message message, AccountsObject _)
 		{
 			var reader = message.GetBodyReader();
@@ -979,10 +979,10 @@ partial class AccountsService : AccountsObject
 	{ }
 	public Task SetBackgroundFileAsync(string value)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -998,10 +998,10 @@ partial class AccountsService : AccountsObject
 	}
 	public Task SetHasMessagesAsync(bool value)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -1017,10 +1017,10 @@ partial class AccountsService : AccountsObject
 	}
 	public Task SetKeyboardLayoutsAsync(string[] value)
 	{
-		return this.Connection.CallMethodAsync(CreateMessage());
+		return this.DBusConnection.CallMethodAsync(CreateMessage());
 		MessageBuffer CreateMessage()
 		{
-			var writer = this.Connection.GetMessageWriter();
+			var writer = this.DBusConnection.GetMessageWriter();
 			writer.WriteMethodCallHeader(
 				destination: DbusServiceFactory.Destination,
 				path: Path,
@@ -1035,14 +1035,14 @@ partial class AccountsService : AccountsObject
 		}
 	}
 	public Task<string> GetBackgroundFileAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "BackgroundFile"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "BackgroundFile"), (Message m, object? s) => ReadMessage_v_s(m, (AccountsObject)s!), this);
 	public Task<bool> GetHasMessagesAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "HasMessages"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "HasMessages"), (Message m, object? s) => ReadMessage_v_b(m, (AccountsObject)s!), this);
 	public Task<string[]> GetKeyboardLayoutsAsync()
-		=> this.Connection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "KeyboardLayouts"), (Message m, object? s) => ReadMessage_v_as(m, (AccountsObject)s!), this);
+		=> this.DBusConnection.CallMethodAsync(CreateGetPropertyMessage(__Interface, "KeyboardLayouts"), (Message m, object? s) => ReadMessage_v_as(m, (AccountsObject)s!), this);
 	public Task<AccountsServiceProperties> GetPropertiesAsync()
 	{
-		return this.Connection.CallMethodAsync(CreateGetAllPropertiesMessage(__Interface), (Message m, object? s) => ReadMessage(m, (AccountsObject)s!), this);
+		return this.DBusConnection.CallMethodAsync(CreateGetAllPropertiesMessage(__Interface), (Message m, object? s) => ReadMessage(m, (AccountsObject)s!), this);
 		static AccountsServiceProperties ReadMessage(Message message, AccountsObject _)
 		{
 			var reader = message.GetBodyReader();
@@ -1111,10 +1111,10 @@ partial class AccountsService : AccountsObject
 }
 partial class AccountsDbusServiceFactory
 {
-	public Tmds.DBus.Protocol.Connection Connection { get; }
+	public Tmds.DBus.Protocol.DBusConnection DBusConnection { get; }
 	public string Destination { get; }
-	public AccountsDbusServiceFactory(Tmds.DBus.Protocol.Connection connection, string destination)
-		=> (Connection, Destination) = (connection, destination);
+	public AccountsDbusServiceFactory(Tmds.DBus.Protocol.DBusConnection connection, string destination)
+		=> (DBusConnection, Destination) = (connection, destination);
 	public Accounts CreateAccounts(ObjectPath path) => new Accounts(this, path);
 	public User CreateUser(ObjectPath path) => new User(this, path);
 	public AccountsService CreateAccountsService(ObjectPath path) => new AccountsService(this, path);
@@ -1123,12 +1123,12 @@ class AccountsObject
 {
 	public AccountsDbusServiceFactory DbusServiceFactory { get; }
 	public ObjectPath Path { get; }
-	protected Tmds.DBus.Protocol.Connection Connection => DbusServiceFactory.Connection;
+	protected Tmds.DBus.Protocol.DBusConnection DBusConnection => DbusServiceFactory.DBusConnection;
 	protected AccountsObject(AccountsDbusServiceFactory dbusServiceFactory, ObjectPath path)
 		=> (DbusServiceFactory, Path) = (dbusServiceFactory, path);
 	protected MessageBuffer CreateGetPropertyMessage(string @interface, string property)
 	{
-		var writer = this.Connection.GetMessageWriter();
+		var writer = this.DBusConnection.GetMessageWriter();
 		writer.WriteMethodCallHeader(
 			destination: DbusServiceFactory.Destination,
 			path: Path,
@@ -1141,7 +1141,7 @@ class AccountsObject
 	}
 	protected MessageBuffer CreateGetAllPropertiesMessage(string @interface)
 	{
-		var writer = this.Connection.GetMessageWriter();
+		var writer = this.DBusConnection.GetMessageWriter();
 		writer.WriteMethodCallHeader(
 			destination: DbusServiceFactory.Destination,
 			path: Path,
@@ -1162,9 +1162,18 @@ class AccountsObject
 			Member = "PropertiesChanged",
 			Arg0 = @interface
 		};
-		return this.Connection.AddMatchAsync(rule, reader,
-			(Exception? ex, PropertyChanges<TProperties> changes, object? rs, object? hs) => ((Action<Exception?, PropertyChanges<TProperties>>)hs!).Invoke(ex, changes),
-			this, handler, emitOnCapturedContext, flags);
+		return this.DBusConnection.AddMatchAsync(rule, reader,
+			(Tmds.DBus.Protocol.Notification<PropertyChanges<TProperties>> notification) =>
+			{
+				if (notification.IsCompletion)
+				{
+					handler(notification.Exception, default !);
+				}
+				else
+				{
+					handler(null, notification.Value);
+				}
+			}, emitOnCapturedContext, flags);
 	}
 	public ValueTask<IDisposable> WatchSignalAsync<TArg>(string sender, string @interface, ObjectPath path, string signal, MessageValueReader<TArg> reader, Action<Exception?, TArg> handler, bool emitOnCapturedContext, ObserverFlags flags)
 	{
@@ -1176,9 +1185,18 @@ class AccountsObject
 			Member = signal,
 			Interface = @interface
 		};
-		return this.Connection.AddMatchAsync(rule, reader,
-			(Exception? ex, TArg arg, object? rs, object? hs) => ((Action<Exception?, TArg>)hs!).Invoke(ex, arg),
-			this, handler, emitOnCapturedContext, flags);
+		return this.DBusConnection.AddMatchAsync(rule, reader,
+			(Tmds.DBus.Protocol.Notification<TArg> notification) =>
+			{
+				if (notification.IsCompletion)
+				{
+					handler(notification.Exception, default !);
+				}
+				else
+				{
+					handler(null, notification.Value);
+				}
+			}, emitOnCapturedContext, flags);
 	}
 	public ValueTask<IDisposable> WatchSignalAsync(string sender, string @interface, ObjectPath path, string signal, Action<Exception?> handler, bool emitOnCapturedContext, ObserverFlags flags)
 	{
@@ -1190,8 +1208,14 @@ class AccountsObject
 			Member = signal,
 			Interface = @interface
 		};
-		return this.Connection.AddMatchAsync<object>(rule, (Message message, object? state) => null!,
-			(Exception? ex, object v, object? rs, object? hs) => ((Action<Exception?>)hs!).Invoke(ex), this, handler, emitOnCapturedContext, flags);
+		return this.DBusConnection.AddMatchAsync<object>(rule, (Message message, object? state) => null!,
+			(Tmds.DBus.Protocol.Notification<object> notification) =>
+			{
+				if (notification.IsCompletion)
+				{
+					handler(notification.Exception);
+				}
+			}, emitOnCapturedContext, flags);
 	}
 	protected static ObjectPath[] ReadMessage_ao(Message message, AccountsObject _)
 	{

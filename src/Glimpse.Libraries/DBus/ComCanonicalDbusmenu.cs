@@ -5,11 +5,11 @@ namespace Glimpse.Libraries.DBus;
 public class ComCanonicalDbusmenu
 {
 	public const string Interface = "com.canonical.dbusmenu";
-	private readonly Connection _connection;
+	private readonly DBusConnection _connection;
 	private readonly string _destination;
 	private readonly string _path;
 
-	public ComCanonicalDbusmenu(Connection connection, string destination, string path)
+	public ComCanonicalDbusmenu(DBusConnection connection, string destination, string path)
 	{
 		_connection = connection;
 		_destination = destination;
@@ -23,9 +23,9 @@ public class ComCanonicalDbusmenu
 			.Concat();
 	}
 
-	public IObservable<(uint revision, (int, Dictionary<string, DBusVariantItem>, DBusVariantItem[]) layout)> LayoutUpdated { get; }
+	public IObservable<(uint revision, (int, Dictionary<string, VariantValue>, VariantValue[]) layout)> LayoutUpdated { get; }
 
-	public Task<(uint revision, (int, Dictionary<string, DBusVariantItem>, DBusVariantItem[]) layout)> GetLayoutAsync(int parentId, int recursionDepth, string[] propertyNames)
+	public Task<(uint revision, (int, Dictionary<string, VariantValue>, VariantValue[]) layout)> GetLayoutAsync(int parentId, int recursionDepth, string[] propertyNames)
 	{
 		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_uriaesvavz);
 
@@ -42,7 +42,7 @@ public class ComCanonicalDbusmenu
 		}
 	}
 
-	public Task<(int, Dictionary<string, DBusVariantItem>)[]> GetGroupPropertiesAsync(int[] ids, string[] propertyNames)
+	public Task<(int, Dictionary<string, VariantValue>)[]> GetGroupPropertiesAsync(int[] ids, string[] propertyNames)
 	{
 		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_ariaesvz);
 
@@ -58,7 +58,7 @@ public class ComCanonicalDbusmenu
 		}
 	}
 
-	public Task<DBusVariantItem> GetPropertyAsync(int id, string name)
+	public Task<VariantValue> GetPropertyAsync(int id, string name)
 	{
 		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_v);
 
@@ -74,7 +74,7 @@ public class ComCanonicalDbusmenu
 		}
 	}
 
-	public Task EventAsync(int id, string eventId, DBusVariantItem data, uint timestamp)
+	public Task EventAsync(int id, string eventId, VariantValue data, uint timestamp)
 	{
 		return _connection.CallMethodAsync(CreateMessage());
 
@@ -92,7 +92,7 @@ public class ComCanonicalDbusmenu
 		}
 	}
 
-	public Task<int[]> EventGroupAsync((int, string, DBusVariantItem, uint)[] events)
+	public Task<int[]> EventGroupAsync((int, string, VariantValue, uint)[] events)
 	{
 		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_ai);
 
@@ -137,7 +137,7 @@ public class ComCanonicalDbusmenu
 		}
 	}
 
-	public ValueTask<IDisposable> WatchItemsPropertiesUpdatedAsync(Action<Exception?, ((int, Dictionary<string, DBusVariantItem>)[] updatedProps, (int, string[])[] removedProps)> handler, bool emitOnCapturedContext = true)
+	public ValueTask<IDisposable> WatchItemsPropertiesUpdatedAsync(Action<Exception?, ((int, Dictionary<string, VariantValue>)[] updatedProps, (int, string[])[] removedProps)> handler, bool emitOnCapturedContext = true)
 	{
 		var rule = new MatchRule
 		{

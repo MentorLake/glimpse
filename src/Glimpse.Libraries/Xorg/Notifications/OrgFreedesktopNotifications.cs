@@ -38,13 +38,13 @@ public record FreedesktopNotification : IKeyed<uint>
 	public DateTime CreationDate { get; set; }
 }
 
-public class OrgFreedesktopNotifications(DBusConnections dBusConnections) : IMethodHandler
+public class OrgFreedesktopNotifications(DBusConnections dBusConnections) : IPathMethodHandler
 {
 	private static uint s_idCounter = 1;
 	private readonly SynchronizationContext? _synchronizationContext;
-	private Connection Connection => dBusConnections.Session;
+	private DBusConnection DBusConnection => dBusConnections.Session;
 	public string Path => "/org/freedesktop/Notifications";
-	public bool RunMethodHandlerSynchronously(Message message) => true;
+	public bool HandlesChildPaths => false;
 	private readonly Subject<FreedesktopNotification> _notificationSubject = new();
 	public IObservable<FreedesktopNotification> Notifications => _notificationSubject;
 
@@ -123,7 +123,7 @@ public class OrgFreedesktopNotifications(DBusConnections dBusConnections) : IMet
 							string summary;
 							string body;
 							string[] actions;
-							Dictionary<string, DBusVariantItem> hints;
+							Dictionary<string, VariantValue> hints;
 							int expire_timeout;
 							ReadParameters();
 
@@ -253,22 +253,21 @@ public class OrgFreedesktopNotifications(DBusConnections dBusConnections) : IMet
 		return ValueTask.FromResult(new[] { "actions", "body" });
 	}
 
-	private GdkPixbufHandle ParseImageData(DBusVariantItem variantItem)
+	private GdkPixbufHandle ParseImageData(VariantValue variantItem)
 	{
-		var imageStruct = variantItem.Value as DBusStructItem;
-		var width = imageStruct[0] as DBusInt32Item;
-		var height = imageStruct[1] as DBusInt32Item;
-		var rowStride = imageStruct[2] as DBusInt32Item;
-		var hasAlpha = imageStruct[3] as DBusBoolItem;
-		var bitsPerSample = imageStruct[4] as DBusInt32Item;
-		var data = imageStruct[6] as DBusByteArrayItem;
+		var imageStruct = variantItem.GetVariantValue();
+		var width = imageStruct.GetItem(0).GetInt32();
+		var height = imageStruct.GetItem(1).GetInt32();
+		var rowStride = imageStruct.GetItem(2).GetInt32();
+		var hasAlpha = imageStruct.GetItem(3).GetBool();
+		var bitsPerSample = imageStruct.GetItem(4).GetInt32();
+		var buffer = imageStruct.GetItem(6).GetArray<byte>();
 
-		var buffer = data.Value;
-		using var fullSizeImage = GdkPixbufFactory.From(buffer, buffer.Length, hasAlpha.Value, bitsPerSample.Value, width.Value, height.Value, rowStride.Value);
+		using var fullSizeImage = GdkPixbufFactory.From(buffer, buffer.Length, hasAlpha, bitsPerSample, width, height, rowStride);
 		return fullSizeImage.ScaleToFit(34, 34);
 	}
 
-	private ValueTask<uint> OnNotifyAsync(string app_name, uint replaces_id, string app_icon, string summary, string body, string[] actions, Dictionary<string, DBusVariantItem> hints, int expire_timeout)
+	private ValueTask<uint> OnNotifyAsync(string app_name, uint replaces_id, string app_icon, string summary, string body, string[] actions, Dictionary<string, VariantValue> hints, int expire_timeout)
 	{
 		var notification = new FreedesktopNotification()
 		{
@@ -280,24 +279,24 @@ public class OrgFreedesktopNotifications(DBusConnections dBusConnections) : IMet
 			Body = body,
 			Actions = actions,
 			Duration = expire_timeout <= 0 ? TimeSpan.FromMilliseconds(3000) : TimeSpan.FromMilliseconds(expire_timeout),
-			ActionIcons = hints.TryGetValue("action-icons", out var actionIconsHint) && (actionIconsHint.Value as DBusBoolItem).Value,
-			Category = hints.TryGetValue("category", out var categoryHint) ? (categoryHint.Value as DBusStringItem).Value : "",
-			DesktopEntry = hints.TryGetValue("desktop-entry", out var desktopEntry) ? (desktopEntry.Value as DBusStringItem).Value : "",
+			ActionIcons = hints.TryGetValue("action-icons", out var actionIconsHint) && actionIconsHint.GetBool(),
+			Category = hints.TryGetValue("category", out var categoryHint) ? categoryHint.GetString() : "",
+			DesktopEntry = hints.TryGetValue("desktop-entry", out var desktopEntry) ? desktopEntry.GetString() : "",
 			Image = hints.TryGetValue("image-data", out var imageDataHint) ? ParseImageData(imageDataHint)
 				: hints.TryGetValue("image_data", out var imageDataHintDeprecated) ? ParseImageData(imageDataHintDeprecated)
 				: hints.TryGetValue("icon_data", out var iconDataHint) ? ParseImageData(iconDataHint)
 				: null,
-			ImagePath = hints.TryGetValue("image-path", out var imagePath) ? (imagePath.Value as DBusStringItem).Value
-				: hints.TryGetValue("image_path", out var imagePathDeprecated) ? (imagePathDeprecated.Value as DBusStringItem).Value
+			ImagePath = hints.TryGetValue("image-path", out var imagePath) ? imagePath.GetString()
+				: hints.TryGetValue("image_path", out var imagePathDeprecated) ? imagePathDeprecated.GetString()
 				: "",
-			Resident = hints.TryGetValue("resident", out var resident) && (imagePath.Value as DBusBoolItem).Value,
-			SoundFile = hints.TryGetValue("sound-file", out var soundFile) ? (soundFile.Value as DBusStringItem).Value : "",
-			SoundName = hints.TryGetValue("sound-name", out var soundName) ? (soundName.Value as DBusStringItem).Value : "",
-			SuppressSound = hints.TryGetValue("suppress-sound", out var suppressSound) && (suppressSound.Value as DBusBoolItem).Value,
-			Transient = hints.TryGetValue("transient", out var transient) && (transient.Value as DBusBoolItem).Value,
-			X = hints.TryGetValue("x", out var x) ? (x.Value as DBusInt32Item).Value : null,
-			Y = hints.TryGetValue("y", out var y) ? (y.Value as DBusInt32Item).Value : null,
-			Urgency = hints.TryGetValue("urgency", out var urgencyHint) ? (NotificationUrgency) ((urgencyHint.Value as DBusByteItem)?.Value ?? 1) : NotificationUrgency.Normal,
+			Resident = hints.TryGetValue("resident", out var resident) && resident.GetBool(),
+			SoundFile = hints.TryGetValue("sound-file", out var soundFile) ? soundFile.GetString() : "",
+			SoundName = hints.TryGetValue("sound-name", out var soundName) ? soundName.GetString() : "",
+			SuppressSound = hints.TryGetValue("suppress-sound", out var suppressSound) && suppressSound.GetBool(),
+			Transient = hints.TryGetValue("transient", out var transient) && transient.GetBool(),
+			X = hints.TryGetValue("x", out var x) ? x.GetInt32() : null,
+			Y = hints.TryGetValue("y", out var y) ? y.GetInt32() : null,
+			Urgency = hints.TryGetValue("urgency", out var urgencyHint) ? (NotificationUrgency) urgencyHint.GetByte() : NotificationUrgency.Normal,
 			CreationDate = DateTime.UtcNow
 		};
 
@@ -318,21 +317,21 @@ public class OrgFreedesktopNotifications(DBusConnections dBusConnections) : IMet
 
 	public void EmitNotificationClosed(uint id, uint reason)
 	{
-		var writer = Connection.GetMessageWriter();
+		var writer = DBusConnection.GetMessageWriter();
 		writer.WriteSignalHeader(null, Path, "org.freedesktop.Notifications", "NotificationClosed", "uu");
 		writer.WriteUInt32(id);
 		writer.WriteUInt32(reason);
-		Connection.TrySendMessage(writer.CreateMessage());
+		DBusConnection.TrySendMessage(writer.CreateMessage());
 		writer.Dispose();
 	}
 
 	public void EmitActionInvoked(uint id, string action_key)
 	{
-		var writer = Connection.GetMessageWriter();
+		var writer = DBusConnection.GetMessageWriter();
 		writer.WriteSignalHeader(null, Path, "org.freedesktop.Notifications", "ActionInvoked", "us");
 		writer.WriteUInt32(id);
 		writer.WriteString(action_key);
-		Connection.TrySendMessage(writer.CreateMessage());
+		DBusConnection.TrySendMessage(writer.CreateMessage());
 		writer.Dispose();
 	}
 }

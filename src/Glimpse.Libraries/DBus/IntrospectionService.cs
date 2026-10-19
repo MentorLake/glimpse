@@ -5,7 +5,7 @@ namespace Glimpse.Libraries.DBus;
 
 public class IntrospectionService
 {
-	private readonly Connection _connection;
+	private readonly DBusConnection _connection;
 
 	public IntrospectionService(DBusConnections dBusConnections) => _connection = dBusConnections.Session;
 

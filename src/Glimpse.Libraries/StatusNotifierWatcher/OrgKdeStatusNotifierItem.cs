@@ -5,11 +5,11 @@ namespace Glimpse.Libraries.StatusNotifierWatcher;
 public class OrgKdeStatusNotifierItem
 {
 	public const string Interface = "org.kde.StatusNotifierItem";
-	private readonly Connection _connection;
+	private readonly DBusConnection _connection;
 	private readonly string _destination;
 	private readonly string _path;
 
-	public OrgKdeStatusNotifierItem(Connection connection, string destination, string path)
+	public OrgKdeStatusNotifierItem(DBusConnection connection, string destination, string path)
 	{
 		_connection = connection;
 		_destination = destination;

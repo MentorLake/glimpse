@@ -3,13 +3,14 @@ using Glimpse.Libraries.DBus.Core;
 
 namespace Glimpse.Libraries.StatusNotifierWatcher;
 
-public class OrgKdeStatusNotifierWatcher(OrgFreedesktopDBus dbusInterface, DBusConnections dBusConnections) : IMethodHandler
+public class OrgKdeStatusNotifierWatcher(OrgFreedesktopDBus dbusInterface, DBusConnections dBusConnections) : IPathMethodHandler
 {
 	private readonly Subject<(string Sender, string Service)> _itemRegistered = new();
 	private readonly Subject<string> _itemRemoved = new();
 
-	private Connection Connection { get; } = dBusConnections.Session;
+	private DBusConnection DBusConnection { get; } = dBusConnections.Session;
 	public string Path { get; } = "/StatusNotifierWatcher";
+	public bool HandlesChildPaths => false;
 	public IObservable<(string Sender, string Service)> ItemRegistered => _itemRegistered;
 	public IObservable<string> ItemRemoved => _itemRemoved;
 	public Properties BackingProperties { get; } = new();
@@ -31,7 +32,6 @@ public class OrgKdeStatusNotifierWatcher(OrgFreedesktopDBus dbusInterface, DBusC
 		});
 	}
 
-	public bool RunMethodHandlerSynchronously(Message message) => true;
 
 	public void RegisterStatusNotifierHostAsync(string service)
 	{
@@ -128,7 +128,7 @@ public class OrgKdeStatusNotifierWatcher(OrgFreedesktopDBus dbusInterface, DBusC
 									case "RegisteredStatusNotifierItems":
 										{
 											var writer = context.CreateReplyWriter("v");
-											writer.WriteDBusVariant(new DBusVariantItem("as", new DBusArrayItem(DBusType.String, BackingProperties.RegisteredStatusNotifierItems.Select(x => new DBusStringItem(x)).ToArray())));
+											writer.WriteDBusVariant(VariantValue.Array(BackingProperties.RegisteredStatusNotifierItems));
 											context.Reply(writer.CreateMessage());
 											writer.Dispose();
 											break;
@@ -137,7 +137,7 @@ public class OrgKdeStatusNotifierWatcher(OrgFreedesktopDBus dbusInterface, DBusC
 									case "IsStatusNotifierHostRegistered":
 										{
 											var writer = context.CreateReplyWriter("v");
-											writer.WriteDBusVariant(new DBusVariantItem("b", new DBusBoolItem(BackingProperties.IsStatusNotifierHostRegistered)));
+											writer.WriteDBusVariant(VariantValue.Bool(BackingProperties.IsStatusNotifierHostRegistered));
 											context.Reply(writer.CreateMessage());
 											writer.Dispose();
 											break;
@@ -146,7 +146,7 @@ public class OrgKdeStatusNotifierWatcher(OrgFreedesktopDBus dbusInterface, DBusC
 									case "ProtocolVersion":
 										{
 											var writer = context.CreateReplyWriter("v");
-											writer.WriteDBusVariant(new DBusVariantItem("i", new DBusInt32Item(BackingProperties.ProtocolVersion)));
+											writer.WriteDBusVariant(VariantValue.Int32(BackingProperties.ProtocolVersion));
 											context.Reply(writer.CreateMessage());
 											writer.Dispose();
 											break;
@@ -164,7 +164,7 @@ public class OrgKdeStatusNotifierWatcher(OrgFreedesktopDBus dbusInterface, DBusC
 							void Reply()
 							{
 								var writer = context.CreateReplyWriter("a{sv}");
-								var dict = new Dictionary<string, DBusVariantItem> { { "RegisteredStatusNotifierItems", new DBusVariantItem("as", new DBusArrayItem(DBusType.String, BackingProperties.RegisteredStatusNotifierItems.Select(x => new DBusStringItem(x)).ToArray())) }, { "IsStatusNotifierHostRegistered", new DBusVariantItem("b", new DBusBoolItem(BackingProperties.IsStatusNotifierHostRegistered)) }, { "ProtocolVersion", new DBusVariantItem("i", new DBusInt32Item(BackingProperties.ProtocolVersion)) } };
+								var dict = new Dictionary<string, VariantValue> { { "RegisteredStatusNotifierItems", VariantValue.Array(BackingProperties.RegisteredStatusNotifierItems) }, { "IsStatusNotifierHostRegistered", VariantValue.Bool(BackingProperties.IsStatusNotifierHostRegistered) }, { "ProtocolVersion", VariantValue.Int32(BackingProperties.ProtocolVersion) } };
 								writer.WriteDictionary_aesv(dict);
 								context.Reply(writer.CreateMessage());
 							}
@@ -198,27 +198,27 @@ public class OrgKdeStatusNotifierWatcher(OrgFreedesktopDBus dbusInterface, DBusC
 
 	protected void EmitStatusNotifierHostRegistered()
 	{
-		var writer = Connection.GetMessageWriter();
+		var writer = DBusConnection.GetMessageWriter();
 		writer.WriteSignalHeader(null, Path, "org.kde.StatusNotifierWatcher", "StatusNotifierHostRegistered");
-		Connection.TrySendMessage(writer.CreateMessage());
+		DBusConnection.TrySendMessage(writer.CreateMessage());
 		writer.Dispose();
 	}
 
 	protected void EmitStatusNotifierItemUnregistered(string arg0)
 	{
-		var writer = Connection.GetMessageWriter();
+		var writer = DBusConnection.GetMessageWriter();
 		writer.WriteSignalHeader(null, Path, "org.kde.StatusNotifierWatcher", "StatusNotifierItemUnregistered", "s");
 		writer.WriteString(arg0);
-		Connection.TrySendMessage(writer.CreateMessage());
+		DBusConnection.TrySendMessage(writer.CreateMessage());
 		writer.Dispose();
 	}
 
 	protected void EmitStatusNotifierItemRegistered(string arg0)
 	{
-		var writer = Connection.GetMessageWriter();
+		var writer = DBusConnection.GetMessageWriter();
 		writer.WriteSignalHeader(null, Path, "org.kde.StatusNotifierWatcher", "StatusNotifierItemRegistered", "s");
 		writer.WriteString(arg0);
-		Connection.TrySendMessage(writer.CreateMessage());
+		DBusConnection.TrySendMessage(writer.CreateMessage());
 		writer.Dispose();
 	}
 

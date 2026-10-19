@@ -12,7 +12,7 @@ public class StatusNotifierWatcherService(
 	OrgKdeStatusNotifierWatcher watcher,
 	OrgFreedesktopDBus orgFreedesktopDBus)
 {
-	private readonly Connection _connection = dBusConnections.Session;
+	private readonly DBusConnection _connection = dBusConnections.Session;
 
 	public async Task InitializeAsync()
 	{
@@ -136,6 +136,6 @@ public class StatusNotifierWatcherService(
 	public async Task ActivateMenuItemAsync(DbusObjectDescription desc, int id)
 	{
 		var menu = new ComCanonicalDbusmenu(_connection, desc.ServiceName, desc.ObjectPath);
-		await menu.EventAsync(id, "clicked", new DBusVariantItem("y", new DBusByteItem(0)), 0);
+		await menu.EventAsync(id, "clicked", VariantValue.Byte(0), 0);
 	}
 }

@@ -2,6 +2,6 @@ namespace Glimpse.Libraries.DBus;
 
 public class DBusConnections
 {
-	public Connection Session { get; set; }
-	public Connection System { get; set; }
+	public DBusConnection Session { get; set; }
+	public DBusConnection System { get; set; }
 }

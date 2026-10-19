@@ -14,11 +14,16 @@ public static class DesktopFileStartupExtensions
 	public static async Task UseDesktopFiles(this IHost host)
 	{
 		var store = host.Services.GetService<ReduxStore>();
-		await LoadDesktopFiles(store);
-		GAppInfoMonitorHandle.Get().Signal_Changed().Subscribe(_ => LoadDesktopFiles(store));
+
+		LoadDesktopFiles(store);
+
+		GAppInfoMonitorHandle.Get()
+			.Signal_Changed()
+			.ConflateLatest(TaskPoolScheduler.Default)
+			.Subscribe(_ => LoadDesktopFiles(store));
 	}
 
-	private static async Task LoadDesktopFiles(ReduxStore store)
+	private static void LoadDesktopFiles(ReduxStore store)
 	{
 		var desktopFiles = GAppInfoHandleExtensions.GetAll();
 

@@ -28,13 +28,13 @@ public class XfceSMClient
 	}
 
 	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-	public delegate void quit([MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof (DelegateSafeHandleMarshaller<GObjectHandle>))] GObjectHandle self, IntPtr user_data);
+	public delegate void QuitSignal([MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof (DelegateSafeHandleMarshaller<GObjectHandle>))] GObjectHandle self, IntPtr user_data);
 
 	public IObservable<Unit> Signal_Quit()
 	{
 		return Observable.Create((Func<IObserver<Unit>, IDisposable>) (obs =>
 		{
-			ulong handlerId = GObjectGlobalFunctions.SignalConnectData(_handle, "quit", Marshal.GetFunctionPointerForDelegate((quit)((_, _) => obs.OnNext(Unit.Default))), IntPtr.Zero, null, GConnectFlags.G_CONNECT_AFTER);
+			ulong handlerId = GObjectGlobalFunctions.SignalConnectData(_handle, "quit", Marshal.GetFunctionPointerForDelegate((QuitSignal)((_, _) => obs.OnNext(Unit.Default))), IntPtr.Zero, null, GConnectFlags.G_CONNECT_AFTER);
 			return Disposable.Create((Action) (() =>
 			{
 				GObjectGlobalFunctions.SignalHandlerDisconnect(_handle, handlerId);

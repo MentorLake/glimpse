@@ -2,7 +2,7 @@
 
 public static class WriterExtensions
 {
-	public static void WriteDictionary_aesv(this ref MessageWriter writer, Dictionary<string, DBusVariantItem> values)
+	public static void WriteDictionary_aesv(this ref MessageWriter writer, Dictionary<string, VariantValue> values)
 	{
 		var arrayStart = writer.WriteArrayStart(DBusType.Struct);
 		foreach (var value in values)
@@ -37,7 +37,7 @@ public static class WriterExtensions
 		writer.WriteArrayEnd(arrayStart);
 	}
 
-	public static void WriteStruct_risvuz(this ref MessageWriter writer, (int, string, DBusVariantItem, uint) value)
+	public static void WriteStruct_risvuz(this ref MessageWriter writer, (int, string, VariantValue, uint) value)
 	{
 		writer.WriteStructureStart();
 		writer.WriteInt32(value.Item1);
@@ -46,7 +46,7 @@ public static class WriterExtensions
 		writer.WriteUInt32(value.Item4);
 	}
 
-	public static void WriteArray_arisvuz(this ref MessageWriter writer, (int, string, DBusVariantItem, uint)[] values)
+	public static void WriteArray_arisvuz(this ref MessageWriter writer, (int, string, VariantValue, uint)[] values)
 	{
 		var arrayStart = writer.WriteArrayStart(DBusType.Struct);
 		foreach (var value in values)

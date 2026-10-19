@@ -5,11 +5,11 @@ namespace Glimpse.Libraries.DBus;
 public class OrgFreedesktopDBusIntrospectable
 {
 	private const string Interface = "org.freedesktop.DBus.Introspectable";
-	private readonly Connection _connection;
+	private readonly DBusConnection _connection;
 	private readonly string _destination;
 	private readonly string _path;
 
-	public OrgFreedesktopDBusIntrospectable(Connection connection, string destination, string path)
+	public OrgFreedesktopDBusIntrospectable(DBusConnection connection, string destination, string path)
 	{
 		_connection = connection;
 		_destination = destination;

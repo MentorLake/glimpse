@@ -14,7 +14,7 @@ public static class DBusStartupExtensions
 	{
 		var services = builder.Services;
 		services.AddSingleton<IntrospectionService>();
-		services.AddSingleton(c => new OrgFreedesktopDBus(c.GetRequiredService<DBusConnections>().Session, Connection.DBusServiceName, Connection.DBusObjectPath));
-		services.AddSingleton(new DBusConnections() { Session = new Connection(Address.Session!), System = new Connection(Address.System!), });
+		services.AddSingleton(c => new OrgFreedesktopDBus(c.GetRequiredService<DBusConnections>().Session, "org.freedesktop.DBus", "/org/freedesktop/DBus"));
+		services.AddSingleton(new DBusConnections() { Session = new DBusConnection(DBusAddress.Session!), System = new DBusConnection(DBusAddress.System!), });
 	}
 }

@@ -13,7 +13,7 @@ public static class JsonSerializerExtensions
 				deserializedObject = JsonSerializer.Deserialize(json, typeof(T), context) as T;
 				return true;
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
 				return false;
 			}

@@ -92,37 +92,37 @@ public static class ReaderExtensions
 		return items.ToArray();
 	}
 
-	public static Dictionary<string, DBusVariantItem> ReadDictionary_aesv(this ref Reader reader)
+	public static Dictionary<string, VariantValue> ReadDictionary_aesv(this ref Reader reader)
 	{
-		Dictionary<string, DBusVariantItem> items = new();
+		Dictionary<string, VariantValue> items = new();
 		var headersEnd = reader.ReadArrayStart(DBusType.Struct);
 		while (reader.HasNext(headersEnd))
 		{
-			items.Add(reader.ReadString(), reader.ReadDBusVariant());
+			items.Add(reader.ReadString(), reader.ReadVariantValue());
 		}
 
 		return items;
 	}
 
-	public static DBusVariantItem[] ReadArray_av(this ref Reader reader)
+	public static VariantValue[] ReadArray_av(this ref Reader reader)
 	{
-		List<DBusVariantItem> items = new();
+		List<VariantValue> items = new();
 		var headersEnd = reader.ReadArrayStart(DBusType.Variant);
 		while (reader.HasNext(headersEnd))
 		{
-			items.Add(reader.ReadDBusVariant());
+			items.Add(reader.ReadVariantValue());
 		}
 
 		return items.ToArray();
 	}
 
-	public static (int, Dictionary<string, DBusVariantItem>, DBusVariantItem[]) ReadStruct_riaesvavz(this ref Reader reader)
+	public static (int, Dictionary<string, VariantValue>, VariantValue[]) ReadStruct_riaesvavz(this ref Reader reader)
 	{
 		reader.AlignStruct();
 		return ValueTuple.Create(reader.ReadInt32(), reader.ReadDictionary_aesv(), reader.ReadArray_av());
 	}
 
-	public static (uint revision, (int, Dictionary<string, DBusVariantItem>, DBusVariantItem[]) layout) ReadMessage_uriaesvavz(Message message, object? _)
+	public static (uint revision, (int, Dictionary<string, VariantValue>, VariantValue[]) layout) ReadMessage_uriaesvavz(Message message, object? _)
 	{
 		var reader = message.GetBodyReader();
 		var arg0 = reader.ReadUInt32();
@@ -130,15 +130,15 @@ public static class ReaderExtensions
 		return (arg0, arg1);
 	}
 
-	public static (int, Dictionary<string, DBusVariantItem>) ReadStruct_riaesvz(this ref Reader reader)
+	public static (int, Dictionary<string, VariantValue>) ReadStruct_riaesvz(this ref Reader reader)
 	{
 		reader.AlignStruct();
 		return ValueTuple.Create(reader.ReadInt32(), reader.ReadDictionary_aesv());
 	}
 
-	public static (int, Dictionary<string, DBusVariantItem>)[] ReadArray_ariaesvz(this ref Reader reader)
+	public static (int, Dictionary<string, VariantValue>)[] ReadArray_ariaesvz(this ref Reader reader)
 	{
-		List<(int, Dictionary<string, DBusVariantItem>)> items = new();
+		List<(int, Dictionary<string, VariantValue>)> items = new();
 		var headersEnd = reader.ReadArrayStart(DBusType.Struct);
 		while (reader.HasNext(headersEnd))
 		{
@@ -148,16 +148,16 @@ public static class ReaderExtensions
 		return items.ToArray();
 	}
 
-	public static (int, Dictionary<string, DBusVariantItem>)[] ReadMessage_ariaesvz(Message message, object? _)
+	public static (int, Dictionary<string, VariantValue>)[] ReadMessage_ariaesvz(Message message, object? _)
 	{
 		var reader = message.GetBodyReader();
 		return reader.ReadArray_ariaesvz();
 	}
 
-	public static DBusVariantItem ReadMessage_v(Message message, object? _)
+	public static VariantValue ReadMessage_v(Message message, object? _)
 	{
 		var reader = message.GetBodyReader();
-		return reader.ReadDBusVariant();
+		return reader.ReadVariantValue();
 	}
 
 	public static int[] ReadArray_ai(this ref Reader reader)
@@ -204,7 +204,7 @@ public static class ReaderExtensions
 		return items.ToArray();
 	}
 
-	public static ((int, Dictionary<string, DBusVariantItem>)[] updatedProps, (int, string[])[] removedProps) ReadMessage_ariaesvzariasz(Message message, object? _)
+	public static ((int, Dictionary<string, VariantValue>)[] updatedProps, (int, string[])[] removedProps) ReadMessage_ariaesvzariasz(Message message, object? _)
 	{
 		var reader = message.GetBodyReader();
 		var arg0 = reader.ReadArray_ariaesvz();
@@ -246,7 +246,7 @@ public static class ReaderExtensions
 		return reader.ReadArray_ay();
 	}
 
-	public static Dictionary<string, DBusVariantItem> ReadMessage_aesv(Message message, object? _)
+	public static Dictionary<string, VariantValue> ReadMessage_aesv(Message message, object? _)
 	{
 		var reader = message.GetBodyReader();
 		return reader.ReadDictionary_aesv();
@@ -321,21 +321,21 @@ public static class ReaderExtensions
 		return reader.ReadInt64();
 	}
 
-	public static (long, long, Dictionary<string, DBusVariantItem>) ReadStruct_rxxaesvz(this ref Reader reader)
+	public static (long, long, Dictionary<string, VariantValue>) ReadStruct_rxxaesvz(this ref Reader reader)
 	{
 		reader.AlignStruct();
 		return ValueTuple.Create(reader.ReadInt64(), reader.ReadInt64(), reader.ReadDictionary_aesv());
 	}
 
-	public static (long, long, Dictionary<string, DBusVariantItem>)[] ReadArray_arxxaesvz(this ref Reader reader)
+	public static (long, long, Dictionary<string, VariantValue>)[] ReadArray_arxxaesvz(this ref Reader reader)
 	{
-		List<(long, long, Dictionary<string, DBusVariantItem>)> items = new();
+		List<(long, long, Dictionary<string, VariantValue>)> items = new();
 		ArrayEnd headersEnd = reader.ReadArrayStart(DBusType.Struct);
 		while (reader.HasNext(headersEnd)) items.Add(reader.ReadStruct_rxxaesvz());
 		return items.ToArray();
 	}
 
-	public static (long, long, Dictionary<string, DBusVariantItem>)[] ReadMessage_arxxaesvz(Message message, object? _)
+	public static (long, long, Dictionary<string, VariantValue>)[] ReadMessage_arxxaesvz(Message message, object? _)
 	{
 		Reader reader = message.GetBodyReader();
 		return reader.ReadArray_arxxaesvz();
@@ -349,11 +349,11 @@ public static class ReaderExtensions
 		return (arg0, arg1);
 	}
 
-	public static (string @name, DBusVariantItem @value) ReadMessage_sv(Message message, object? _)
+	public static (string @name, VariantValue @value) ReadMessage_sv(Message message, object? _)
 	{
 		Reader reader = message.GetBodyReader();
 		string arg0 = reader.ReadString();
-		DBusVariantItem arg1 = reader.ReadDBusVariant();
+		VariantValue arg1 = reader.ReadVariantValue();
 		return (arg0, arg1);
 	}
 }

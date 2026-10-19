@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Glimpse.Libraries.DBus.Core;
 
 namespace Glimpse.Libraries.DBus;
@@ -17,7 +16,7 @@ public class DbusMenuItem
 
 	public DbusMenuItem[] Children { get; set; }
 
-	public static DbusMenuItem From((int, Dictionary<string, DBusVariantItem>, DBusVariantItem[]) root)
+	public static DbusMenuItem From((int, Dictionary<string, VariantValue>, VariantValue[]) root)
 	{
 		root.Item2.TryGetValue("enabled", out var enabled);
 		root.Item2.TryGetValue("label", out var label);
@@ -31,29 +30,31 @@ public class DbusMenuItem
 		var item = new DbusMenuItem()
 		{
 			Id = root.Item1,
-			Enabled = ((DBusBoolItem) enabled?.Value)?.Value,
-			Label = RemoveMnemonics(((DBusStringItem) label?.Value)?.Value),
-			Visible = ((DBusBoolItem) visible?.Value)?.Value,
-			IconName = ((DBusStringItem) iconName?.Value)?.Value,
-			ToggleState = toggleState?.Value is DBusInt32Item v1 ? v1.Value
-				: toggleState?.Value is DBusUInt32Item v2 ? (int) v2.Value
+			Enabled = ReadBool(enabled),
+			Label = RemoveMnemonics(ReadString(label)),
+			Visible = ReadBool(visible),
+			IconName = ReadString(iconName),
+			ToggleState = toggleState.Type == VariantValueType.Int32 ? toggleState.GetInt32()
+				: toggleState.Type == VariantValueType.UInt32 ? (int)toggleState.GetUInt32()
 				: 0,
-			ToggleType = ((DBusStringItem) toggleType?.Value)?.Value,
-			Type = ((DBusStringItem) type?.Value)?.Value,
+			ToggleType = ReadString(toggleType),
+			Type = ReadString(type),
 			Children = ProcessChildren(root.Item3)
 		};
 
-		if (iconData?.Value is DBusArrayItem iconArray)
+		if (iconData.Type == VariantValueType.Array)
 		{
-			item.IconData = iconArray.Select(i => i as DBusByteItem).Select(i => i.Value).ToArray();
-		}
-		else
-		{
-			item.IconData = ((DBusByteArrayItem) iconData?.Value)?.ToArray();
+			item.IconData = iconData.GetArray<byte>();
 		}
 
 		return item;
 	}
+
+	private static string ReadString(VariantValue value)
+		=> value.Type == VariantValueType.String ? value.GetString() : null;
+
+	private static bool? ReadBool(VariantValue value)
+		=> value.Type == VariantValueType.Bool ? value.GetBool() : null;
 
 	private static string RemoveMnemonics(string label)
 	{
@@ -61,29 +62,48 @@ public class DbusMenuItem
 		return string.Join('_', label.Split("__").Select(s => s.Replace("_", "")));
 	}
 
-	private static DbusMenuItem[] ProcessChildren(DBusVariantItem[] children)
+	private static DbusMenuItem[] ProcessChildren(VariantValue[] children)
 	{
 		if (!children.Any()) return Array.Empty<DbusMenuItem>();
 
 		var processedChildren = new LinkedList<DbusMenuItem>();
 
-		foreach (var child in children.Select(c => c.Value as DBusStructItem))
+		foreach (var child in children)
 		{
-			var id = child.First() is DBusInt32Item id1 ? id1.Value
-				: child.First() is DBusUInt32Item id2 ? (int)id2.Value
-				: throw new Exception("Unabled to parse menu item of type " + child.First().GetType().FullName);
+			var id = child.GetItem(0).Type == VariantValueType.Int32 ? child.GetItem(0).GetInt32()
+				: child.GetItem(0).Type == VariantValueType.UInt32 ? (int)child.GetItem(0).GetUInt32()
+				: throw new Exception("Unabled to parse menu item of type " + child.GetItem(0).Type);
 
-			var properties = ((DBusArrayItem)child.ElementAt(1))
-				.ToArray()
-				.Cast<DBusDictEntryItem>()
-				.ToDictionary(i => i.Key.ToString(), i => (DBusVariantItem) i.Value);
-			var childrenOfChild = ((DBusArrayItem)child.ElementAt(2)).Cast<DBusVariantItem>().ToArray();
+			var properties = ReadProperties(child.GetItem(1));
+			var childrenOfChild = ReadChildVariants(child.GetItem(2));
 			var tuple = (id, properties, subChildren: childrenOfChild);
 
 			processedChildren.AddLast(From(tuple));
-
 		}
 
 		return processedChildren.ToArray();
+	}
+
+	private static Dictionary<string, VariantValue> ReadProperties(VariantValue propertiesArray)
+	{
+		var properties = new Dictionary<string, VariantValue>();
+		for (var i = 0; i < propertiesArray.Count; i++)
+		{
+			var entry = propertiesArray.GetItem(i);
+			properties[entry.GetItem(0).GetString()] = entry.GetItem(1);
+		}
+
+		return properties;
+	}
+
+	private static VariantValue[] ReadChildVariants(VariantValue childrenArray)
+	{
+		var result = new VariantValue[childrenArray.Count];
+		for (var i = 0; i < childrenArray.Count; i++)
+		{
+			result[i] = childrenArray.GetItem(i);
+		}
+
+		return result;
 	}
 }

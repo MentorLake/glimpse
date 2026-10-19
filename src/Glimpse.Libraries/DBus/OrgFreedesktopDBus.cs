@@ -5,11 +5,11 @@ namespace Glimpse.Libraries.DBus;
 public class OrgFreedesktopDBus
 {
 	private const string Interface = "org.freedesktop.DBus";
-	private readonly Connection _connection;
+	private readonly DBusConnection _connection;
 	private readonly string _destination;
 	private readonly string _path;
 
-	public OrgFreedesktopDBus(Connection connection, string destination, string path)
+	public OrgFreedesktopDBus(DBusConnection connection, string destination, string path)
 	{
 		_connection = connection;
 		_destination = destination;
@@ -311,7 +311,7 @@ public class OrgFreedesktopDBus
 		}
 	}
 
-	public Task<Dictionary<string, DBusVariantItem>> GetConnectionCredentialsAsync(string arg0)
+	public Task<Dictionary<string, VariantValue>> GetConnectionCredentialsAsync(string arg0)
 	{
 		return _connection.CallMethodAsync(CreateMessage(), ReaderExtensions.ReadMessage_aesv);
 
