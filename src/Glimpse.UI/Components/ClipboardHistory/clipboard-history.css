@@ -1,0 +1,129 @@
+.clipboard-history__container {
+	background-color: alpha(#2b2b2b, 0.97);
+	border: 1px solid alpha(#ffffff, 0.12);
+	border-radius: 10px;
+	padding: 10px;
+}
+
+.clipboard-history__header-row {
+	margin-bottom: 6px;
+}
+
+.clipboard-history__header {
+	color: #cccccc;
+	font-size: 0.85em;
+	font-weight: bold;
+}
+
+.clipboard-history__clear-button {
+	padding: 2px 4px;
+	background: transparent;
+	border: none;
+	box-shadow: none;
+}
+
+.clipboard-history__clear-button image {
+	color: #999999;
+}
+
+.clipboard-history__clear-button:hover image {
+	color: #ffffff;
+}
+
+.clipboard-history__list {
+	background: transparent;
+}
+
+.clipboard-history__scroller scrollbar {
+	background: transparent;
+	border: none;
+	min-width: 0;
+	min-height: 0;
+	padding: 0;
+	margin: 0;
+}
+
+.clipboard-history__scroller scrollbar slider {
+	background-color: transparent;
+	border-radius: 4px;
+	min-width: 6px;
+	transition: background-color 200ms ease-in-out;
+}
+
+.clipboard-history__scroller scrollbar trough {
+	background: transparent;
+	border: none;
+	min-width: 0;
+}
+
+.clipboard-history__scroller scrollbar button,
+.clipboard-history__scroller scrollbar.horizontal {
+	min-width: 0;
+	min-height: 0;
+	padding: 0;
+	margin: 0;
+	background: transparent;
+	border: none;
+}
+
+.clipboard-history__container:hover .clipboard-history__scroller scrollbar slider,
+.clipboard-history__scroller scrollbar.dragging slider {
+	background-color: alpha(#ffffff, 0.3);
+}
+
+.clipboard-history__container:hover .clipboard-history__scroller scrollbar slider:hover {
+	background-color: alpha(#ffffff, 0.45);
+}
+
+.clipboard-history__list row {
+	border-radius: 6px;
+	padding: 0;
+}
+
+.clipboard-history__list row:selected {
+	background-color: alpha(#4a90d9, 0.35);
+}
+
+.clipboard-history-item__container {
+	padding: 6px 8px;
+}
+
+.clipboard-history-item__text {
+	color: #e6e6e6;
+	font-size: 0.95em;
+}
+
+.clipboard-history-item__text selection {
+	background-color: alpha(#4a90d9, 0.55);
+	color: #ffffff;
+}
+
+.clipboard-history-item__timestamp {
+	color: #999999;
+	font-size: 0.75em;
+}
+
+.clipboard-history-item__pin-button,
+.clipboard-history-item__delete-button {
+	padding: 2px 4px;
+	background: transparent;
+	border: none;
+	box-shadow: none;
+}
+
+.clipboard-history-item__pin-button image {
+	color: #999999;
+}
+
+.clipboard-history-item__pin-button--pinned image {
+	color: #e5c07b;
+}
+
+.clipboard-history-item__delete-button image {
+	color: #999999;
+}
+
+.clipboard-history-item__pin-button:hover image,
+.clipboard-history-item__delete-button:hover image {
+	color: #ffffff;
+}
