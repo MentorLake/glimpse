@@ -11,10 +11,22 @@ public class XLib
 	public static extern int XCloseDisplay(ulong display);
 
 	[DllImport(LibraryName)]
-	public static extern int XSelectInput(ulong display, ulong window, EventMask event_mask);
+	public static extern int XSelectInput(ulong display, ulong window, long event_mask);
 
 	[DllImport(LibraryName)]
 	public static extern int XNextEvent(ulong display, IntPtr e);
+
+	[DllImport(LibraryName)]
+	public static extern bool XPeekEvent(ulong display, IntPtr event_ptr);
+
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate int XPredicate(IntPtr display, IntPtr xevent, IntPtr arg);
+
+	[DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
+	public static extern bool XCheckIfEvent(ulong display, IntPtr event_ptr, XPredicate predicate, IntPtr arg);
+
+	[DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
+	public static extern int XPeekIfEvent(ulong display, IntPtr event_ptr, XPredicate predicate, IntPtr arg);
 
 	[DllImport(LibraryName)]
 	public static extern bool XCheckMaskEvent(ulong display, long event_mask, IntPtr event_return);
@@ -69,6 +81,18 @@ public class XLib
 
 	[DllImport(LibraryName)]
 	public static extern int XGetInputFocus(ulong display, out ulong focus_return, out int revert_to_return);
+
+	[DllImport(LibraryName)]
+	public static extern int XQueryPointer(
+		ulong display,
+		ulong window,
+		out ulong root_return,
+		out ulong child_return,
+		out int root_x_return,
+		out int root_y_return,
+		out int win_x_return,
+		out int win_y_return,
+		out uint mask_return);
 
 	[DllImport(LibraryName)]
 	public static extern int XMapWindow(ulong display, ulong window);
@@ -135,6 +159,40 @@ public class XLib
 
 	[DllImport(LibraryName)]
 	public static extern int XChangeProperty(ulong display, ulong w, ulong property, ulong type, int format, int mode, byte[] data, int length);
+
+	[DllImport(LibraryName)]
+	public static extern int XKeysymToKeycode(ulong display, ulong keysym);
+
+	[DllImport(LibraryName)]
+	public static extern ulong XCreateSimpleWindow(ulong display, ulong parent, int x, int y, uint width, uint height, uint border_width, ulong border, ulong background);
+
+	[DllImport(LibraryName)]
+	public static extern int XDestroyWindow(ulong display, ulong w);
+
+	[DllImport(LibraryName)]
+	public static extern ulong XGetSelectionOwner(ulong display, ulong selection);
+
+	[DllImport(LibraryName)]
+	public static extern int XSetSelectionOwner(ulong display, ulong selection, ulong owner, ulong time);
+
+	[DllImport(LibraryName)]
+	public static extern int XConvertSelection(ulong display, ulong selection, ulong target, ulong property, ulong requestor, ulong time);
+
+	[DllImport(LibraryName)]
+	public static extern int XDeleteProperty(ulong display, ulong w, ulong property);
+
+	public const ulong CurrentTime = 0L;
+
+	[DllImport(LibraryName)]
+	public static extern bool XQueryExtension(ulong display, string name, out int major_opcode, out int first_event, out int first_error);
+}
+
+public class XTestLib
+{
+	private const string LibraryName = "libXtst.so.6";
+
+	[DllImport(LibraryName)]
+	public static extern int XTestFakeKeyEvent(ulong display, uint keycode, bool is_release, ulong delay);
 }
 
 public static class XConstants
@@ -228,6 +286,7 @@ public enum EventMask : long
 	PropertyChangeMask = (1L << 22),
 	ColormapChangeMask = (1L << 23),
 	OwnerGrabButtonMask = (1L << 24),
+	AllEventsMask = (1L << 25) - 1,
 }
 
 public enum Event : int
@@ -267,6 +326,15 @@ public enum Event : int
 	MappingNotify = 34,
 	GenericEvent = 35,
 	LASTEvent = 36
+}
+
+[StructLayout(LayoutKind.Sequential, Size = (24 * sizeof(long)))]
+public struct XEvent
+{
+	public int type;
+	public ulong serial;
+	public bool send_event;
+	public ulong display;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = (24 * sizeof(long)))]
@@ -373,6 +441,47 @@ public struct XDestroyWindowEvent
 	public ulong window;
 }
 
+[StructLayout(LayoutKind.Sequential, Size = (24 * sizeof(long)))]
+public struct XSelectionClearEvent
+{
+	public int type;
+	public ulong serial;
+	public bool send_event;
+	public ulong display;
+	public ulong window;
+	public ulong selection;
+	public ulong time;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = (24 * sizeof(long)))]
+public struct XSelectionRequestEvent
+{
+	public int type;
+	public ulong serial;
+	public bool send_event;
+	public ulong display;
+	public ulong owner;
+	public ulong requestor;
+	public ulong selection;
+	public ulong target;
+	public ulong property;
+	public ulong time;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = (24 * sizeof(long)))]
+public struct XSelectionEvent
+{
+	public int type;
+	public ulong serial;
+	public bool send_event;
+	public ulong display;
+	public ulong requestor;
+	public ulong selection;
+	public ulong target;
+	public ulong property;
+	public ulong time;
+}
+
 public enum NotifyMode : int
 {
 	NotifyNormal = 0,
@@ -425,3 +534,31 @@ public struct XErrorEvent
 public delegate int XErrorHandlerDelegate(IntPtr display, ref XErrorEvent ev);
 
 public delegate int XIOErrorHandlerDelegate(IntPtr display);
+
+public class XFixesLib
+{
+	private const string LibraryName = "libXfixes.so.3";
+
+	public const uint SetSelectionOwnerNotifyMask = 1u << 0;
+
+	[DllImport(LibraryName)]
+	public static extern int XFixesQueryVersion(ulong display, out int major_version, out int minor_version);
+
+	[DllImport(LibraryName)]
+	public static extern void XFixesSelectSelectionInput(ulong display, ulong window, ulong selection, uint event_mask);
+}
+[StructLayout(LayoutKind.Sequential, Size = (24 * sizeof(long)))]
+public struct XFixesSelectionNotifyEvent
+{
+	public int type;
+	public int subtype;
+	public ulong serial;
+	public ulong send_event;
+	public ulong display;
+	public ulong window;
+	public ulong pad;
+	public ulong owner;
+	public ulong selection;
+	public ulong timestamp;
+	public ulong selection_timestamp;
+}

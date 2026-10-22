@@ -2,7 +2,7 @@ using Glimpse.Libraries.Images;
 
 namespace Glimpse.Libraries.Xorg.X11;
 
-internal class X11DisplayServer(XLibAdaptorService xService) : IDisplayServer
+internal class X11DisplayServer(XLibAdaptorService xService, XClipboardServer clipboardServer) : IDisplayServer
 {
 	public GdkPixbufHandle TakeScreenshot(IWindowRef windowRef)
 	{
@@ -53,4 +53,11 @@ internal class X11DisplayServer(XLibAdaptorService xService) : IDisplayServer
 		xService.MakeWindowVisible((XWindowRef) windowRef);
 		xService.MoveToMonitor((XWindowRef) windowRef, monitorGeometry);
 	}
+
+	public void PasteIntoFocusedWindow(string text)
+	{
+		clipboardServer.PasteIntoFocusedWindow(text);
+	}
+
+	public IObservable<string> ClipboardTextChanged => clipboardServer.ClipboardTextChanged;
 }

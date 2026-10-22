@@ -13,4 +13,6 @@ public interface IDisplayServer
 	void CloseWindow(IWindowRef windowRef);
 	void MoveToMonitor(IWindowRef windowRef, Rectangle monitorGeometry);
 	GdkPixbufHandle TakeScreenshot(IWindowRef windowRef);
+	void PasteIntoFocusedWindow(string text);
+	IObservable<string> ClipboardTextChanged { get; }
 }

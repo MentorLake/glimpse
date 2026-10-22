@@ -15,6 +15,8 @@ public static class XorgStartupExtensions
 	{
 		builder.Services.AddSingleton<IEffectsFactory, XorgEffects>();
 		builder.Services.AddSingleton<XLibAdaptorService>();
+		builder.Services.AddSingleton<XClipboardServer>();
+		builder.Services.AddSingleton<X11EventQueue>();
 		builder.Services.AddSingleton<IDisplayServer, X11DisplayServer>();
 		builder.Services.AddInstance(XorgReducers.Reducers);
 		builder.Services.AddHostedService<XorgHostedService>();

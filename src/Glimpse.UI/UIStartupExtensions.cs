@@ -1,6 +1,7 @@
 using Glimpse.Libraries.Configuration;
 using Glimpse.UI.Components.ApplicationIcons;
 using Glimpse.UI.Components.Calendar;
+using Glimpse.UI.Components.ClipboardHistory;
 using Glimpse.UI.Components.NotificationBubbles;
 using Glimpse.UI.Components.NotificationHistory;
 using Glimpse.UI.Components.NotificationsConfig;
@@ -36,6 +37,7 @@ public static class UIStartupExtensions
 		builder.Services.AddSingleton<NotificationsConfigWindow>();
 		builder.Services.AddSingleton<CalendarWindow>();
 		builder.Services.AddSingleton<SidePaneWindow>();
+		builder.Services.AddSingleton<ClipboardHistoryWindow>();
 		builder.Services.AddTransient<Panel>();
 		builder.Services.AddTransient<StartMenuIcon>();
 		builder.Services.AddTransient<TaskbarView>();

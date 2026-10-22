@@ -10,9 +10,21 @@ public static class ConfigurationStartupExtensions
 		builder.Services.Configure<GlimpseAppSettings>(configSection);
 		builder.Services.PostConfigure<GlimpseAppSettings>(o =>
 		{
-			o.ConfigurationFilePath = Environment.ExpandEnvironmentVariables(o.ConfigurationFilePath);
-			o.NotificationsFilePath = Environment.ExpandEnvironmentVariables(o.NotificationsFilePath);
+			o.ApplicationName = string.IsNullOrEmpty(o.ApplicationName) ? "glimpse" : o.ApplicationName;
+			o.ConfigurationFilePath = ExpandOrDefault(o.ConfigurationFilePath, $".config/{o.ApplicationName}/config.json");
+			o.NotificationsFilePath = ExpandOrDefault(o.NotificationsFilePath, $".local/share/{o.ApplicationName}/notification-history.json");
+			o.ClipboardHistoryFilePath = ExpandOrDefault(o.ClipboardHistoryFilePath, $".local/share/{o.ApplicationName}/clipboard-history.json");
 		});
+	}
+
+	private static string ExpandOrDefault(string path, string defaultRelativePath)
+	{
+		if (string.IsNullOrEmpty(path))
+		{
+			path = Path.Combine("%HOME%", defaultRelativePath);
+		}
+
+		return Environment.ExpandEnvironmentVariables(path);
 	}
 
 	public static Task UseGlimpseConfiguration(this IHost host)

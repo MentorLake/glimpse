@@ -5,7 +5,9 @@ using Glimpse.Libraries.Wallpaper;
 using Glimpse.Libraries.Xorg;
 using Glimpse.Libraries.Xorg.State;
 using Glimpse.Services;
+using Glimpse.Services.Clipboard;
 using Glimpse.Services.StartMenu;
+using Glimpse.UI.Components.ClipboardHistory;
 using Glimpse.UI.Components.NotificationBubbles;
 using Glimpse.UI.Components.Panel;
 using Glimpse.UI.Components.SidePane;
@@ -38,6 +40,10 @@ public class DisplayOrchestrator(IconManager iconManager, NotificationBubblesSer
 			changeWallpaperAction.Signal_Activate().Select(_ => true).SubscribeDebug(_ => store.Dispatch(new WallpaperActions.NextWallpaperAction()));
 			application.AddAction(changeWallpaperAction);
 
+			var openClipboardHistoryAction = GSimpleActionHandle.New("OpenClipboardHistory", null);
+			openClipboardHistoryAction.Signal_Activate().Select(_ => true).SubscribeDebug(_ => store.Dispatch(new ClipboardPickerOpenedAction()));
+			application.AddAction(openClipboardHistoryAction);
+
 			_loadPanels = GSimpleActionHandle.New("LoadPanels", null);
 			application.AddAction(_loadPanels);
 		});
@@ -47,6 +53,7 @@ public class DisplayOrchestrator(IconManager iconManager, NotificationBubblesSer
 			_startMenuWindow = serviceProvider.GetRequiredService<StartMenuWindow>();
 			application.AddWindow(_startMenuWindow.Window);
 			application.AddWindow(serviceProvider.GetRequiredService<SidePaneWindow>().Window);
+			application.AddWindow(serviceProvider.GetRequiredService<ClipboardHistoryWindow>().Window);
 		});
 	}
 

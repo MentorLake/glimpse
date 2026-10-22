@@ -105,6 +105,14 @@ xfconf-query \
 	-t string \
 	-s "gdbus call --session --dest org.glimpse --object-path /org/glimpse --method org.gtk.Actions.Activate \"OpenStartMenu\" [] {}"
 
+# Updating Super+V clipboard history shortcut"
+xfconf-query \
+	-c xfce4-keyboard-shortcuts \
+	-p "/commands/custom/<Super>v" \
+	-n \
+	-t string \
+	-s "gdbus call --session --dest org.glimpse --object-path /org/glimpse --method org.gtk.Actions.Activate \"OpenClipboardHistory\" [] {}"
+
 disableXfcePanel
 
 # Disable xfce4-notifyd.service"

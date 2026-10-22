@@ -5,30 +5,26 @@ using Glimpse.Libraries.Images;
 
 namespace Glimpse.Libraries.Xorg.X11;
 
-internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) : IDisposable
+internal class XLibAdaptorService(X11EventQueue queue, IHostApplicationLifetime applicationLifetime) : IDisposable
 {
 	private XWindowRef _rootWindowRef;
 	private readonly Subject<IObservable<WindowProperties>> _windows = new();
-	private readonly Subject<(XAnyEvent someEvent, IntPtr eventPointer)> _events = new();
 	private readonly Subject<XWindowRef> _focusChanged = new();
 
 	public IObservable<XWindowRef> FocusChanged => _focusChanged;
 	public IObservable<IObservable<WindowProperties>> Windows => _windows;
 
-	public Task InitializeAsync()
+	public void Initialize(ulong display)
 	{
-		XLib.XInitThreads();
-
-		var display = XLib.XOpenDisplay(0);
 		var rootWindow = XLib.XDefaultRootWindow(display);
 
 		_rootWindowRef = new XWindowRef() { Window = rootWindow, Display = display };
 
 		var rootEventMask = EventMask.SubstructureNotifyMask | EventMask.PropertyChangeMask | EventMask.KeyPressMask | EventMask.KeyReleaseMask;
 		var clientEventMask = EventMask.StructureNotifyMask | EventMask.PropertyChangeMask;
-		var windowEvents = _events.Where(e => e.someEvent.window == rootWindow).Publish();
+		var windowEvents = queue.Events.Where(e => e.someEvent.window == rootWindow).Publish();
 
-		XLib.XSelectInput(display, rootWindow, rootEventMask);
+		XLib.XSelectInput(display, rootWindow, (long) rootEventMask);
 
 		windowEvents.ObservePropertyEvent()
 			.ObserveULongArrayProperty(XAtoms.NetActiveWindow)
@@ -43,13 +39,13 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 			.Subscribe(windowObservable =>
 			{
 				var windowRef = windowObservable.Key;
-				XLib.XSelectInput(windowRef.Display, windowRef.Window, clientEventMask);
+				XLib.XSelectInput(windowRef.Display, windowRef.Window, (long) clientEventMask);
 
 				windowObservable
 					.TakeLast(1)
-					.Subscribe(_ => XLib.XSelectInput(windowRef.Display, windowRef.Window, EventMask.NoEventMask));
+					.Subscribe(_ => XLib.XSelectInput(windowRef.Display, windowRef.Window, (long) EventMask.NoEventMask));
 
-				var windowXEvents = _events.Where(e => e.someEvent.window == windowRef.Window)
+				var windowXEvents = queue.Events.Where(e => e.someEvent.window == windowRef.Window)
 					.TakeUntil(windowObservable.TakeLast(1))
 					.Publish();
 
@@ -116,10 +112,6 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 			});
 
 		windowEvents.Connect();
-
-		Task.Run(() => WatchEventsAsync(applicationLifetime.ApplicationStopping));
-
-		return Task.CompletedTask;
 	}
 
 	private AllowedWindowActions[] ParseWindowActions(List<string> x11WindowActions)
@@ -147,27 +139,9 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 		return results.Distinct().ToArray();
 	}
 
-	private async Task WatchEventsAsync(CancellationToken cancellationToken)
-	{
-		var eventPointer = Marshal.AllocHGlobal(24 * sizeof(long));
-		var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(25));
-
-		while (!cancellationToken.IsCancellationRequested && await timer.WaitForNextTickAsync(cancellationToken))
-		{
-			var eventMask = (long) (EventMask.PropertyChangeMask | EventMask.StructureNotifyMask | EventMask.SubstructureNotifyMask | EventMask.KeyPressMask | EventMask.KeyReleaseMask);
-			while (XLib.XCheckMaskEvent(_rootWindowRef.Display, eventMask, eventPointer))
-			{
-				var someEvent = Marshal.PtrToStructure<XAnyEvent>(eventPointer);
-				_events.OnNext((someEvent, eventPointer));
-			}
-		}
-
-		XLib.XFree(eventPointer);
-	}
-
 	public void Dispose()
 	{
-		XLib.XCloseDisplay(_rootWindowRef.Display);
+
 	}
 
 	private LinkedList<ulong> GetParents(XWindowRef windowRef)
@@ -287,11 +261,7 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 		message.ptr1 = (IntPtr) XAtoms.WmDeleteWindow;
 		message.ptr2 = IntPtr.Zero;
 
-		var pointer = Marshal.AllocHGlobal(24 * sizeof(long));
-		Marshal.StructureToPtr(message, pointer, true);
-		XLib.XSendEvent(windowRef.Display, windowRef.Window, false, (long)EventMask.NoEventMask, pointer);
-		XLib.XFlush(windowRef.Display);
-		Marshal.FreeHGlobal(pointer);
+		windowRef.SendEvent(message);
 	}
 
 	public void StartResizing(XWindowRef windowRef)
@@ -379,11 +349,7 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 		if (data.Length >= 4) message.ptr4 = (IntPtr) data[3];
 		if (data.Length >= 5) message.ptr5 = (IntPtr) data[4];
 
-		var pointer = Marshal.AllocHGlobal(24 * sizeof(long));
-		Marshal.StructureToPtr(message, pointer, true);
-		XLib.XSendEvent(windowRef.Display, windowRef.Window, true, (long)EventMask.SubstructureNotifyMask, pointer);
-		XLib.XFlush(windowRef.Display);
-		Marshal.FreeHGlobal(pointer);
+		windowRef.SendEvent(message, propagate: true, eventMask: EventMask.SubstructureNotifyMask);
 	}
 
 	private void SendClientMessageToRoot(XWindowRef windowRef, ulong messageType, ulong[] data)
@@ -402,11 +368,7 @@ internal class XLibAdaptorService(IHostApplicationLifetime applicationLifetime) 
 		if (data.Length >= 4) message.ptr4 = (IntPtr) data[3];
 		if (data.Length >= 5) message.ptr5 = (IntPtr) data[4];
 
-		var pointer = Marshal.AllocHGlobal(24 * sizeof(long));
-		Marshal.StructureToPtr(message, pointer, true);
-		var eventMask = (long) (EventMask.SubstructureNotifyMask | EventMask.SubstructureRedirectMask);
-		XLib.XSendEvent(windowRef.Display, _rootWindowRef.Window, false, eventMask, pointer);
-		XLib.XFlush(windowRef.Display);
-		Marshal.FreeHGlobal(pointer);
+		var eventMask = EventMask.SubstructureNotifyMask | EventMask.SubstructureRedirectMask;
+		_rootWindowRef.SendEvent(message, eventMask: eventMask);
 	}
 }

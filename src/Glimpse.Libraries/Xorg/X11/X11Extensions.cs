@@ -67,11 +67,26 @@ internal static unsafe class X11Extensions
 			.DistinctUntilChanged();
 	}
 
-	public static string GetStringProperty(this XWindowRef windowRef, ulong property)
-	{
-		var result = XLib.XGetWindowProperty(windowRef.Display, windowRef.Window, property, 0, 1024, false, 0, out var actualTypeReturn, out var actualFormatReturn, out var actualLength, out _, out var dataPointer);
+	public static XWindowRef ToWindowRef(this XAnyEvent someEvent) => new() { Window = someEvent.window, Display = someEvent.display };
 
-		if (result != 0 || actualTypeReturn == 0)
+	public static void SendEvent<T>(this XWindowRef windowRef, T xEvent, bool propagate = false, EventMask eventMask = EventMask.NoEventMask) where T : struct
+	{
+		var pointer = Marshal.AllocHGlobal(24 * sizeof(long));
+		Marshal.StructureToPtr(xEvent, pointer, true);
+		XLib.XSendEvent(windowRef.Display, windowRef.Window, propagate, (long) eventMask, pointer);
+		XLib.XFlush(windowRef.Display);
+		Marshal.FreeHGlobal(pointer);
+	}
+
+	public static XWindowRef ToRequestorWindowRef(this XSelectionEvent selectionEvent) => new() { Window = selectionEvent.requestor, Display = selectionEvent.display };
+
+	public static XWindowRef ToRequestorWindowRef(this XSelectionRequestEvent selectionRequestEvent) => new() { Window = selectionRequestEvent.requestor, Display = selectionRequestEvent.display };
+
+	public static string GetStringProperty(this XWindowRef windowRef, ulong property, bool delete = false)
+	{
+		var result = XLib.XGetWindowProperty(windowRef.Display, windowRef.Window, property, 0, 1024 * 1024, delete, 0, out var actualTypeReturn, out var actualFormatReturn, out var actualLength, out _, out var dataPointer);
+
+		if (result != 0 || actualTypeReturn == 0 || dataPointer == IntPtr.Zero)
 		{
 			return null;
 		}
@@ -84,9 +99,10 @@ internal static unsafe class X11Extensions
 			var propBytes = new byte[dataSize];
 			Marshal.Copy(dataPointer, propBytes, 0, dataSize);
 			XLib.XFree(dataPointer);
-			return Encoding.UTF8.GetString(propBytes);
+			return Encoding.UTF8.GetString(propBytes).TrimEnd('\0');
 		}
 
+		XLib.XFree(dataPointer);
 		return null;
 	}
 

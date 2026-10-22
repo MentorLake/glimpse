@@ -2,6 +2,7 @@ using Glimpse.Libraries.Microsoft.Extensions;
 using Glimpse.Libraries.StatusNotifierWatcher;
 using Glimpse.Libraries.System.Reactive;
 using Glimpse.Libraries.Xorg.Notifications;
+using Glimpse.Services.Clipboard;
 using Glimpse.Services.Notifications;
 using Glimpse.Services.StartMenu;
 using Glimpse.Services.SystemTray;
@@ -26,6 +27,10 @@ public static class GlimpseServicesStartupExtensions
 		builder.Services.AddSingleton<IEffectsFactory, TaskbarEffects>();
 		builder.Services.AddInstance(TaskbarReducers.AllReducers);
 
+		builder.Services.AddSingleton<ClipboardMonitorService>();
+		builder.Services.AddSingleton<IEffectsFactory, ClipboardEffects>();
+		builder.Services.AddInstance(ClipboardReducers.AllReducers);
+
 		builder.Services.AddTransient<IReducerFactory, SystemTrayItemStateReducers>();
 	}
 
@@ -37,6 +42,7 @@ public static class GlimpseServicesStartupExtensions
 		host.UseStartMenu(store, configurationService);
 		await host.UseNotifications(store, configurationService);
 		host.UseTaskbar(store, configurationService, appSettings);
+		host.UseClipboard(store, configurationService, appSettings);
 		await host.UseSystemTray();
 	}
 
@@ -68,6 +74,17 @@ public static class GlimpseServicesStartupExtensions
 		configurationService
 			.ObserveChange(StartMenuConfiguration.ConfigKey)
 			.SubscribeDebug(c => store.Dispatch(new UpdateStartMenuConfiguration(StartMenuConfiguration.From(c))));
+	}
+
+	private static void UseClipboard(this IHost host, ReduxStore store, ConfigurationService configurationService, GlimpseAppSettings appSettings)
+	{
+		configurationService.AddIfNotExists(ClipboardConfiguration.ConfigKey, ClipboardConfiguration.Empty.ToJsonElement());
+
+		configurationService
+			.ObserveChange(ClipboardConfiguration.ConfigKey)
+			.Subscribe(c => store.Dispatch(new UpdateClipboardConfigurationAction(ClipboardConfiguration.From(c))));
+
+		host.Services.GetRequiredService<ClipboardMonitorService>().InitializeAsync(appSettings.ClipboardHistoryFilePath).ConfigureAwait(false);
 	}
 
 	private static async Task UseSystemTray(this IHost host)

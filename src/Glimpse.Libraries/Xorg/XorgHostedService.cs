@@ -4,7 +4,12 @@ using DateTime = System.DateTime;
 
 namespace Glimpse.Libraries.Xorg;
 
-internal class XorgHostedService(XLibAdaptorService xLibAdaptorService, ReduxStore store) : IHostedService
+internal class XorgHostedService(
+	X11EventQueue queue,
+	XLibAdaptorService xLibAdaptorService,
+	XClipboardServer clipboardServer,
+	ReduxStore store,
+	IHostApplicationLifetime lifetime) : IHostedService
 {
 	public async Task StartAsync(CancellationToken cancellationToken)
 	{
@@ -17,7 +22,18 @@ internal class XorgHostedService(XLibAdaptorService xLibAdaptorService, ReduxSto
 			windowObs.TakeLast(1).Subscribe(w => store.Dispatch(new RemoveWindowAction() { WindowProperties = w }));
 		});
 
-		await xLibAdaptorService.InitializeAsync();
+		XLib.XInitThreads();
+		var display = XLib.XOpenDisplay(0);
+		xLibAdaptorService.Initialize(display);
+		clipboardServer.Initialize(display);
+		queue.Start(display);
+
+		lifetime.ApplicationStopping.Register(() =>
+		{
+			xLibAdaptorService.Dispose();
+			clipboardServer.Dispose();
+			XLib.XCloseDisplay(display);
+		});
 	}
 
 	public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
