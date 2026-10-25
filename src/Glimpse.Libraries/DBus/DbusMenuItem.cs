@@ -84,16 +84,28 @@ public class DbusMenuItem
 		return processedChildren.ToArray();
 	}
 
-	private static Dictionary<string, VariantValue> ReadProperties(VariantValue propertiesArray)
+	private static Dictionary<string, VariantValue> ReadProperties(VariantValue properties)
 	{
-		var properties = new Dictionary<string, VariantValue>();
-		for (var i = 0; i < propertiesArray.Count; i++)
+		if (properties.Type == VariantValueType.Dictionary)
 		{
-			var entry = propertiesArray.GetItem(i);
-			properties[entry.GetItem(0).GetString()] = entry.GetItem(1);
+			var dictionary = new Dictionary<string, VariantValue>(properties.Count);
+			for (var i = 0; i < properties.Count; i++)
+			{
+				var entry = properties.GetDictionaryEntry(i);
+				dictionary[entry.Key.GetString()] = entry.Value;
+			}
+
+			return dictionary;
 		}
 
-		return properties;
+		var asArray = new Dictionary<string, VariantValue>(properties.Count);
+		for (var i = 0; i < properties.Count; i++)
+		{
+			var entry = properties.GetItem(i);
+			asArray[entry.GetItem(0).GetString()] = entry.GetItem(1);
+		}
+
+		return asArray;
 	}
 
 	private static VariantValue[] ReadChildVariants(VariantValue childrenArray)
