@@ -183,10 +183,10 @@ internal static unsafe class X11Extensions
 		if (success != 0 || actualTypeReturn == 0) return ImmutableList<GdkPixbufHandle>.Empty;
 
 		using var memoryStream = new UnmanagedMemoryStream((byte*)dataPointer, (long)actualLength * 8);
-		using var binaryReader = new BinaryReader(memoryStream);
+		using var binaryReader = new BinaryReader(memoryStream, Encoding.Latin1);
 		var icons = ImmutableList<GdkPixbufHandle>.Empty;
 
-		while (binaryReader.PeekChar() != -1)
+		while (memoryStream.Position < memoryStream.Length)
 		{
 			var width = binaryReader.ReadInt64();
 			var height = binaryReader.ReadInt64();
