@@ -24,7 +24,7 @@ internal static class TaskbarViewModelSelectors
 			var result = ImmutableList<SlotRef>.Empty.AddRange(storedSlots.Refs);
 
 			var previouslyFoundDesktopFiles = result
-				.Select(l => desktopFiles.ContainsKey(l.PinnedDesktopFileId) ? desktopFiles.ById[l.PinnedDesktopFileId] : null)
+				.Select(l => desktopFiles.ById.GetValueOrDefault(l.PinnedDesktopFileId))
 				.Where(f => f != null)
 				.ToList();
 
@@ -62,9 +62,9 @@ internal static class TaskbarViewModelSelectors
 		{
 			return slots.Refs.Select(slot => (
 					Slot: slot,
-					DesktopFile: desktopFiles.ContainsKey(slot.PinnedDesktopFileId) ? desktopFiles.ById[slot.PinnedDesktopFileId]
-					: desktopFiles.ContainsKey(slot.DiscoveredDesktopFileId) ? desktopFiles.ById[slot.DiscoveredDesktopFileId]
-					: new DesktopFile() { Id = "" }))
+					DesktopFile: desktopFiles.ById.GetValueOrDefault(slot.PinnedDesktopFileId)
+					?? desktopFiles.ById.GetValueOrDefault(slot.DiscoveredDesktopFileId)
+					?? new DesktopFile() { Id = "" }))
 				.ToImmutableList();
 		},
 		(x, y) => CollectionComparer.Sequence(x, y, (i, j) => i.Slot == j.Slot && i.DesktopFile.Id == j.DesktopFile.Id));

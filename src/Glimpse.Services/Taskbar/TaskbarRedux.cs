@@ -54,38 +54,41 @@ internal static class TaskbarReducers
 		FeatureReducer.Build(new TaskbarState())
 			.On<UpdateTaskbarConfigurationAction>((taskbarState, a) =>
 			{
-				if (taskbarState.StoredSlots.Refs.Select(s => s.PinnedDesktopFileId).SequenceEqual(a.Config.PinnedLaunchers))
-				{
-					return taskbarState with { Configuration = a.Config };
-				}
-
 				var before = taskbarState.StoredSlots.Refs.Select(i => string.IsNullOrEmpty(i.PinnedDesktopFileId) ? i.DiscoveredDesktopFileId : i.PinnedDesktopFileId).ToList();
-				var after = a.Config.PinnedLaunchers.ToList();
+				var after = a.Config.PinnedLaunchers.Where(id => !string.IsNullOrEmpty(id)).ToList();
+				if (before.SequenceEqual(after))
+				{
+					return taskbarState with { Configuration = a.Config with { PinnedLaunchers = [.. after] } };
+				}
 				var results = ImmutableList<SlotRef>.Empty;
 
-				foreach (var p in Pairings(before, after))
+				foreach (var pairing in Pairings(before, after))
 				{
-					if (string.IsNullOrEmpty(p.Item1) && !string.IsNullOrEmpty(p.Item2))
+					if (pairing is LauncherDiff.Removed removed)
 					{
-						var slotRef = taskbarState.StoredSlots.Refs.Find(r => r.PinnedDesktopFileId == p.Item2);
-						if (slotRef == null) slotRef = new SlotRef() { PinnedDesktopFileId = p.Item2 };
-						results = results.Add(slotRef);
+						var pinnedSlotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == removed.DesktopFileId);
+						var transientSlotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.DiscoveredDesktopFileId == removed.DesktopFileId);
+						if (pinnedSlotRef == null && transientSlotRef != null && !results.Contains(transientSlotRef)) results = results.Add(transientSlotRef);
+						continue;
 					}
-					else if (!string.IsNullOrEmpty(p.Item1) && string.IsNullOrEmpty(p.Item2))
-					{
-						var pinnedSlotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == p.Item1);
-						var transientSlotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.DiscoveredDesktopFileId == p.Item1);
-						if (pinnedSlotRef == null && transientSlotRef != null) results = results.Add(transientSlotRef);
-					}
-					else
-					{
-						var slotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == p.Item2 || r.DiscoveredDesktopFileId == p.Item2);
-						if (slotRef == null) slotRef = new SlotRef() { PinnedDesktopFileId = p.Item2 };
-						results = results.Add(slotRef);
 
-						var pinnedSlotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == p.Item1);
-						var transientSlotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.DiscoveredDesktopFileId == p.Item1);
-						if (pinnedSlotRef == null && transientSlotRef != null) results = results.Add(transientSlotRef);
+					var addedId = pairing switch
+					{
+						LauncherDiff.Added added => added.DesktopFileId,
+						LauncherDiff.Matched matched => matched.NewId,
+						_ => throw new InvalidOperationException($"Unexpected pairing {pairing}")
+					};
+
+					var slotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == addedId || r.DiscoveredDesktopFileId == addedId)
+						?? new SlotRef() { PinnedDesktopFileId = addedId };
+
+					if (!results.Contains(slotRef)) results = results.Add(slotRef);
+
+					if (pairing is LauncherDiff.Matched matchedPairing)
+					{
+						var pinnedSlotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == matchedPairing.OldId);
+						var transientSlotRef = taskbarState.StoredSlots.Refs.FirstOrDefault(r => r.DiscoveredDesktopFileId == matchedPairing.OldId);
+						if (pinnedSlotRef == null && transientSlotRef != null && !results.Contains(transientSlotRef)) results = results.Add(transientSlotRef);
 					}
 				}
 
@@ -104,7 +107,14 @@ internal static class TaskbarReducers
 			})
 	];
 
-	private static List<(string, string)> Pairings(List<string> s1, List<string> s2)
+	private abstract record LauncherDiff
+	{
+		public record Matched(string OldId, string NewId) : LauncherDiff;
+		public record Removed(string DesktopFileId) : LauncherDiff;
+		public record Added(string DesktopFileId) : LauncherDiff;
+	}
+
+	private static List<LauncherDiff> Pairings(List<string> s1, List<string> s2)
 	{
 		int m = s1.Count, n = s2.Count;
 		int[,] dp = new int[m + 1, n + 1];
@@ -118,37 +128,27 @@ internal static class TaskbarReducers
 				dp[i, j] = Math.Min(Math.Min(dp[i - 1, j - 1] + cost, dp[i - 1, j] + 1), dp[i, j - 1] + 1);
 			}
 		}
-		List<string> aligned1 = new List<string>();
-		List<string> aligned2 = new List<string>();
+		List<LauncherDiff> pairs = new List<LauncherDiff>();
 		int x = m, y = n;
 		while (x > 0 || y > 0)
 		{
 			if (x > 0 && y > 0 && dp[x, y] == dp[x - 1, y - 1] + (s1[x - 1] == s2[y - 1] ? 0 : 1))
 			{
-				aligned1.Add(s1[x - 1]);
-				aligned2.Add(s2[y - 1]);
+				pairs.Add(new LauncherDiff.Matched(s1[x - 1], s2[y - 1]));
 				x--; y--;
 			}
 			else if (x > 0 && dp[x, y] == dp[x - 1, y] + 1)
 			{
-				aligned1.Add(s1[x - 1]);
-				aligned2.Add(null);
+				pairs.Add(new LauncherDiff.Removed(s1[x - 1]));
 				x--;
 			}
 			else
 			{
-				aligned1.Add(null);
-				aligned2.Add(s2[y - 1]);
+				pairs.Add(new LauncherDiff.Added(s2[y - 1]));
 				y--;
 			}
 		}
-		aligned1.Reverse();
-		aligned2.Reverse();
-		List<(string, string)> pairs = new List<(string, string)>();
-		for (int i = 0; i < aligned1.Count; i++)
-		{
-			pairs.Add((aligned1[i], aligned2[i]));
-		}
+		pairs.Reverse();
 		return pairs;
 	}
 }
