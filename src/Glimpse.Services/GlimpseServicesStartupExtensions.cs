@@ -24,11 +24,9 @@ public static class GlimpseServicesStartupExtensions
 		builder.Services.AddTransient<IReducerFactory, NotificationsReducers>();
 
 		builder.Services.AddSingleton<TaskbarService>();
-		builder.Services.AddSingleton<IEffectsFactory, TaskbarEffects>();
 		builder.Services.AddInstance(TaskbarReducers.AllReducers);
 
 		builder.Services.AddSingleton<ClipboardMonitorService>();
-		builder.Services.AddSingleton<IEffectsFactory, ClipboardEffects>();
 		builder.Services.AddInstance(ClipboardReducers.AllReducers);
 
 		builder.Services.AddTransient<IReducerFactory, SystemTrayItemStateReducers>();

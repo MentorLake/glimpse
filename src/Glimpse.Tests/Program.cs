@@ -12,6 +12,7 @@ using Glimpse.Libraries.Wallpaper;
 using Glimpse.Libraries.Xfce.SessionManagement;
 using Glimpse.Libraries.Xorg;
 using Glimpse.Services;
+using Glimpse.Services.Taskbar;
 using MentorLake.Gdk;
 using MentorLake.Gio;
 using MentorLake.GLib;
@@ -62,6 +63,7 @@ public class Program
 		var store = host.Services.GetRequiredService<ReduxStore>();
 		store.RegisterReducers(host.Services.GetServices<IReducerFactory>().ToArray());
 		store.RegisterReducers(host.Services.GetServices<FeatureReducerCollection>().ToArray());
+		store.RegisterThunkApiFactory(ctx => new TaskbarThunkApi(ctx, host.Services.GetRequiredService<ConfigurationService>()));
 		store.RegisterEffects(host.Services.GetServices<IEffectsFactory>().ToArray()
 			.SelectMany(e => e.Create())
 			.Select(oldEffect => new Effect()

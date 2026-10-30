@@ -11,6 +11,7 @@ using Glimpse.Libraries.Wallpaper;
 using Glimpse.Libraries.Xfce.SessionManagement;
 using Glimpse.Libraries.Xorg;
 using Glimpse.Services;
+using Glimpse.Services.Taskbar;
 using Glimpse.UI;
 using MentorLake.Gio;
 using MentorLake.GLib;
@@ -87,6 +88,7 @@ public static class Program
 
 			var store = host.Services.GetRequiredService<ReduxStore>();
 			store.Errors.Subscribe(exception => bootstrapLogger.LogError(exception, "Redux dispatch pipeline failure"));
+			store.RegisterThunkApiFactory(ctx => new TaskbarThunkApi(ctx, host.Services.GetRequiredService<ConfigurationService>()));
 			store.RegisterReducers(host.Services.GetServices<IReducerFactory>().ToArray());
 			store.RegisterReducers(host.Services.GetServices<FeatureReducerCollection>().ToArray());
 			store.RegisterEffects(host.Services.GetServices<IEffectsFactory>().ToArray()

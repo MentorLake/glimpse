@@ -8,6 +8,7 @@ using Glimpse.Services.Taskbar;
 using Glimpse.UI.Components.Shared;
 using Glimpse.UI.Components.Shared.ForEach;
 using Glimpse.UI.Components.WindowPicker;
+using MentorLake.Redux.Thunks;
 
 namespace Glimpse.UI.Components.ApplicationIcons;
 
@@ -151,7 +152,7 @@ public class TaskbarView
 			groupIcon.ContextMenuItemActivated
 				.Where(i => i.Id == "Pin")
 				.WithLatestFrom(viewModelObservable)
-				.Subscribe(t => store.Dispatch(new ToggleTaskbarPinningAction(t.Second.DesktopFile.Id)));
+				.Subscribe(t => store.Using<TaskbarThunkApi>().Dispatch(TaskbarThunks.TogglePinning, t.Second.DesktopFile.Id));
 
 			groupIcon.ContextMenuItemActivated
 				.Where(i => i.Id == "Launch")
@@ -167,7 +168,7 @@ public class TaskbarView
 
 		forEachGroup.OrderingChanged
 			.TakeUntilDestroyed(Widget)
-			.Subscribe(ordering => store.Dispatch(new UpdateTaskbarSlotOrderingBulkAction(ordering.Select(s => s.SlotRef.Id).ToImmutableList())));
+			.Subscribe(ordering => store.Using<TaskbarThunkApi>().Dispatch(TaskbarThunks.UpdateSlotOrdering, ordering.Select(s => s.SlotRef.Id).ToImmutableList()));
 
 		forEachGroup.DragBeginObservable
 			.TakeUntilDestroyed(Widget)

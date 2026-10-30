@@ -1,4 +1,5 @@
 using Glimpse.Libraries.System.Collections;
+using MentorLake.Redux.Thunks;
 
 namespace Glimpse.Services.Taskbar;
 
@@ -44,7 +45,7 @@ public static class TaskbarSelectors
 
 public record UpdateTaskbarSlotOrderingBulkAction(ImmutableList<string> SlotIds);
 public record UpdateTaskbarConfigurationAction(TaskbarConfiguration Config);
-public record ToggleTaskbarPinningAction(string DesktopFileId);
+public record UpdateTaskbarSlotsAction(ImmutableList<SlotRef> Slots);
 
 internal static class TaskbarReducers
 {
@@ -90,22 +91,7 @@ internal static class TaskbarReducers
 
 				return taskbarState with { Configuration = a.Config, StoredSlots = new SlotReferences() { Refs = results }};
 			})
-			.On<ToggleTaskbarPinningAction>((s, a) =>
-			{
-				if (s.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == a.DesktopFileId) is { } pinnedSlot)
-				{
-					return string.IsNullOrEmpty(pinnedSlot.DiscoveredDesktopFileId)
-						? s with { StoredSlots = s.StoredSlots with { Refs = s.StoredSlots.Refs.Remove(pinnedSlot) } }
-						: s with { StoredSlots = s.StoredSlots with { Refs = s.StoredSlots.Refs.Replace(pinnedSlot, pinnedSlot with { PinnedDesktopFileId = "" }) } };
-				}
-
-				if (s.StoredSlots.Refs.FirstOrDefault(r => r.DiscoveredDesktopFileId == a.DesktopFileId) is { } unpinnedSlot)
-				{
-					return s with { StoredSlots = s.StoredSlots with { Refs = s.StoredSlots.Refs.Replace(unpinnedSlot, unpinnedSlot with { PinnedDesktopFileId = a.DesktopFileId }) } };
-				}
-
-				return s with { StoredSlots = s.StoredSlots with { Refs = s.StoredSlots.Refs.Add(new SlotRef() { PinnedDesktopFileId = a.DesktopFileId }) } };
-			})
+			.On<UpdateTaskbarSlotsAction>((s, a) => s with { StoredSlots = new SlotReferences() { Refs = a.Slots } })
 			.On<UpdateTaskbarSlotOrderingBulkAction>((s, a) =>
 			{
 				var reordered = a.SlotIds
@@ -165,32 +151,4 @@ internal static class TaskbarReducers
 		}
 		return pairs;
 	}
-}
-
-internal class TaskbarEffects(ReduxStore store, ConfigurationService configurationService) : IEffectsFactory
-{
-	public IEnumerable<Effect> Create() => [
-		EffectsFactory.Create(actions => actions
-			.OfType<UpdateTaskbarSlotOrderingBulkAction>()
-			.WithLatestFrom(store.Select(TaskbarSelectors.s_configuration))
-			.WithLatestFrom(store.Select(TaskbarSelectors.s_storedSlots))
-			.Do(t =>
-			{
-				var ((_, config), currentSlots) = t;
-				var pinnedLaunchers = currentSlots.Refs.Select(slot => slot.PinnedDesktopFileId).Where(x => !string.IsNullOrEmpty(x)).ToImmutableList();
-				var newConfig = config with { PinnedLaunchers = pinnedLaunchers };
-				configurationService.Upsert(TaskbarConfiguration.ConfigKey, newConfig.ToJsonElement());
-			})),
-		EffectsFactory.Create(actions => actions
-			.OfType<ToggleTaskbarPinningAction>()
-			.WithLatestFrom(store.Select(TaskbarSelectors.s_configuration))
-			.WithLatestFrom(store.Select(TaskbarSelectors.s_storedSlots))
-			.Do(t =>
-			{
-				var ((_, config), currentSlots) = t;
-				var pinnedLaunchers = currentSlots.Refs.Select(slot => slot.PinnedDesktopFileId).Where(x => !string.IsNullOrEmpty(x)).ToImmutableList();
-				var newConfig = config with { PinnedLaunchers = pinnedLaunchers };
-				configurationService.Upsert(TaskbarConfiguration.ConfigKey, newConfig.ToJsonElement());
-			}))
-	];
 }

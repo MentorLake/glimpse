@@ -81,19 +81,3 @@ internal class ClipboardReducers
 		return entries.Where((_, i) => !evictableIndexes.Contains(i)).ToImmutableList();
 	}
 }
-
-internal class ClipboardEffects(ReduxStore store, ConfigurationService configurationService) : IEffectsFactory
-{
-	public IEnumerable<Effect> Create() => new[]
-	{
-		EffectsFactory.Create(actions => actions
-			.Where(a => a is UpdateClipboardConfigurationAction)
-			.WithLatestFrom(store.Select(ClipboardSelectors.Configuration))
-			.Do(t =>
-			{
-				var (_, config) = t;
-				var serializedConfig = JsonSerializer.SerializeToNode(config, typeof(ClipboardConfiguration), ClipboardSerializationContext.Instance)?.AsObject();
-				configurationService.Upsert(ClipboardConfiguration.ConfigKey, serializedConfig);
-			}))
-	};
-}

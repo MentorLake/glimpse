@@ -72,12 +72,14 @@ public class ConfigurationService(ILogger<ConfigurationService> logger)
 	{
 		var changeObs = _fileChangedObs.Select(_ => _sections[key]);
 
+		var nodeComparer = EqualityComparer<JsonObject>.Create(JsonNode.DeepEquals);
+
 		if (_sections.TryGetValue(key, out var currentValue))
 		{
-			return Observable.Return(currentValue).Concat(changeObs);
+			return Observable.Return(currentValue).Concat(changeObs).DistinctUntilChanged(nodeComparer);
 		}
 
-		return changeObs;
+		return changeObs.DistinctUntilChanged(nodeComparer);
 	}
 
 	public void AddIfNotExists(string key, JsonObject element)
