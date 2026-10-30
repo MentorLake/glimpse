@@ -152,7 +152,11 @@ public class TaskbarView
 			groupIcon.ContextMenuItemActivated
 				.Where(i => i.Id == "Pin")
 				.WithLatestFrom(viewModelObservable)
-				.Subscribe(t => store.Using<TaskbarThunkApi>().Dispatch(TaskbarThunks.TogglePinning, t.Second.DesktopFile.Id));
+				.Subscribe(t => store.Using<TaskbarThunkApi>().Dispatch(
+					TaskbarThunks.TogglePinning,
+					string.IsNullOrEmpty(t.Second.SlotRef.PinnedDesktopFileId)
+						? t.Second.SlotRef.DiscoveredDesktopFileId
+						: t.Second.SlotRef.PinnedDesktopFileId));
 
 			groupIcon.ContextMenuItemActivated
 				.Where(i => i.Id == "Launch")
