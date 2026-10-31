@@ -172,7 +172,7 @@ public class TaskbarView
 
 		forEachGroup.OrderingChanged
 			.TakeUntilDestroyed(Widget)
-			.Subscribe(ordering => store.Using<TaskbarThunkApi>().Dispatch(TaskbarThunks.UpdateSlotOrdering, ordering.Select(s => s.SlotRef.Id).ToImmutableList()));
+			.Subscribe(ordering => store.Using<TaskbarThunkApi>().Dispatch(TaskbarThunks.UpdateSlotOrdering, ordering.Select(s => s.SlotRef).ToImmutableList()));
 
 		forEachGroup.DragBeginObservable
 			.TakeUntilDestroyed(Widget)

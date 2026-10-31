@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+		<AssemblyName>glimpse_playground</AssemblyName>
+		<PublishAot>true</PublishAot>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="appsettings.development.json" LogicalName="appsettings.json"/>
+		<EmbeddedResource Include="Assets/*" LogicalName="%(Filename)%(Extension)" />
+		<EmbeddedResource Include="Components/**/*.css" LogicalName="%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Glimpse.Libraries\Glimpse.Libraries.csproj" />
+		<ProjectReference Include="..\Glimpse.UI\Glimpse.UI.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MentorLake.Gtk3" />
+		<PackageReference Include="MentorLake.Redux" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" />
+		<PackageReference Include="Microsoft.Extensions.Http" />
+		<PackageReference Include="System.Reactive" />
+		<PackageReference Include="Tmds.Systemd.Logging" />
+	</ItemGroup>
+
+</Project>

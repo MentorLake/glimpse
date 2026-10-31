@@ -27,7 +27,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Task = System.Threading.Tasks.Task;
 
-namespace Glimpse.Tests;
+namespace Glimpse.TestHarness;
 
 public class Program
 {

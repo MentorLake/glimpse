@@ -1,31 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-		<RootNamespace>Glimpse.Tests</RootNamespace>
-		<AssemblyName>glimpse_tests</AssemblyName>
-		<PublishAot>true</PublishAot>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="appsettings.development.json" LogicalName="appsettings.json"/>
-		<EmbeddedResource Include="Assets/*" LogicalName="%(Filename)%(Extension)" />
-		<EmbeddedResource Include="Components/**/*.css" LogicalName="%(Filename)%(Extension)" />
+		<ProjectReference Include="..\Glimpse.Services\Glimpse.Services.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Glimpse.Libraries\Glimpse.Libraries.csproj" />
-		<ProjectReference Include="..\Glimpse.UI\Glimpse.UI.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="MentorLake.Gtk3" />
-		<PackageReference Include="MentorLake.Redux" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" />
-		<PackageReference Include="Microsoft.Extensions.Http" />
-		<PackageReference Include="System.Reactive" />
-		<PackageReference Include="Tmds.Systemd.Logging" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" />
+		<PackageReference Include="MSTest.TestAdapter" />
+		<PackageReference Include="MSTest.TestFramework" />
 	</ItemGroup>
 
 </Project>

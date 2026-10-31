@@ -4,6 +4,7 @@ using Glimpse.Libraries.System.Collections;
 using Glimpse.Libraries.Xorg;
 using Glimpse.Libraries.Xorg.State;
 using Glimpse.Services.Taskbar;
+using static Glimpse.Services.Taskbar.TaskbarSelectors;
 using static MentorLake.Redux.Selectors.SelectorFactory;
 using IconInfo = Glimpse.Services.IconInfo;
 
@@ -14,46 +15,6 @@ internal static class TaskbarViewModelSelectors
 	private static readonly ISelector<ImmutableList<WindowProperties>> s_windowPropertiesList = Create(
 		XorgSelectors.Windows,
 		windows => windows.ById.Values.ToImmutableList());
-
-	public static readonly ISelector<SlotReferences> CurrentSlots = Create(
-		DesktopFileSelectors.DesktopFiles,
-		s_windowPropertiesList.WithSequenceComparer((x, y) => x.WindowRef.Id == y.WindowRef.Id && x.ClassHintName.Equals(y.ClassHintName, StringComparison.OrdinalIgnoreCase)),
-		TaskbarSelectors.s_storedSlots,
-		(desktopFiles, windows, storedSlots) =>
-		{
-			var result = ImmutableList<SlotRef>.Empty.AddRange(storedSlots.Refs);
-
-			var previouslyFoundDesktopFiles = result
-				.Select(l => desktopFiles.ById.GetValueOrDefault(l.PinnedDesktopFileId))
-				.Where(f => f != null)
-				.ToList();
-
-			foreach (var window in windows.OrderBy(w => w.CreationDate))
-			{
-				if (result.Any(s => s.ClassHintName.Equals(window.ClassHintName, StringComparison.OrdinalIgnoreCase))) continue;
-				var desktopFile = FindAppDesktopFileByName(previouslyFoundDesktopFiles, window.ClassHintName) ?? FindAppDesktopFileByName(desktopFiles.ById.Values, window.ClassHintName);
-				var matchingSlot = result.FirstOrDefault(s => s.PinnedDesktopFileId == desktopFile?.Id) ?? result.FirstOrDefault(s => s.DiscoveredDesktopFileId == desktopFile?.Id);
-
-				if (matchingSlot == null)
-				{
-					result = result.Add(new SlotRef() { ClassHintName = window.ClassHintName, DiscoveredDesktopFileId = desktopFile?.Id ?? "" });
-				}
-				else if (string.IsNullOrEmpty(matchingSlot.ClassHintName))
-				{
-					result = result.Replace(matchingSlot, matchingSlot with { ClassHintName = window.ClassHintName });
-				}
-			}
-
-			foreach (var unpinnedSlot in result.Where(s => string.IsNullOrEmpty(s.PinnedDesktopFileId)).ToList())
-			{
-				if (windows.All(w => !w.ClassHintName.Equals(unpinnedSlot.ClassHintName, StringComparison.OrdinalIgnoreCase)))
-				{
-					result = result.Remove(unpinnedSlot);
-				}
-			}
-
-			return new SlotReferences { Refs = result };
-		});
 
 	private static readonly ISelector<ImmutableList<(SlotRef Slot, DesktopFile DesktopFile)>> s_slotToDesktopFile = Create(
 		CurrentSlots,
@@ -301,13 +262,4 @@ internal static class TaskbarViewModelSelectors
 				})
 				.ToImmutableList()
 		});
-
-	private static DesktopFile FindAppDesktopFileByName(IEnumerable<DesktopFile> desktopFiles, string classHintName)
-	{
-		return desktopFiles.FirstOrDefault(f => f.Name.Contains(classHintName, StringComparison.OrdinalIgnoreCase))
-			?? desktopFiles.FirstOrDefault(f => f.FileName.Equals(classHintName, StringComparison.OrdinalIgnoreCase))
-			?? desktopFiles.FirstOrDefault(f => f.StartupWmClass.Contains(classHintName, StringComparison.OrdinalIgnoreCase))
-			?? desktopFiles.FirstOrDefault(f => f.Executable.Contains(classHintName, StringComparison.OrdinalIgnoreCase) && f.Executable.Length == f.CommandLine.Length)
-			?? desktopFiles.FirstOrDefault(f => f.Executable.Contains(classHintName, StringComparison.OrdinalIgnoreCase));
-	}
 }

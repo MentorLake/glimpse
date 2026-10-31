@@ -10,4 +10,8 @@
 		<ProjectReference Include="..\Glimpse.Libraries\Glimpse.Libraries.csproj"/>
 	</ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="Glimpse.Tests" />
+	</ItemGroup>
+
 </Project>

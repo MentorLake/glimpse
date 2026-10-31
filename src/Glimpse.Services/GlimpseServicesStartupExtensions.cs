@@ -7,6 +7,7 @@ using Glimpse.Services.Notifications;
 using Glimpse.Services.StartMenu;
 using Glimpse.Services.SystemTray;
 using Glimpse.Services.Taskbar;
+using MentorLake.Redux.Thunks;
 
 namespace Glimpse.Services;
 
@@ -50,7 +51,7 @@ public static class GlimpseServicesStartupExtensions
 
 		configurationService
 			.ObserveChange(TaskbarConfiguration.ConfigKey)
-			.Subscribe(c => store.Dispatch(new UpdateTaskbarConfigurationAction(TaskbarConfiguration.From(c))));
+			.Subscribe(c => store.Using<TaskbarThunkApi>().Dispatch(TaskbarThunks.UpdateConfiguration, TaskbarConfiguration.From(c)));
 	}
 
 	private static async Task UseNotifications(this IHost host, ReduxStore store, ConfigurationService configurationService)

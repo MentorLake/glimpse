@@ -1,51 +1,100 @@
-using MentorLake.Redux.Thunks;
+using Glimpse.Libraries.System.Collections;
 
 namespace Glimpse.Services.Taskbar;
 
-public sealed class TaskbarThunkApi(ThunkApiContext context, ConfigurationService configurationService) : ThunkApi(context)
-{
-	public ConfigurationService ConfigurationService { get; } = configurationService;
-}
-
 public static class TaskbarThunks
 {
-	private static Task PersistPinnedLaunchers(TaskbarThunkApi api)
+	public static Task UpdateConfiguration(TaskbarThunkApi api, TaskbarConfiguration configuration)
 	{
 		var state = api.State.GetFeatureState<TaskbarState>();
-		var pinnedLaunchers = state.StoredSlots.Refs
+		var before = state.StoredSlots.Refs
 			.Select(slot => slot.PinnedDesktopFileId)
 			.Where(id => !string.IsNullOrEmpty(id))
-			.ToImmutableList();
-		api.ConfigurationService.Upsert(TaskbarConfiguration.ConfigKey, (state.Configuration with { PinnedLaunchers = pinnedLaunchers }).ToJsonElement());
+			.ToList();
+		var after = configuration.PinnedLaunchers.Where(id => !string.IsNullOrEmpty(id)).ToList();
+		var slots = state.StoredSlots;
+
+		if (!before.SequenceEqual(after))
+		{
+			var results = ImmutableList<SlotRef>.Empty;
+			foreach (var pairing in SequenceDiff.Compute(before, after))
+			{
+				if (pairing is SequenceDiff.Removed<string> removed)
+				{
+					var pinnedSlotRef = state.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == removed.Value);
+					var transientSlotRef = state.StoredSlots.Refs.FirstOrDefault(r => r.DiscoveredDesktopFileId == removed.Value);
+					if (pinnedSlotRef == null && transientSlotRef != null && !results.Contains(transientSlotRef)) results = results.Add(transientSlotRef);
+					continue;
+				}
+
+				var addedId = pairing switch
+				{
+					SequenceDiff.Added<string> added => added.Value,
+					SequenceDiff.Matched<string> matched => matched.New,
+					_ => throw new InvalidOperationException($"Unexpected pairing {pairing}")
+				};
+
+				var slotRef = state.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == addedId || r.DiscoveredDesktopFileId == addedId)
+					?? new SlotRef() { PinnedDesktopFileId = addedId };
+				if (!results.Contains(slotRef)) results = results.Add(slotRef);
+
+				if (pairing is SequenceDiff.Matched<string> matchedPairing)
+				{
+					var pinnedSlotRef = state.StoredSlots.Refs.FirstOrDefault(r => r.PinnedDesktopFileId == matchedPairing.Old);
+					var transientSlotRef = state.StoredSlots.Refs.FirstOrDefault(r => r.DiscoveredDesktopFileId == matchedPairing.Old);
+					if (pinnedSlotRef == null && transientSlotRef != null && !results.Contains(transientSlotRef)) results = results.Add(transientSlotRef);
+				}
+			}
+
+			slots = new SlotReferences() { Refs = results };
+		}
+
+		api.Dispatch(new UpdateTaskbarStateAction(state with
+		{
+			Configuration = configuration with { PinnedLaunchers = [.. after] },
+			StoredSlots = slots
+		}));
+
 		return Task.CompletedTask;
 	}
 
-	public static async Task TogglePinning(TaskbarThunkApi api, string desktopFileId)
+	public static Task TogglePinning(TaskbarThunkApi api, string desktopFileId)
 	{
-		var slots = api.State.GetFeatureState<TaskbarState>().StoredSlots.Refs;
+		var slots = TaskbarSelectors.CurrentSlots.Apply(api.State).Refs;
 
 		if (slots.FirstOrDefault(r => r.PinnedDesktopFileId == desktopFileId) is { } pinnedSlot)
 		{
-			var updated = string.IsNullOrEmpty(pinnedSlot.DiscoveredDesktopFileId)
+			slots = string.IsNullOrEmpty(pinnedSlot.DiscoveredDesktopFileId)
 				? slots.Remove(pinnedSlot)
 				: slots.Replace(pinnedSlot, pinnedSlot with { PinnedDesktopFileId = "" });
-			api.Dispatch(new UpdateTaskbarSlotsAction(updated));
 		}
 		else if (slots.FirstOrDefault(r => r.DiscoveredDesktopFileId == desktopFileId) is { } unpinnedSlot)
 		{
-			api.Dispatch(new UpdateTaskbarSlotsAction(slots.Replace(unpinnedSlot, unpinnedSlot with { PinnedDesktopFileId = desktopFileId })));
+			slots = slots.Replace(unpinnedSlot, unpinnedSlot with { PinnedDesktopFileId = desktopFileId });
 		}
 		else
 		{
-			api.Dispatch(new UpdateTaskbarSlotsAction(slots.Add(new SlotRef { PinnedDesktopFileId = desktopFileId })));
+			slots = slots.Add(new SlotRef { PinnedDesktopFileId = desktopFileId });
 		}
 
-		await api.Using<TaskbarThunkApi>().Dispatch(PersistPinnedLaunchers).ToTask();
+		return UpdateSlotOrdering(api, slots);
 	}
 
-	public static async Task UpdateSlotOrdering(TaskbarThunkApi api, ImmutableList<string> slotIds)
+	public static Task UpdateSlotOrdering(TaskbarThunkApi api, ImmutableList<SlotRef> slots)
 	{
-		api.Dispatch(new UpdateTaskbarSlotOrderingBulkAction(slotIds));
-		await api.Using<TaskbarThunkApi>().Dispatch(PersistPinnedLaunchers).ToTask();
+		var state = api.State.GetFeatureState<TaskbarState>();
+		var updated = state with
+		{
+			StoredSlots = new SlotReferences() { Refs = slots },
+			Configuration = state.Configuration with
+			{
+				PinnedLaunchers = slots.Select(slot => slot.PinnedDesktopFileId)
+					.Where(id => !string.IsNullOrEmpty(id))
+					.ToImmutableList()
+			}
+		};
+		api.Dispatch(new UpdateTaskbarStateAction(updated));
+		api.ConfigurationService.Upsert(TaskbarConfiguration.ConfigKey, updated.Configuration.ToJsonElement());
+		return Task.CompletedTask;
 	}
 }
