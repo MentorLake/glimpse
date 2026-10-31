@@ -63,7 +63,6 @@ public class Program
 		var store = host.Services.GetRequiredService<ReduxStore>();
 		store.RegisterReducers(host.Services.GetServices<IReducerFactory>().ToArray());
 		store.RegisterReducers(host.Services.GetServices<FeatureReducerCollection>().ToArray());
-		store.RegisterThunkApiFactory(ctx => new TaskbarThunkApi(ctx, host.Services.GetRequiredService<ConfigurationService>()));
 		store.RegisterEffects(host.Services.GetServices<IEffectsFactory>().ToArray()
 			.SelectMany(e => e.Create())
 			.Select(oldEffect => new Effect()

@@ -7,7 +7,6 @@ using Glimpse.Services.Notifications;
 using Glimpse.Services.StartMenu;
 using Glimpse.Services.SystemTray;
 using Glimpse.Services.Taskbar;
-using MentorLake.Redux.Thunks;
 
 namespace Glimpse.Services;
 
@@ -24,7 +23,6 @@ public static class GlimpseServicesStartupExtensions
 		builder.Services.AddTransient<IEffectsFactory, NotificationsEffects>();
 		builder.Services.AddTransient<IReducerFactory, NotificationsReducers>();
 
-		builder.Services.AddSingleton<TaskbarService>();
 		builder.Services.AddInstance(TaskbarReducers.AllReducers);
 
 		builder.Services.AddSingleton<ClipboardMonitorService>();
@@ -49,9 +47,16 @@ public static class GlimpseServicesStartupExtensions
 	{
 		configurationService.AddIfNotExists(TaskbarConfiguration.ConfigKey, TaskbarConfiguration.New(appSettings).ToJsonElement());
 
+		store
+			.Select(TaskbarSelectors.s_configuration)
+			.Select(configuration => configuration.ToJsonElement())
+			.DistinctUntilChanged(EqualityComparer<JsonObject>.Create(JsonNode.DeepEquals))
+			.Skip(1)
+			.Subscribe(configuration => configurationService.Upsert(TaskbarConfiguration.ConfigKey, configuration));
+
 		configurationService
 			.ObserveChange(TaskbarConfiguration.ConfigKey)
-			.Subscribe(c => store.Using<TaskbarThunkApi>().Dispatch(TaskbarThunks.UpdateConfiguration, TaskbarConfiguration.From(c)));
+			.Subscribe(c => store.Dispatch(new UpdateTaskbarConfigurationAction(TaskbarConfiguration.From(c))));
 	}
 
 	private static async Task UseNotifications(this IHost host, ReduxStore store, ConfigurationService configurationService)

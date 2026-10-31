@@ -88,7 +88,6 @@ public static class Program
 
 			var store = host.Services.GetRequiredService<ReduxStore>();
 			store.Errors.Subscribe(exception => bootstrapLogger.LogError(exception, "Redux dispatch pipeline failure"));
-			store.RegisterThunkApiFactory(ctx => new TaskbarThunkApi(ctx, host.Services.GetRequiredService<ConfigurationService>()));
 			store.RegisterReducers(host.Services.GetServices<IReducerFactory>().ToArray());
 			store.RegisterReducers(host.Services.GetServices<FeatureReducerCollection>().ToArray());
 			store.RegisterEffects(host.Services.GetServices<IEffectsFactory>().ToArray()

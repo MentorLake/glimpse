@@ -20,7 +20,7 @@ public class StartMenuWindow
 	public IObservable<Point> WindowMoved { get; }
 	public GtkWindowHandle Window => _root;
 
-	public StartMenuWindow(ReduxStore store, TaskbarService taskbarService, IconManager iconManager)
+	public StartMenuWindow(ReduxStore store, IconManager iconManager)
 	{
 		_root = GtkWindowHandle.New(GtkWindowType.GTK_WINDOW_TOPLEVEL)
 			.SetSkipPagerHint(true)
@@ -76,7 +76,7 @@ public class StartMenuWindow
 		_root.ObserveEvent(_startMenuContent.DesktopFileAction).SubscribeDebug(a => DesktopFileRunner.Run(a));
 		_root.ObserveEvent(_startMenuContent.AppOrderingChanged).SubscribeDebug(t => store.Dispatch(new UpdateStartMenuPinnedAppOrderingAction(t)));
 		_root.ObserveEvent(_startMenuContent.ToggleStartMenuPinning).SubscribeDebug(f => store.Dispatch(new ToggleStartMenuPinningAction(f)));
-		_root.ObserveEvent(_startMenuContent.ToggleTaskbarPinning).SubscribeDebug(taskbarService.ToggleDesktopFilePinning);
+		_root.ObserveEvent(_startMenuContent.ToggleTaskbarPinning).SubscribeDebug(desktopFileId => store.Dispatch(new ToggleTaskbarPinningAction(desktopFileId)));
 		_root.ObserveEvent(_startMenuContent.SearchTextUpdated).SubscribeDebug(text => store.Dispatch(new UpdateStartMenuSearchTextAction(text)));
 		_root.ObserveEvent(_startMenuContent.AppLaunch).SubscribeDebug(desktopFile =>
 		{
