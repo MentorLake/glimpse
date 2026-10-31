@@ -1,5 +1,31 @@
 namespace Glimpse.Services.Taskbar;
 
+internal record TaskbarState
+{
+	public SlotReferences StoredSlots = new();
+	public TaskbarConfiguration Configuration = new();
+
+	public virtual bool Equals(TaskbarState other) => ReferenceEquals(this, other);
+}
+
+public record SlotReferences
+{
+	public ImmutableList<SlotRef> Refs = ImmutableList<SlotRef>.Empty;
+
+	public virtual bool Equals(SlotReferences other)
+	{
+		return other.Refs.SequenceEqual(Refs);
+	}
+}
+
+public record SlotRef
+{
+	public string Id { get; init; } = Guid.NewGuid().ToString();
+	public string PinnedDesktopFileId { get; init; } = "";
+	public string ClassHintName { get; init; } = "";
+	public string DiscoveredDesktopFileId { get; init; } = "";
+}
+
 public record ContextMenuItem
 {
 	public string DisplayText { get; set; }
